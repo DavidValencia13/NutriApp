@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const buildApp = require("./app");
 const { connectPostgres } = require("./Infraestructura/database/postgres");
 const { connectMongo } = require("./Infraestructura/database/mongo");

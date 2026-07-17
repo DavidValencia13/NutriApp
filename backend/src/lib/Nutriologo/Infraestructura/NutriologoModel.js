@@ -1,5 +1,5 @@
 const { DataTypes } = require("sequelize");
-const { sequelize } = require("../../Infraestructura/database/postgres");
+const { sequelize } = require("../../../Infraestructura/database/postgres");
 
 // Modelo de Sequelize para PostgreSQL
 // Define la tabla nutriologos y sus columnas
