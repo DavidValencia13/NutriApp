@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+/* Paleta de colores de NutriApp,*/
+@theme {
+  --color-nutri-orange: #f5a623;
+  --color-nutri-pink: #ef4b6a;
+  --color-nutri-teal: #1ba9a0;
+  --color-nutri-blue: #2e86c1;
+  --color-nutri-green: #4caf7d;
+  --color-nutri-navy: #1b2a4a;
+}
