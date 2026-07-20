@@ -2,13 +2,16 @@ import { useState, useEffect } from "react";
 import { listarPacientes, eliminarPaciente } from "../services/pacienteService";
 import Modal from "../components/Modal";
 import FormularioPaciente from "../components/FormularioPaciente";
+import ListaAlimentos from "../components/ListaAlimentos";
 
 function Pacientes() {
   const [pacientes, setPacientes] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
-  const [modalAbierto, setModalAbierto] = useState(false);
-  const [pacienteEditar, setPacienteEditar] = useState(null); // null = modo crear
+
+  // Un solo estado controla qué modal está abierto (nunca dos a la vez):
+  // tipo: null | "paciente" | "alimentos"
+  const [modal, setModal] = useState({ tipo: null, paciente: null });
 
   useEffect(() => {
     cargarPacientes();
@@ -38,22 +41,36 @@ function Pacientes() {
   }
 
   function abrirModalCrear() {
-    setPacienteEditar(null); // asegura que el form empiece vacío
-    setModalAbierto(true);
+    setModal({ tipo: "paciente", paciente: null }); // asegura que el form empiece vacío
   }
 
   function abrirModalEditar(paciente) {
-    setPacienteEditar(paciente);
-    setModalAbierto(true);
+    setModal({ tipo: "paciente", paciente });
   }
 
-  function handleSuccessFormulario() {
-    setModalAbierto(false);
-    setPacienteEditar(null);
+  function abrirModalAlimentos(paciente) {
+    setModal({ tipo: "alimentos", paciente });
+  }
+
+  function cerrarModal() {
+    setModal({ tipo: null, paciente: null });
+  }
+
+  function handleSuccessFormularioPaciente() {
+    cerrarModal();
     cargarPacientes();
   }
 
   if (cargando) return <p className="p-6">Cargando pacientes...</p>;
+
+  const tituloModal =
+    modal.tipo === "paciente"
+      ? modal.paciente
+        ? "Editar paciente"
+        : "Nuevo paciente"
+      : modal.tipo === "alimentos"
+        ? `Alimentos de ${modal.paciente?.nombre}`
+        : "";
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -92,6 +109,12 @@ function Pacientes() {
               </div>
               <div className="flex gap-3">
                 <button
+                  onClick={() => abrirModalAlimentos(p)}
+                  className="text-nutri-navy hover:opacity-70 text-sm"
+                >
+                  Alimentos
+                </button>
+                <button
                   onClick={() => abrirModalEditar(p)}
                   className="text-nutri-teal hover:opacity-70 text-sm"
                 >
@@ -109,16 +132,17 @@ function Pacientes() {
         </div>
       )}
 
-      <Modal
-        isOpen={modalAbierto}
-        onClose={() => setModalAbierto(false)}
-        title={pacienteEditar ? "Editar paciente" : "Nuevo paciente"}
-      >
-        <FormularioPaciente
-          pacienteEditar={pacienteEditar}
-          onSuccess={handleSuccessFormulario}
-          onCancel={() => setModalAbierto(false)}
-        />
+      <Modal isOpen={modal.tipo !== null} onClose={cerrarModal} title={tituloModal}>
+        {modal.tipo === "paciente" && (
+          <FormularioPaciente
+            pacienteEditar={modal.paciente}
+            onSuccess={handleSuccessFormularioPaciente}
+            onCancel={cerrarModal}
+          />
+        )}
+        {modal.tipo === "alimentos" && modal.paciente && (
+          <ListaAlimentos idPaciente={modal.paciente.id} />
+        )}
       </Modal>
     </div>
   );
