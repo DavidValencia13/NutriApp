@@ -84,15 +84,15 @@ function MenuPaciente({ idPaciente }) {
             )}
           </p>
 
-          {(menu.dias_menus || []).map((dia) => (
+          {(menu.dias || []).map((dia) => (
             <div key={dia.id} className="border rounded p-3 mb-2">
               <p className="font-semibold">
                 Día {dia.numeroDia} — {dia.caloriasTotales} kcal
               </p>
-              {(dia.comidas_menus || []).map((comida) => (
+              {(dia.comidas || []).map((comida) => (
                 <div key={comida.id} className="ml-3 text-sm">
                   {comida.tipoComida} ({comida.calorias} kcal):{" "}
-                  {(comida.detalle_comida_alimentos || [])
+                  {(comida.detalles || [])
                     .map(
                       (d) =>
                         `${d.nombreAlimento} (${d.cantidadUtilizada}${d.unidadMedida})`,

@@ -61,7 +61,12 @@ class MenuRepositorySequelize {
       ],
       include: {
         model: DiaMenuModel,
-        include: { model: ComidaMenuModel, include: DetalleComidaAlimentoModel },
+        as: "dias",
+        include: {
+          model: ComidaMenuModel,
+          as: "comidas",
+          include: { model: DetalleComidaAlimentoModel, as: "detalles" },
+        },
       },
     });
     if (!doc) return null;
@@ -71,7 +76,7 @@ class MenuRepositorySequelize {
   async obtenerMenuConPropietario(idMenu, idNutriologo) {
     const doc = await MenuModel.findOne({
       where: { id: idMenu },
-      include: { model: PacienteModel, where: { idNutriologo }, required: true },
+      include: { model: PacienteModel, as: "paciente", where: { idNutriologo }, required: true },
     });
     if (!doc) return null;
     return this._toEntity(doc);
@@ -82,11 +87,13 @@ class MenuRepositorySequelize {
       where: { id: idComidaMenu },
       include: {
         model: DiaMenuModel,
+        as: "dia",
         required: true,
         include: {
           model: MenuModel,
+          as: "menu",
           required: true,
-          include: { model: PacienteModel, where: { idNutriologo }, required: true },
+          include: { model: PacienteModel, as: "paciente", where: { idNutriologo }, required: true },
         },
       },
     });
@@ -95,9 +102,9 @@ class MenuRepositorySequelize {
       id: doc.id,
       idDiaMenu: doc.idDiaMenu,
       menu: {
-        id: doc.dias_menu.menu.id,
-        idPaciente: doc.dias_menu.menu.idPaciente,
-        estado: doc.dias_menu.menu.estado,
+        id: doc.dia.menu.id,
+        idPaciente: doc.dia.menu.idPaciente,
+        estado: doc.dia.menu.estado,
       },
     };
   }
@@ -106,11 +113,11 @@ class MenuRepositorySequelize {
     return await sequelize.transaction(async (transaction) => {
       const comida = await ComidaMenuModel.findOne({
         where: { id: idComidaMenu },
-        include: { model: DiaMenuModel, required: true, include: MenuModel },
+        include: { model: DiaMenuModel, as: "dia", required: true, include: { model: MenuModel, as: "menu" } },
         transaction,
       });
       if (!comida) throw new NotFoundError("Comida no encontrada");
-      if (comida.dias_menu.menu.estado !== "generado")
+      if (comida.dia.menu.estado !== "generado")
         throw new ConflictError("No se puede ajustar un menú ya aprobado");
 
       await DetalleComidaAlimentoModel.destroy({ where: { idComidaMenu }, transaction });
