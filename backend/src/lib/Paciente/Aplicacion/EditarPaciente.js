@@ -1,3 +1,5 @@
+const Paciente = require("../Dominio/Entidades/Paciente");
+
 // Caso de uso: editar un paciente existente
 class EditarPaciente {
   constructor(pacienteRepository) {
@@ -13,7 +15,32 @@ class EditarPaciente {
     if (paciente.idNutriologo !== idNutriologo)
       throw new Error("No autorizado para editar este paciente");
 
-    return await this.pacienteRepository.updateById(id, data);
+    // Revalida el estado completo resultante del merge (constructor de
+    // Paciente). idNutriologo siempre se toma del paciente existente, nunca
+    // del body: evita que un dato colado en `data` reasigne el paciente a
+    // otro nutriólogo.
+    const actualizado = new Paciente({
+      ...paciente,
+      ...data,
+      id,
+      idNutriologo: paciente.idNutriologo,
+    });
+
+    // Solo campos de negocio pasan al repositorio; nunca id/idNutriologo
+    const cambios = {
+      nombre: actualizado.nombre,
+      peso: actualizado.peso,
+      altura: actualizado.altura,
+      objetivo: actualizado.objetivo,
+      nivelActividad: actualizado.nivelActividad,
+      numeroComidas: actualizado.numeroComidas,
+      presupuesto: actualizado.presupuesto,
+      tiempoParaCocinar: actualizado.tiempoParaCocinar,
+      restricciones: actualizado.restricciones,
+      preferencias: actualizado.preferencias,
+    };
+
+    return await this.pacienteRepository.updateById(id, cambios);
   }
 }
 
