@@ -13,19 +13,29 @@ class GeneradorMenuGroq {
 
     let textoRespuesta;
     try {
-      textoRespuesta = await this.pedirCompletion([{ role: "user", content: prompt }]);
+      textoRespuesta = await this.pedirCompletion([
+        { role: "user", content: prompt },
+      ]);
     } catch (error) {
       if (error instanceof GroqTimeoutError) {
-        throw new ServicioExternoError("El servicio de generación no respondió a tiempo", 504);
+        throw new ServicioExternoError(
+          "El servicio de generación no respondió a tiempo",
+          504,
+        );
       }
-      throw new ServicioExternoError("El servicio de generación no está disponible", 502);
+      throw new ServicioExternoError(
+        "El servicio de generación no está disponible",
+        502,
+      );
     }
 
     let resultado;
     try {
       resultado = JSON.parse(textoRespuesta);
     } catch {
-      throw new ServicioExternoError("El servicio de generación devolvió una respuesta inválida");
+      throw new ServicioExternoError(
+        "El servicio de generación devolvió una respuesta inválida",
+      );
     }
 
     this._validarForma(resultado, perfilPaciente.numeroComidas);
@@ -56,6 +66,7 @@ Responde SOLO con un JSON con este formato exacto, sin texto adicional:
         {
           "orden": <entero 1 a ${perfilPaciente.numeroComidas}, cada uno una sola vez dentro del día>,
           "tipoComida": "Desayuno",
+          "nombrePlato": "<nombre real y apetitoso del platillo>",
           "calorias": <numero>,
           "alimentos": [ { "idAlimento": "<id de la lista>", "cantidad": <numero> } ]
         }
@@ -64,44 +75,66 @@ Responde SOLO con un JSON con este formato exacto, sin texto adicional:
   ],
   "recomendacion": "<texto>"
 }
-El array "dias" debe tener exactamente 7 elementos, con "numeroDia" del 1 al 7 sin repetir. Cada día debe tener exactamente ${perfilPaciente.numeroComidas} comidas, con "orden" del 1 al ${perfilPaciente.numeroComidas} sin repetir. Usa solo "id" que aparezcan en la lista de alimentos disponibles.`;
+El array "dias" debe tener exactamente 7 elementos, con "numeroDia" del 1 al 7 sin repetir. Cada día debe tener exactamente ${perfilPaciente.numeroComidas} comidas, con "orden" del 1 al ${perfilPaciente.numeroComidas} sin repetir. 
+Usa solo "id" que aparezcan en la lista de alimentos disponibles. Para cada comida, inventa un nombre de platillo real y apetitoso (nombrePlato) que se pueda preparar combinando ÚNICAMENTE los alimentos que le asignes a esa comida. 
+No inventes ingredientes fuera de la lista. El nombre del platillo es solo presentación: no debe cambiar las calorías ni las cantidades ya calculadas para cumplir el objetivo del paciente.
+IMPORTANTE: cada alimento debe tener EXACTAMENTE las claves "idAlimento" y "cantidad", escritas tal cual, sin abreviar ni omitir letras.`;
   }
 
   _validarForma(resultado, numeroComidasEsperado) {
     const error = () => {
-      throw new ServicioExternoError("El servicio de generación devolvió un menú inválido");
+      throw new ServicioExternoError(
+        "El servicio de generación devolvió un menú inválido",
+      );
     };
 
     if (!Array.isArray(resultado.dias) || resultado.dias.length !== 7) error();
 
     const numerosDia = resultado.dias.map((dia) => dia.numeroDia);
     const diasCubiertos =
-      new Set(numerosDia).size === 7 && [1, 2, 3, 4, 5, 6, 7].every((n) => numerosDia.includes(n));
+      new Set(numerosDia).size === 7 &&
+      [1, 2, 3, 4, 5, 6, 7].every((n) => numerosDia.includes(n));
     if (!diasCubiertos) error();
 
     for (const dia of resultado.dias) {
-      if (!Array.isArray(dia.comidas) || dia.comidas.length !== numeroComidasEsperado) error();
+      if (
+        !Array.isArray(dia.comidas) ||
+        dia.comidas.length !== numeroComidasEsperado
+      )
+        error();
 
       const ordenes = dia.comidas.map((c) => c.orden);
-      const rango = Array.from({ length: numeroComidasEsperado }, (_, i) => i + 1);
+      const rango = Array.from(
+        { length: numeroComidasEsperado },
+        (_, i) => i + 1,
+      );
       const ordenesCubiertos =
-        new Set(ordenes).size === numeroComidasEsperado && rango.every((n) => ordenes.includes(n));
+        new Set(ordenes).size === numeroComidasEsperado &&
+        rango.every((n) => ordenes.includes(n));
       if (!ordenesCubiertos) error();
 
       for (const comida of dia.comidas) {
-        if (!Array.isArray(comida.alimentos) || comida.alimentos.length === 0) error();
+        if (!Array.isArray(comida.alimentos) || comida.alimentos.length === 0)
+          error();
         if (!Number.isFinite(comida.calorias) || comida.calorias < 0) error();
-        if (!comida.tipoComida || comida.tipoComida.trim().length === 0) error();
-
+        if (!comida.tipoComida || comida.tipoComida.trim().length === 0)
+          error();
+        if (!comida.nombrePlato || comida.nombrePlato.trim().length === 0)
+          error();
         for (const detalle of comida.alimentos) {
-          if (!Number.isFinite(detalle.cantidad) || detalle.cantidad <= 0) error();
-          if (typeof detalle.idAlimento !== "string" || !OBJECT_ID_REGEX.test(detalle.idAlimento))
+          if (!Number.isFinite(detalle.cantidad) || detalle.cantidad <= 0)
+            error();
+          if (
+            typeof detalle.idAlimento !== "string" ||
+            !OBJECT_ID_REGEX.test(detalle.idAlimento)
+          )
             error();
         }
       }
     }
 
-    if (!resultado.recomendacion || resultado.recomendacion.trim().length === 0) error();
+    if (!resultado.recomendacion || resultado.recomendacion.trim().length === 0)
+      error();
   }
 }
 

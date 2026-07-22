@@ -27,7 +27,11 @@ class MenuRepositorySequelize {
 
     for (const dia of dias) {
       const diaDoc = await DiaMenuModel.create(
-        { idMenu: menuDoc.id, numeroDia: dia.numeroDia, caloriasTotales: dia.caloriasTotales },
+        {
+          idMenu: menuDoc.id,
+          numeroDia: dia.numeroDia,
+          caloriasTotales: dia.caloriasTotales,
+        },
         { transaction: contextoPersistencia },
       );
       for (const comida of dia.comidas) {
@@ -36,6 +40,7 @@ class MenuRepositorySequelize {
             idDiaMenu: diaDoc.id,
             orden: comida.orden,
             tipoComida: comida.tipoComida,
+            nombrePlato: comida.nombrePlato,
             calorias: comida.calorias,
           },
           { transaction: contextoPersistencia },
@@ -87,7 +92,12 @@ class MenuRepositorySequelize {
   async obtenerMenuConPropietario(idMenu, idNutriologo) {
     const doc = await MenuModel.findOne({
       where: { id: idMenu },
-      include: { model: PacienteModel, as: "paciente", where: { idNutriologo }, required: true },
+      include: {
+        model: PacienteModel,
+        as: "paciente",
+        where: { idNutriologo },
+        required: true,
+      },
     });
     if (!doc) return null;
     return this._toEntity(doc);
@@ -104,7 +114,12 @@ class MenuRepositorySequelize {
           model: MenuModel,
           as: "menu",
           required: true,
-          include: { model: PacienteModel, as: "paciente", where: { idNutriologo }, required: true },
+          include: {
+            model: PacienteModel,
+            as: "paciente",
+            where: { idNutriologo },
+            required: true,
+          },
         },
       },
     });
@@ -124,33 +139,52 @@ class MenuRepositorySequelize {
     return await sequelize.transaction(async (transaction) => {
       const comida = await ComidaMenuModel.findOne({
         where: { id: idComidaMenu },
-        include: { model: DiaMenuModel, as: "dia", required: true, include: { model: MenuModel, as: "menu" } },
+        include: {
+          model: DiaMenuModel,
+          as: "dia",
+          required: true,
+          include: { model: MenuModel, as: "menu" },
+        },
         transaction,
       });
       if (!comida) throw new NotFoundError("Comida no encontrada");
       if (comida.dia.menu.estado !== "generado")
         throw new ConflictError("No se puede ajustar un menú ya aprobado");
 
-      await DetalleComidaAlimentoModel.destroy({ where: { idComidaMenu }, transaction });
+      await DetalleComidaAlimentoModel.destroy({
+        where: { idComidaMenu },
+        transaction,
+      });
       for (const detalle of cambios.alimentos) {
         await DetalleComidaAlimentoModel.create(
           { idComidaMenu, ...detalle },
           { transaction },
         );
       }
-      await comida.update({ calorias: cambios.calorias }, { transaction });
+      await comida.update(
+        { calorias: cambios.calorias, nombrePlato: cambios.nombrePlato },
+        { transaction },
+      );
 
       const comidasDelDia = await ComidaMenuModel.findAll({
         where: { idDiaMenu: comida.idDiaMenu },
         transaction,
       });
-      const nuevoTotal = comidasDelDia.reduce((total, c) => total + Number(c.calorias), 0);
+      const nuevoTotal = comidasDelDia.reduce(
+        (total, c) => total + Number(c.calorias),
+        0,
+      );
       await DiaMenuModel.update(
         { caloriasTotales: nuevoTotal },
         { where: { id: comida.idDiaMenu }, transaction },
       );
 
-      return { id: comida.id, calorias: cambios.calorias, alimentos: cambios.alimentos };
+      return {
+        id: comida.id,
+        calorias: cambios.calorias,
+        nombrePlato: cambios.nombrePlato,
+        alimentos: cambios.alimentos,
+      };
     });
   }
 

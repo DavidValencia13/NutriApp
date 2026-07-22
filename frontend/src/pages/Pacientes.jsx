@@ -145,7 +145,12 @@ function Pacientes() {
         </div>
       )}
 
-      <Modal isOpen={modal.tipo !== null} onClose={cerrarModal} title={tituloModal}>
+      <Modal
+        isOpen={modal.tipo !== null}
+        onClose={cerrarModal}
+        title={tituloModal}
+        ancho={modal.tipo === "menu" ? "max-w-5xl" : "max-w-lg"}
+      >
         {modal.tipo === "paciente" && (
           <FormularioPaciente
             pacienteEditar={modal.paciente}

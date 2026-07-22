@@ -1,4 +1,8 @@
-const { NotFoundError, ConflictError, ValidationError } = require("../Dominio/Errores");
+const {
+  NotFoundError,
+  ConflictError,
+  ValidationError,
+} = require("../Dominio/Errores");
 
 class AjustarComidaMenu {
   constructor({ menuRepository, listarAlimentosPorPaciente }) {
@@ -7,13 +11,23 @@ class AjustarComidaMenu {
   }
 
   async ejecutar(idComidaMenu, idNutriologo, cambios) {
-    const comida = await this.menuRepository.obtenerComidaConPropietario(idComidaMenu, idNutriologo);
+    const comida = await this.menuRepository.obtenerComidaConPropietario(
+      idComidaMenu,
+      idNutriologo,
+    );
     if (!comida) throw new NotFoundError("Comida no encontrada");
     if (comida.menu.estado === "aprobado")
       throw new ConflictError("No se puede ajustar un menú ya aprobado");
 
-    const alimentosDisponibles = await this.listarAlimentosPorPaciente.ejecutar(comida.menu.idPaciente);
-    const alimentosPorId = new Map(alimentosDisponibles.map((a) => [a.id.toString(), a]));
+    if (!cambios.nombrePlato || cambios.nombrePlato.trim().length === 0)
+      throw new ValidationError("nombrePlato es requerido");
+
+    const alimentosDisponibles = await this.listarAlimentosPorPaciente.ejecutar(
+      comida.menu.idPaciente,
+    );
+    const alimentosPorId = new Map(
+      alimentosDisponibles.map((a) => [a.id.toString(), a]),
+    );
 
     for (const detalle of cambios.alimentos) {
       if (!alimentosPorId.has(detalle.idAlimento.toString()))
@@ -32,6 +46,7 @@ class AjustarComidaMenu {
 
     return await this.menuRepository.actualizarComida(idComidaMenu, {
       calorias: cambios.calorias,
+      nombrePlato: cambios.nombrePlato.trim(),
       alimentos: detallesConSnapshot,
     });
   }

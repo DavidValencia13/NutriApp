@@ -50,6 +50,7 @@ class GenerarMenuSemanal {
       const comidas = dia.comidas.map((comida) => ({
         orden: comida.orden,
         tipoComida: comida.tipoComida,
+        nombrePlato: comida.nombrePlato,  
         calorias: comida.calorias,
         alimentos: comida.alimentos.map((detalle) => {
           const alimento = alimentosPorId.get(detalle.idAlimento.toString());

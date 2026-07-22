@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import { generarMenu, obtenerMenu, aprobarMenu } from "../services/menuService";
 import { listarRecomendaciones } from "../services/recomendacionService";
+import Modal from "./Modal";
+import FormularioAjustarComida from "./FormularioAjustarComida";
 
 function MenuPaciente({ idPaciente }) {
   const [menu, setMenu] = useState(null);
   const [recomendaciones, setRecomendaciones] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
+  const [comidaEditar, setComidaEditar] = useState(null);
 
   useEffect(() => {
     cargarDatos();
@@ -49,6 +52,11 @@ function MenuPaciente({ idPaciente }) {
     }
   }
 
+  function handleSuccessAjuste() {
+    setComidaEditar(null);
+    cargarDatos();
+  }
+
   if (cargando) return <p>Cargando menú...</p>;
 
   return (
@@ -72,7 +80,7 @@ function MenuPaciente({ idPaciente }) {
         </p>
       ) : (
         <div>
-          <p className="text-sm text-gray-600 mb-2">
+          <p className="text-sm text-gray-600 mb-3">
             Estado: <strong>{menu.estado}</strong>
             {menu.estado === "generado" && (
               <button
@@ -84,24 +92,49 @@ function MenuPaciente({ idPaciente }) {
             )}
           </p>
 
-          {(menu.dias || []).map((dia) => (
-            <div key={dia.id} className="border rounded p-3 mb-2">
-              <p className="font-semibold">
-                Día {dia.numeroDia} — {dia.caloriasTotales} kcal
-              </p>
-              {(dia.comidas || []).map((comida) => (
-                <div key={comida.id} className="ml-3 text-sm">
-                  {comida.tipoComida} ({comida.calorias} kcal):{" "}
-                  {(comida.detalles || [])
-                    .map(
-                      (d) =>
-                        `${d.nombreAlimento} (${d.cantidadUtilizada}${d.unidadMedida})`,
-                    )
-                    .join(", ")}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {(menu.dias || []).map((dia) => (
+              <div
+                key={dia.id}
+                className="border rounded-lg shadow-sm overflow-hidden"
+              >
+                <div className="bg-nutri-teal text-white px-4 py-2 flex justify-between items-center">
+                  <span className="font-semibold">Día {dia.numeroDia}</span>
+                  <span className="text-sm">{dia.caloriasTotales} kcal</span>
                 </div>
-              ))}
-            </div>
-          ))}
+                <div className="divide-y">
+                  {(dia.comidas || []).map((comida) => (
+                    <div key={comida.id} className="p-3">
+                      <div className="flex justify-between items-baseline">
+                        <p className="font-medium">
+                          {comida.tipoComida}: {comida.nombrePlato}
+                        </p>
+                        <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
+                          {comida.calorias} kcal
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {(comida.detalles || [])
+                          .map(
+                            (d) =>
+                              `${d.nombreAlimento} (${d.cantidadUtilizada}${d.unidadMedida})`,
+                          )
+                          .join(", ")}
+                      </p>
+                      {menu.estado === "generado" && (
+                        <button
+                          onClick={() => setComidaEditar(comida)}
+                          className="text-nutri-teal text-xs underline mt-1"
+                        >
+                          Ajustar
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -115,6 +148,21 @@ function MenuPaciente({ idPaciente }) {
           </ul>
         </div>
       )}
+
+      <Modal
+        isOpen={comidaEditar !== null}
+        onClose={() => setComidaEditar(null)}
+        title="Ajustar comida"
+      >
+        {comidaEditar && (
+          <FormularioAjustarComida
+            idPaciente={idPaciente}
+            comida={comidaEditar}
+            onSuccess={handleSuccessAjuste}
+            onCancel={() => setComidaEditar(null)}
+          />
+        )}
+      </Modal>
     </div>
   );
 }

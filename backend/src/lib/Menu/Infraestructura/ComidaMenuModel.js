@@ -8,6 +8,7 @@ const ComidaMenuModel = sequelize.define(
     idDiaMenu: { type: DataTypes.INTEGER, allowNull: false },
     orden: { type: DataTypes.INTEGER, allowNull: false },
     tipoComida: { type: DataTypes.STRING, allowNull: false },
+    nombrePlato: { type: DataTypes.STRING(150), allowNull: false },
     calorias: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
   },
   {
