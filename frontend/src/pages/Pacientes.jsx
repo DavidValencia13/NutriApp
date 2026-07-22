@@ -3,6 +3,7 @@ import { listarPacientes, eliminarPaciente } from "../services/pacienteService";
 import Modal from "../components/Modal";
 import FormularioPaciente from "../components/FormularioPaciente";
 import ListaAlimentos from "../components/ListaAlimentos";
+import MenuPaciente from "../components/MenuPaciente";
 
 function Pacientes() {
   const [pacientes, setPacientes] = useState([]);
@@ -52,6 +53,10 @@ function Pacientes() {
     setModal({ tipo: "alimentos", paciente });
   }
 
+  function abrirModalMenu(paciente) {
+    setModal({ tipo: "menu", paciente });
+  }
+
   function cerrarModal() {
     setModal({ tipo: null, paciente: null });
   }
@@ -70,7 +75,9 @@ function Pacientes() {
         : "Nuevo paciente"
       : modal.tipo === "alimentos"
         ? `Alimentos de ${modal.paciente?.nombre}`
-        : "";
+        : modal.tipo === "menu"
+          ? `Menú de ${modal.paciente?.nombre}`
+          : "";
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -115,6 +122,12 @@ function Pacientes() {
                   Alimentos
                 </button>
                 <button
+                  onClick={() => abrirModalMenu(p)}
+                  className="text-nutri-navy hover:opacity-70 text-sm"
+                >
+                  Menú
+                </button>
+                <button
                   onClick={() => abrirModalEditar(p)}
                   className="text-nutri-teal hover:opacity-70 text-sm"
                 >
@@ -142,6 +155,9 @@ function Pacientes() {
         )}
         {modal.tipo === "alimentos" && modal.paciente && (
           <ListaAlimentos idPaciente={modal.paciente.id} />
+        )}
+        {modal.tipo === "menu" && modal.paciente && (
+          <MenuPaciente idPaciente={modal.paciente.id} />
         )}
       </Modal>
     </div>
