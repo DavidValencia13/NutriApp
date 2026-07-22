@@ -591,6 +591,11 @@ y el cascade, borrar un paciente dejaría menús huérfanos apuntando a un
   comida, actualizar `ComidaMenu.calorias`, y recalcular
   `DiaMenu.calorias_totales` como `SUM(ComidaMenu.calorias)` de ese día. Si
   la revalidación de estado falla, hace rollback y lanza `ConflictError`.
+  Extensión futura conocida y no implementada: si más adelante una
+  operación real necesita coordinar esta escritura con la de otro módulo,
+  `actualizarComida` puede aceptar un `contextoPersistencia` opcional (usar
+  el recibido en vez de abrir uno nuevo) — no se agrega ahora porque ningún
+  llamador actual lo necesita y quedaría sin test que lo ejercite.
 - `aprobar(idMenu)` →
   `UPDATE menus SET estado='aprobado' WHERE id=:idMenu AND estado='generado'`,
   devuelve la fila actualizada o `null` si no afectó ninguna (UPDATE
