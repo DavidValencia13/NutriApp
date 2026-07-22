@@ -70,6 +70,17 @@ class MenuRepositorySequelize {
       },
     });
     if (!doc) return null;
+
+    // Sequelize no garantiza el orden de una colección hasMany incluida sin un
+    // ORDER BY explícito por fila del JOIN (comprobado: sin esto, "comidas"
+    // podía llegar con orden: 2 antes que orden: 1). Se ordena en memoria en
+    // vez de depender de la sintaxis de "order" anidado de Sequelize, que es
+    // frágil con include a varios niveles.
+    doc.dias.sort((a, b) => a.numeroDia - b.numeroDia);
+    for (const dia of doc.dias) {
+      dia.comidas.sort((a, b) => a.orden - b.orden);
+    }
+
     return doc; // el controller serializa el árbol completo tal cual (RF-009/RF-0010)
   }
 
