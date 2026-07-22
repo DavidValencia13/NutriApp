@@ -3,6 +3,8 @@ const cors = require("cors"); // CORS (permite que otro origen/dominio le pida d
 const registerNutriologoModule = require("./lib/Nutriologo/Infraestructura/http");
 const registerPacienteModule = require("./lib/Paciente/Infraestructura/http");
 const registerAlimentoModule = require("./lib/Alimento/Infraestructura/http");
+const registerMenuModule = require("./lib/Menu/Infraestructura/http");
+const registerRecomendacionModule = require("./lib/Recomendacion/Infraestructura/http");
 
 function buildApp() {
   const app = express();
@@ -15,6 +17,8 @@ function buildApp() {
   registerNutriologoModule(app);
   registerPacienteModule(app);
   registerAlimentoModule(app);
+  registerMenuModule(app);
+  registerRecomendacionModule(app);
 
   // Catch-all (atrapa todo lo que no coincidió arriba) → 404 = ruta no existe
   app.use((req, res) => {
