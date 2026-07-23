@@ -73,6 +73,7 @@ test("llama a updateByIdAndPaciente con (id, idPaciente, cambios) solo con campo
   assert.deepEqual(Object.keys(llamada.cambios).sort(), [
     "cantidad",
     "nombre",
+    "precio",
     "unidadMedida",
   ]);
   assert.equal(llamada.cambios.nombre, "Papa");

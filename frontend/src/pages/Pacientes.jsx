@@ -4,8 +4,45 @@ import Modal from "../components/Modal";
 import FormularioPaciente from "../components/FormularioPaciente";
 import ListaAlimentos from "../components/ListaAlimentos";
 import MenuPaciente from "../components/MenuPaciente";
+import {
+  IconUsers,
+  IconPlus,
+  IconFork,
+  IconList,
+  IconPencil,
+  IconTrash,
+  IconScale,
+  IconRuler,
+  IconActivity,
+  IconAlertTriangle,
+  IconLeaf,
+} from "../components/Icons";
 
-function Pacientes() {
+function sinRestricciones(texto) {
+  return /^(ninguna?|no aplica|n\/a|-)$/i.test(texto.trim());
+}
+
+function iniciales(nombre = "") {
+  const partes = nombre.trim().split(/\s+/);
+  const a = partes[0]?.charAt(0) || "";
+  const b = partes[1]?.charAt(0) || "";
+  return (a + b).toUpperCase() || "?";
+}
+
+const coloresAvatar = [
+  "bg-nutri-teal",
+  "bg-nutri-blue",
+  "bg-nutri-orange",
+  "bg-nutri-green",
+  "bg-nutri-pink",
+  "bg-nutri-navy",
+];
+
+function colorAvatar(id) {
+  return coloresAvatar[id % coloresAvatar.length];
+}
+
+function Pacientes({ busqueda = "" }) {
   const [pacientes, setPacientes] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
@@ -79,15 +116,25 @@ function Pacientes() {
           ? `Menú de ${modal.paciente?.nombre}`
           : "";
 
+  const pacientesFiltrados = pacientes.filter((p) =>
+    p.nombre.toLowerCase().includes(busqueda.trim().toLowerCase()),
+  );
+
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Mis Pacientes</h1>
+    <div className="p-8 max-w-6xl mx-auto">
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-nutri-navy">Mis Pacientes</h1>
+          <p className="text-gray-500 mt-1">
+            Gestiona el progreso y los planes de tu comunidad.
+          </p>
+        </div>
         <button
           onClick={abrirModalCrear}
-          className="bg-nutri-teal text-white px-4 py-2 rounded hover:bg-nutri-navy"
+          className="flex items-center gap-2 bg-nutri-teal text-white px-4 py-2.5 rounded-lg font-medium hover:bg-nutri-navy transition-colors"
         >
-          + Nuevo paciente
+          <IconPlus />
+          Nuevo paciente
         </button>
       </div>
 
@@ -97,46 +144,142 @@ function Pacientes() {
         </p>
       )}
 
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div className="bg-white rounded-xl shadow-sm p-5 flex items-center gap-4">
+          <div className="w-11 h-11 rounded-lg bg-nutri-teal/10 text-nutri-teal flex items-center justify-center">
+            <IconUsers />
+          </div>
+          <div>
+            <p className="text-xs font-medium text-gray-500 tracking-wide">
+              TOTAL PACIENTES
+            </p>
+            <p className="text-2xl font-bold text-nutri-navy">
+              {pacientes.length}
+            </p>
+          </div>
+        </div>
+      </div>
+
       {pacientes.length === 0 ? (
         <p className="text-gray-500">
           Todavía no tienes pacientes registrados.
         </p>
+      ) : pacientesFiltrados.length === 0 ? (
+        <p className="text-gray-500">
+          Ningún paciente coincide con "{busqueda}".
+        </p>
       ) : (
-        <div className="grid gap-4">
-          {pacientes.map((p) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {pacientesFiltrados.map((p) => (
             <div
               key={p.id}
-              className="bg-white p-4 rounded-lg shadow flex justify-between items-center"
+              className="bg-white rounded-xl shadow-sm p-5"
             >
-              <div>
-                <p className="font-semibold">{p.nombre}</p>
-                <p className="text-sm text-gray-500">
-                  Objetivo: {p.objetivo} · {p.numeroComidas} comidas/día
-                </p>
+              <div className="flex items-center gap-3 mb-4">
+                <div
+                  className={`w-12 h-12 rounded-full ${colorAvatar(p.id)} text-white flex items-center justify-center font-semibold shrink-0`}
+                >
+                  {iniciales(p.nombre)}
+                </div>
+                <div className="min-w-0">
+                  <p className="font-semibold text-nutri-navy truncate">
+                    {p.nombre}
+                  </p>
+                  <p className="text-sm text-gray-500 truncate">
+                    Objetivo: {p.objetivo} · {p.numeroComidas} comidas/día
+                  </p>
+                </div>
               </div>
-              <div className="flex gap-3">
+
+              <div className="grid grid-cols-3 gap-2 mb-3">
+                <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-2.5 py-2">
+                  <IconScale className="text-gray-400 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-gray-400 leading-none mb-0.5">
+                      Peso
+                    </p>
+                    <p className="text-sm font-medium text-nutri-navy truncate">
+                      {p.peso} kg
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-2.5 py-2">
+                  <IconRuler className="text-gray-400 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-gray-400 leading-none mb-0.5">
+                      Altura
+                    </p>
+                    <p className="text-sm font-medium text-nutri-navy truncate">
+                      {p.altura} m
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-2.5 py-2">
+                  <IconActivity className="text-gray-400 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-gray-400 leading-none mb-0.5">
+                      Actividad
+                    </p>
+                    <p className="text-sm font-medium text-nutri-navy truncate">
+                      {p.nivelActividad}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {p.restricciones && (
+                <div
+                  className={`flex items-start gap-2 rounded-lg px-3 py-2 text-xs mb-2 ${
+                    sinRestricciones(p.restricciones)
+                      ? "bg-gray-50 text-gray-500"
+                      : "bg-nutri-orange/10 text-nutri-orange"
+                  }`}
+                >
+                  <IconAlertTriangle className="shrink-0 mt-0.5" />
+                  <span>
+                    <span className="font-semibold">Restricciones: </span>
+                    {p.restricciones}
+                  </span>
+                </div>
+              )}
+
+              {p.preferencias && (
+                <div className="flex items-start gap-2 bg-nutri-teal/10 text-nutri-teal rounded-lg px-3 py-2 text-xs mb-3">
+                  <IconLeaf className="shrink-0 mt-0.5" />
+                  <span>
+                    <span className="font-semibold">Preferencias: </span>
+                    {p.preferencias}
+                  </span>
+                </div>
+              )}
+
+              <div className="grid grid-cols-4 gap-1 pt-3 border-t border-gray-100">
                 <button
                   onClick={() => abrirModalAlimentos(p)}
-                  className="text-nutri-navy hover:opacity-70 text-sm"
+                  className="flex flex-col items-center gap-1 py-2 rounded-lg text-nutri-navy hover:bg-gray-50 text-xs"
                 >
+                  <IconFork />
                   Alimentos
                 </button>
                 <button
                   onClick={() => abrirModalMenu(p)}
-                  className="text-nutri-navy hover:opacity-70 text-sm"
+                  className="flex flex-col items-center gap-1 py-2 rounded-lg text-nutri-navy hover:bg-gray-50 text-xs"
                 >
+                  <IconList />
                   Menú
                 </button>
                 <button
                   onClick={() => abrirModalEditar(p)}
-                  className="text-nutri-teal hover:opacity-70 text-sm"
+                  className="flex flex-col items-center gap-1 py-2 rounded-lg text-nutri-teal hover:bg-gray-50 text-xs"
                 >
+                  <IconPencil />
                   Editar
                 </button>
                 <button
                   onClick={() => handleEliminar(p.id)}
-                  className="text-nutri-pink hover:opacity-70 text-sm"
+                  className="flex flex-col items-center gap-1 py-2 rounded-lg text-nutri-pink hover:bg-gray-50 text-xs"
                 >
+                  <IconTrash />
                   Eliminar
                 </button>
               </div>
@@ -162,7 +305,10 @@ function Pacientes() {
           <ListaAlimentos idPaciente={modal.paciente.id} />
         )}
         {modal.tipo === "menu" && modal.paciente && (
-          <MenuPaciente idPaciente={modal.paciente.id} />
+          <MenuPaciente
+            idPaciente={modal.paciente.id}
+            presupuesto={modal.paciente.presupuesto}
+          />
         )}
       </Modal>
     </div>

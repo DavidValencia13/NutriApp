@@ -18,6 +18,15 @@ const AlimentoSchema = new mongoose.Schema(
       },
     },
     unidadMedida: { type: String, required: true, trim: true },
+    precio: {
+      type: Number,
+      required: true,
+      default: 0,
+      validate: {
+        validator: (v) => Number.isFinite(v) && v >= 0,
+        message: "El precio no puede ser negativo",
+      },
+    },
   },
   { timestamps: true },
 );

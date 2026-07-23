@@ -8,6 +8,7 @@ class AlimentoRepositoryMongo {
       nombre: alimento.nombre,
       cantidad: alimento.cantidad,
       unidadMedida: alimento.unidadMedida,
+      precio: alimento.precio,
     });
     return this._toEntity(doc);
   }
@@ -50,6 +51,7 @@ class AlimentoRepositoryMongo {
       nombre: doc.nombre,
       cantidad: doc.cantidad,
       unidadMedida: doc.unidadMedida,
+      precio: doc.precio,
     });
   }
 }

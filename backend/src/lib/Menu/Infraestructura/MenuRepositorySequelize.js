@@ -31,6 +31,7 @@ class MenuRepositorySequelize {
           idMenu: menuDoc.id,
           numeroDia: dia.numeroDia,
           caloriasTotales: dia.caloriasTotales,
+          costoTotalDia: dia.costoTotalDia,
         },
         { transaction: contextoPersistencia },
       );
@@ -42,6 +43,7 @@ class MenuRepositorySequelize {
             tipoComida: comida.tipoComida,
             nombrePlato: comida.nombrePlato,
             calorias: comida.calorias,
+            costoTotal: comida.costoTotal,
           },
           { transaction: contextoPersistencia },
         );
@@ -162,7 +164,11 @@ class MenuRepositorySequelize {
         );
       }
       await comida.update(
-        { calorias: cambios.calorias, nombrePlato: cambios.nombrePlato },
+        {
+          calorias: cambios.calorias,
+          nombrePlato: cambios.nombrePlato,
+          costoTotal: cambios.costoTotal,
+        },
         { transaction },
       );
 
@@ -170,12 +176,16 @@ class MenuRepositorySequelize {
         where: { idDiaMenu: comida.idDiaMenu },
         transaction,
       });
-      const nuevoTotal = comidasDelDia.reduce(
+      const nuevoTotalCalorias = comidasDelDia.reduce(
         (total, c) => total + Number(c.calorias),
         0,
       );
+      const nuevoTotalCosto = comidasDelDia.reduce(
+        (total, c) => total + Number(c.costoTotal),
+        0,
+      );
       await DiaMenuModel.update(
-        { caloriasTotales: nuevoTotal },
+        { caloriasTotales: nuevoTotalCalorias, costoTotalDia: nuevoTotalCosto },
         { where: { id: comida.idDiaMenu }, transaction },
       );
 
@@ -183,6 +193,7 @@ class MenuRepositorySequelize {
         id: comida.id,
         calorias: cambios.calorias,
         nombrePlato: cambios.nombrePlato,
+        costoTotal: cambios.costoTotal,
         alimentos: cambios.alimentos,
       };
     });

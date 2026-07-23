@@ -68,29 +68,34 @@ function FormularioPaciente({ pacienteEditar, onSuccess, onCancel }) {
     }
   }
 
+  const labelClass = "block mb-1 text-sm font-medium text-gray-700";
   const inputClass =
-    "w-full border border-gray-300 rounded px-3 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-nutri-teal";
+    "w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-nutri-teal";
+  const inputCompactClass =
+    "w-24 text-center border border-gray-300 rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-nutri-teal";
 
   return (
     <form onSubmit={handleSubmit}>
       {error && (
-        <p className="bg-red-100 text-red-700 text-sm p-2 rounded mb-3">
+        <p className="bg-red-100 text-red-700 text-sm p-2 rounded-lg mb-4">
           {error}
         </p>
       )}
 
-      <label className="text-sm font-medium text-gray-700">Nombre</label>
-      <input
-        name="nombre"
-        value={form.nombre}
-        onChange={handleChange}
-        required
-        className={inputClass}
-      />
+      <div className="mb-4">
+        <label className={labelClass}>Nombre</label>
+        <input
+          name="nombre"
+          value={form.nombre}
+          onChange={handleChange}
+          required
+          className={inputClass}
+        />
+      </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 mb-4">
         <div>
-          <label className="text-sm font-medium text-gray-700">Peso (kg)</label>
+          <label className={labelClass}>Peso (kg)</label>
           <input
             type="number"
             step="0.1"
@@ -102,9 +107,7 @@ function FormularioPaciente({ pacienteEditar, onSuccess, onCancel }) {
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-gray-700">
-            Altura (m)
-          </label>
+          <label className={labelClass}>Altura (m)</label>
           <input
             type="number"
             step="0.01"
@@ -117,87 +120,92 @@ function FormularioPaciente({ pacienteEditar, onSuccess, onCancel }) {
         </div>
       </div>
 
-      <label className="text-sm font-medium text-gray-700">Objetivo</label>
-      <input
-        name="objetivo"
-        value={form.objetivo}
-        onChange={handleChange}
-        required
-        className={inputClass}
-        placeholder="Ej: Perder peso"
-      />
+      <div className="mb-4">
+        <label className={labelClass}>Objetivo</label>
+        <input
+          name="objetivo"
+          value={form.objetivo}
+          onChange={handleChange}
+          required
+          className={inputClass}
+          placeholder="Ej: Perder peso"
+        />
+      </div>
 
-      <label className="text-sm font-medium text-gray-700">
-        Nivel de actividad
-      </label>
-      <input
-        name="nivelActividad"
-        value={form.nivelActividad}
-        onChange={handleChange}
-        required
-        className={inputClass}
-        placeholder="Ej: Moderado"
-      />
+      <div className="mb-4">
+        <label className={labelClass}>Nivel de actividad</label>
+        <input
+          name="nivelActividad"
+          value={form.nivelActividad}
+          onChange={handleChange}
+          required
+          className={inputClass}
+          placeholder="Ej: Moderado"
+        />
+      </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 mb-4">
         <div>
-          <label className="text-sm font-medium text-gray-700">
-            # Comidas al día
-          </label>
+          <label className={labelClass}># Comidas al día</label>
           <input
             type="number"
             name="numeroComidas"
             value={form.numeroComidas}
             onChange={handleChange}
             required
-            className={inputClass}
+            className={inputCompactClass}
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-gray-700">
-            Presupuesto
-          </label>
-          <input
-            type="number"
-            step="0.01"
-            name="presupuesto"
-            value={form.presupuesto}
-            onChange={handleChange}
-            required
-            className={inputClass}
-          />
+          <label className={labelClass}>Presupuesto</label>
+          <div className="flex items-center gap-1.5">
+            <input
+              type="number"
+              step="0.01"
+              name="presupuesto"
+              value={form.presupuesto}
+              onChange={handleChange}
+              required
+              className={inputCompactClass}
+            />
+            <span className="text-gray-400 text-sm">$</span>
+          </div>
         </div>
       </div>
 
-      <label className="text-sm font-medium text-gray-700">
-        Tiempo para cocinar (min)
-      </label>
-      <input
-        type="number"
-        name="tiempoParaCocinar"
-        value={form.tiempoParaCocinar}
-        onChange={handleChange}
-        required
-        className={inputClass}
-      />
+      <div className="mb-4">
+        <label className={labelClass}>Tiempo para cocinar (min)</label>
+        <input
+          type="number"
+          name="tiempoParaCocinar"
+          value={form.tiempoParaCocinar}
+          onChange={handleChange}
+          required
+          className={inputClass}
+        />
+      </div>
 
-      <label className="text-sm font-medium text-gray-700">Restricciones</label>
-      <input
-        name="restricciones"
-        value={form.restricciones}
-        onChange={handleChange}
-        className={inputClass}
-        placeholder="Ej: Ninguna"
-      />
+      <div className="mb-4">
+        <label className={labelClass}>Restricciones</label>
+        <input
+          name="restricciones"
+          value={form.restricciones}
+          onChange={handleChange}
+          className={inputClass}
+          placeholder="Ej: Ninguna"
+        />
+      </div>
 
-      <label className="text-sm font-medium text-gray-700">Preferencias</label>
-      <input
-        name="preferencias"
-        value={form.preferencias}
-        onChange={handleChange}
-        className={inputClass}
-        placeholder="Ej: Vegetariano"
-      />
+      <div className="mb-4">
+        <label className={labelClass}>Preferencias</label>
+        <input
+          name="preferencias"
+          value={form.preferencias}
+          onChange={handleChange}
+          className={inputClass}
+          placeholder="Ej: Vegetariano"
+        />
+      </div>
 
       <div className="flex justify-end gap-2 mt-4">
         <button

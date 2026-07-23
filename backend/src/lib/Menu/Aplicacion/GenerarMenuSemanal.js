@@ -47,24 +47,32 @@ class GenerarMenuSemanal {
     }
 
     const diasPersistibles = resultado.dias.map((dia) => {
-      const comidas = dia.comidas.map((comida) => ({
-        orden: comida.orden,
-        tipoComida: comida.tipoComida,
-        nombrePlato: comida.nombrePlato,  
-        calorias: comida.calorias,
-        alimentos: comida.alimentos.map((detalle) => {
+      const comidas = dia.comidas.map((comida) => {
+        const alimentos = comida.alimentos.map((detalle) => {
           const alimento = alimentosPorId.get(detalle.idAlimento.toString());
+          const precioUnitario = alimento.precio || 0;
           return {
             idAlimento: alimento.id.toString(),
             nombreAlimento: alimento.nombre,
             unidadMedida: alimento.unidadMedida,
             cantidadUtilizada: detalle.cantidad,
+            precioUnitario,
+            costoTotal: precioUnitario * detalle.cantidad,
           };
-        }),
-      }));
+        });
+        return {
+          orden: comida.orden,
+          tipoComida: comida.tipoComida,
+          nombrePlato: comida.nombrePlato,
+          calorias: comida.calorias,
+          costoTotal: alimentos.reduce((total, a) => total + a.costoTotal, 0),
+          alimentos,
+        };
+      });
       return {
         numeroDia: dia.numeroDia,
         caloriasTotales: comidas.reduce((total, c) => total + c.calorias, 0),
+        costoTotalDia: comidas.reduce((total, c) => total + c.costoTotal, 0),
         comidas,
       };
     });

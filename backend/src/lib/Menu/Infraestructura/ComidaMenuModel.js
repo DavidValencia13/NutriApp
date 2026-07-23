@@ -10,6 +10,12 @@ const ComidaMenuModel = sequelize.define(
     tipoComida: { type: DataTypes.STRING, allowNull: false },
     nombrePlato: { type: DataTypes.STRING(150), allowNull: false },
     calorias: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
+    costoTotal: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      defaultValue: 0,
+      validate: { min: 0 },
+    },
   },
   {
     timestamps: true,

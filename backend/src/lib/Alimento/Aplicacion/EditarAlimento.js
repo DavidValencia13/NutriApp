@@ -27,6 +27,7 @@ class EditarAlimento {
       nombre: actualizado.nombre,
       cantidad: actualizado.cantidad,
       unidadMedida: actualizado.unidadMedida,
+      precio: actualizado.precio,
     };
 
     return await this.alimentoRepository.updateByIdAndPaciente(

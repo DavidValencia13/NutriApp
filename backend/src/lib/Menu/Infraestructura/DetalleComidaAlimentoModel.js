@@ -22,6 +22,20 @@ const DetalleComidaAlimentoModel = sequelize.define(
       allowNull: false,
       validate: { min: 0.001 },
     },
+    // Snapshot del precio por unidad de medida al momento de generar/ajustar
+    // el menú (igual que nombreAlimento/unidadMedida: no es un FK en vivo).
+    precioUnitario: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      defaultValue: 0,
+      validate: { min: 0 },
+    },
+    costoTotal: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      defaultValue: 0,
+      validate: { min: 0 },
+    },
   },
   { timestamps: true },
 );

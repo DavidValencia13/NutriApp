@@ -108,7 +108,8 @@ function ListaAlimentos({ idPaciente }) {
               <div>
                 <p className="font-medium">{a.nombre}</p>
                 <p className="text-sm text-gray-500">
-                  {a.cantidad} {a.unidadMedida}
+                  {a.cantidad} {a.unidadMedida} · {Number(a.precio).toFixed(2)}$/
+                  {a.unidadMedida}
                 </p>
               </div>
               <div className="flex gap-3">

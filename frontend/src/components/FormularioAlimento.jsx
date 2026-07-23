@@ -4,11 +4,23 @@ import {
   editarAlimento,
 } from "../services/alimentoService";
 
+// Unidades principales que un nutriólogo usa al registrar alimentos:
+// peso (g, kg, lb), volumen (ml, l) y conteo (unidad).
+const UNIDADES_MEDIDA = [
+  { value: "g", label: "Gramos (g)" },
+  { value: "kg", label: "Kilogramos (kg)" },
+  { value: "lb", label: "Libras (lb)" },
+  { value: "ml", label: "Mililitros (ml)" },
+  { value: "l", label: "Litros (l)" },
+  { value: "unidad", label: "Unidad" },
+];
+
 function FormularioAlimento({ idPaciente, alimentoEditar, onSuccess, onCancel }) {
   const [form, setForm] = useState({
     nombre: "",
     cantidad: "",
     unidadMedida: "",
+    precio: "",
   });
   const [error, setError] = useState("");
   const [guardando, setGuardando] = useState(false);
@@ -20,6 +32,7 @@ function FormularioAlimento({ idPaciente, alimentoEditar, onSuccess, onCancel })
         nombre: alimentoEditar.nombre,
         cantidad: alimentoEditar.cantidad,
         unidadMedida: alimentoEditar.unidadMedida,
+        precio: alimentoEditar.precio,
       });
     }
   }, [alimentoEditar]);
@@ -38,6 +51,7 @@ function FormularioAlimento({ idPaciente, alimentoEditar, onSuccess, onCancel })
         nombre: form.nombre,
         cantidad: parseFloat(form.cantidad),
         unidadMedida: form.unidadMedida,
+        precio: parseFloat(form.precio),
       };
 
       // Si hay un alimentoEditar, actualiza; si no, crea uno nuevo
@@ -54,30 +68,35 @@ function FormularioAlimento({ idPaciente, alimentoEditar, onSuccess, onCancel })
     }
   }
 
+  const labelClass = "block mb-1 text-sm font-medium text-gray-700";
   const inputClass =
-    "w-full border border-gray-300 rounded px-3 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-nutri-teal";
+    "w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-nutri-teal";
+  const inputCompactClass =
+    "w-24 text-center border border-gray-300 rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-nutri-teal";
 
   return (
     <form onSubmit={handleSubmit}>
       {error && (
-        <p className="bg-red-100 text-red-700 text-sm p-2 rounded mb-3">
+        <p className="bg-red-100 text-red-700 text-sm p-2 rounded-lg mb-4">
           {error}
         </p>
       )}
 
-      <label className="text-sm font-medium text-gray-700">Nombre</label>
-      <input
-        name="nombre"
-        value={form.nombre}
-        onChange={handleChange}
-        required
-        className={inputClass}
-        placeholder="Ej: Arroz"
-      />
+      <div className="mb-4">
+        <label className={labelClass}>Nombre</label>
+        <input
+          name="nombre"
+          value={form.nombre}
+          onChange={handleChange}
+          required
+          className={inputClass}
+          placeholder="Ej: Arroz"
+        />
+      </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="flex gap-2 mb-4">
         <div>
-          <label className="text-sm font-medium text-gray-700">Cantidad</label>
+          <label className={labelClass}>Cantidad</label>
           <input
             type="number"
             step="0.01"
@@ -85,21 +104,54 @@ function FormularioAlimento({ idPaciente, alimentoEditar, onSuccess, onCancel })
             value={form.cantidad}
             onChange={handleChange}
             required
-            className={inputClass}
+            className={inputCompactClass}
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-gray-700">
-            Unidad de medida
-          </label>
-          <input
+          <label className={labelClass}>Unidad de medida</label>
+          <select
             name="unidadMedida"
             value={form.unidadMedida}
             onChange={handleChange}
             required
-            className={inputClass}
-            placeholder="Ej: g, kg, unidad"
+            className="w-40 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-nutri-teal"
+          >
+            <option value="" disabled>
+              Selecciona...
+            </option>
+            {UNIDADES_MEDIDA.map((u) => (
+              <option key={u.value} value={u.value}>
+                {u.label}
+              </option>
+            ))}
+            {/* Si el alimento ya tenía una unidad fuera de esta lista (ej. "KG"
+                de un registro anterior), se conserva como opción para no
+                perder el valor guardado al editar. */}
+            {form.unidadMedida &&
+              !UNIDADES_MEDIDA.some((u) => u.value === form.unidadMedida) && (
+                <option value={form.unidadMedida}>{form.unidadMedida}</option>
+              )}
+          </select>
+        </div>
+      </div>
+
+      <div className="mb-4">
+        <label className={labelClass}>
+          Precio por {form.unidadMedida || "unidad"}
+        </label>
+        <div className="flex items-center gap-1.5">
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            name="precio"
+            value={form.precio}
+            onChange={handleChange}
+            required
+            className={inputCompactClass}
+            placeholder="2.50"
           />
+          <span className="text-gray-400 text-sm">$</span>
         </div>
       </div>
 

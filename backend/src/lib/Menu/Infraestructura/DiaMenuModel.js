@@ -8,6 +8,12 @@ const DiaMenuModel = sequelize.define(
     idMenu: { type: DataTypes.INTEGER, allowNull: false },
     numeroDia: { type: DataTypes.INTEGER, allowNull: false },
     caloriasTotales: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
+    costoTotalDia: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      defaultValue: 0,
+      validate: { min: 0 },
+    },
   },
   {
     timestamps: true,

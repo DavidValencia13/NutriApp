@@ -36,17 +36,26 @@ class AjustarComidaMenu {
 
     const detallesConSnapshot = cambios.alimentos.map((d) => {
       const alimento = alimentosPorId.get(d.idAlimento.toString());
+      const precioUnitario = alimento.precio || 0;
       return {
         idAlimento: alimento.id.toString(),
         nombreAlimento: alimento.nombre,
         unidadMedida: alimento.unidadMedida,
         cantidadUtilizada: d.cantidad,
+        precioUnitario,
+        costoTotal: precioUnitario * d.cantidad,
       };
     });
+
+    const costoTotal = detallesConSnapshot.reduce(
+      (total, d) => total + d.costoTotal,
+      0,
+    );
 
     return await this.menuRepository.actualizarComida(idComidaMenu, {
       calorias: cambios.calorias,
       nombrePlato: cambios.nombrePlato.trim(),
+      costoTotal,
       alimentos: detallesConSnapshot,
     });
   }
