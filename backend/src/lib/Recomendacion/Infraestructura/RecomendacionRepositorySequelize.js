@@ -18,6 +18,7 @@ class RecomendacionRepositorySequelize {
     const docs = await RecomendacionModel.findAll({
       where: { idPaciente },
       order: [["fechaGeneracion", "DESC"]],
+      limit: 3,
     });
     return docs.map((doc) => this._toEntity(doc));
   }
