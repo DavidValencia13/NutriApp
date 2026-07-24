@@ -11,7 +11,7 @@ class NutriologoController {
   registrar = async (req, res) => {
     try {
       const nutriologo = await this.registrarNutriologo.ejecutar(req.body);
-      res.status(201).json(nutriologo);
+      res.status(201).json(this._aPublico(nutriologo));
     } catch (error) {
       res.status(400).json({ message: error.message });
     }
@@ -28,14 +28,23 @@ class NutriologoController {
   };
 
   // Obtener perfil del nutriólogo
+  // Solo puede consultar su propio perfil (req.nutriologo lo deja authMiddleware)
   obtener = async (req, res) => {
     try {
+      if (Number(req.params.id) !== req.nutriologo.id) {
+        return res.status(403).json({ message: "No autorizado" });
+      }
       const nutriologo = await this.obtenerNutriologo.ejecutar(req.params.id);
-      res.json(nutriologo);
+      res.json(this._aPublico(nutriologo));
     } catch (error) {
       res.status(404).json({ message: error.message });
     }
   };
+
+  // Quita campos sensibles (ej. password) antes de responder al cliente
+  _aPublico({ id, nombre, apellido, email }) {
+    return { id, nombre, apellido, email };
+  }
 }
 
 module.exports = NutriologoController;

@@ -20,19 +20,22 @@ function FormularioAlimento({ idPaciente, alimentoEditar, onSuccess, onCancel })
     nombre: "",
     cantidad: "",
     unidadMedida: "",
-    precio: "",
+    precioTotal: "",
   });
   const [error, setError] = useState("");
   const [guardando, setGuardando] = useState(false);
 
-  // Si viene un alimento a editar, precarga sus datos en el formulario
+  // Si viene un alimento a editar, precarga sus datos en el formulario.
+  // El backend guarda precio por unidad (ej. $/g); aquí se muestra el
+  // total pagado (precio unitario × cantidad) porque es lo que el
+  // nutriólogo recuerda naturalmente ("pagué $30 por estas 500g").
   useEffect(() => {
     if (alimentoEditar) {
       setForm({
         nombre: alimentoEditar.nombre,
         cantidad: alimentoEditar.cantidad,
         unidadMedida: alimentoEditar.unidadMedida,
-        precio: alimentoEditar.precio,
+        precioTotal: alimentoEditar.precio * alimentoEditar.cantidad,
       });
     }
   }, [alimentoEditar]);
@@ -47,11 +50,15 @@ function FormularioAlimento({ idPaciente, alimentoEditar, onSuccess, onCancel })
     setError("");
     setGuardando(true);
     try {
+      const cantidad = parseFloat(form.cantidad);
+      const precioTotal = parseFloat(form.precioTotal);
       const datos = {
         nombre: form.nombre,
-        cantidad: parseFloat(form.cantidad),
+        cantidad,
         unidadMedida: form.unidadMedida,
-        precio: parseFloat(form.precio),
+        // El backend guarda precio POR unidad de medida; el nutriólogo
+        // captura el total pagado, así que aquí se hace la división.
+        precio: precioTotal / cantidad,
       };
 
       // Si hay un alimentoEditar, actualiza; si no, crea uno nuevo
@@ -137,22 +144,30 @@ function FormularioAlimento({ idPaciente, alimentoEditar, onSuccess, onCancel })
 
       <div className="mb-4">
         <label className={labelClass}>
-          Precio por {form.unidadMedida || "unidad"}
+          Precio total pagado por esta cantidad
         </label>
         <div className="flex items-center gap-1.5">
           <input
             type="number"
             step="0.01"
             min="0"
-            name="precio"
-            value={form.precio}
+            name="precioTotal"
+            value={form.precioTotal}
             onChange={handleChange}
             required
             className={inputCompactClass}
-            placeholder="2.50"
+            placeholder="30.00"
           />
           <span className="text-gray-400 text-sm">$</span>
         </div>
+        {/* Ayuda visual: confirma al nutriólogo cuánto sale por unidad,
+            que es lo que realmente se guarda y usa la IA para calcular costos. */}
+        {form.cantidad > 0 && form.precioTotal !== "" && (
+          <p className="text-xs text-gray-400 mt-1">
+            ≈ {(parseFloat(form.precioTotal) / parseFloat(form.cantidad)).toFixed(4)}{" "}
+            $ por {form.unidadMedida || "unidad"}
+          </p>
+        )}
       </div>
 
       <div className="flex justify-end gap-2 mt-4">

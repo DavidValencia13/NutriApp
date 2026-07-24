@@ -1,5 +1,8 @@
 const { ServicioExternoError } = require("../Dominio/Errores");
-const { GroqTimeoutError } = require("../../../Infraestructura/ia/groqClient");
+const {
+  GroqTimeoutError,
+  GroqRateLimitError,
+} = require("../../../Infraestructura/ia/groqClient");
 
 const OBJECT_ID_REGEX = /^[a-fA-F0-9]{24}$/;
 
@@ -17,10 +20,21 @@ class GeneradorMenuGroq {
         { role: "user", content: prompt },
       ]);
     } catch (error) {
+      // Se loguea la causa real (nunca llega al cliente, pero sin esto
+      // es imposible saber por qué falló Groq: llave inválida, rate
+      // limit, timeout, red caída, etc.)
+      console.error("Error al llamar a Groq:", error.message);
+
       if (error instanceof GroqTimeoutError) {
         throw new ServicioExternoError(
           "El servicio de generación no respondió a tiempo",
           504,
+        );
+      }
+      if (error instanceof GroqRateLimitError) {
+        throw new ServicioExternoError(
+          "Se alcanzó el límite de solicitudes al servicio de generación. Espera un momento e inténtalo de nuevo.",
+          429,
         );
       }
       throw new ServicioExternoError(
@@ -57,6 +71,11 @@ class GeneradorMenuGroq {
 
 Alimentos disponibles (usa ÚNICAMENTE estos "id"), cada uno con su precio por unidad de medida:
 ${JSON.stringify(listaAlimentos)}
+
+CUIDADO CON LA UNIDAD DE MEDIDA (error común, evítalo): antes de elegir "cantidad" para un alimento, revisa su "unidadMedida". Una porción de una sola comida es normalmente un número pequeño en la unidad indicada:
+- Si "unidadMedida" es "kg" o "l": una porción normal es una FRACCIÓN, casi siempre entre 0.05 y 0.4 (ej. 0.15 kg = 150 gramos, una porción típica de carne). NUNCA uses números como 100, 150 o 200 para un alimento en "kg" o "l" — esos son propios de gramos/mililitros, no de kilos/litros, y producirían una cantidad absurda (ej. 150 kg de pollo en una comida).
+- Si "unidadMedida" es "g" o "ml": una porción normal suele estar entre 20 y 300.
+- Si "unidadMedida" es "unidad" o similar (piezas, unidades): usa enteros pequeños, casi siempre entre 1 y 3.
 
 REGLA ESTRICTA DE DIETA: el campo "preferencias" del perfil indica el tipo de dieta del paciente (ej. vegetariano, vegano, carnívoro, sin lácteos, etc.) y "restricciones" indica alergias o alimentos prohibidos. Usa tu conocimiento de qué alimentos son de origen animal, vegetal, contienen lácteos, gluten, etc. según su nombre, y EXCLUYE por completo cualquier alimento de la lista que viole esas preferencias o restricciones, aunque esté disponible. Por ejemplo: si "preferencias" dice "vegetariano", nunca uses carnes, pollo, pescado ni mariscos; si dice "carne" o similar, prioriza alimentos de origen animal disponibles. Si "restricciones" menciona una alergia (ej. "alérgico al maní"), no uses ese alimento ni derivados bajo ninguna circunstancia.
 
