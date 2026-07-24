@@ -4,11 +4,16 @@ import {
   eliminarAlimento,
 } from "../services/alimentoService";
 import FormularioAlimento from "./FormularioAlimento";
+import { IconAlertTriangle, IconLeaf } from "./Icons";
+
+function sinRestricciones(texto) {
+  return /^(ninguna?|no aplica|n\/a|-)$/i.test(texto.trim());
+}
 
 // Gestiona los alimentos de un paciente dentro del modal "Alimentos".
 // Alterna entre vista de lista y vista de formulario con un estado local:
 // evita abrir un segundo <Modal> apilado sobre el que ya está abierto.
-function ListaAlimentos({ idPaciente }) {
+function ListaAlimentos({ idPaciente, paciente }) {
   const [alimentos, setAlimentos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
@@ -63,14 +68,53 @@ function ListaAlimentos({ idPaciente }) {
     setAlimentoEditar(null);
   }
 
+  // Perfil del paciente: se muestra siempre (lista y formulario) para que
+  // el nutriólogo tenga presente restricciones/preferencias/objetivo al
+  // registrar o editar alimentos, no solo al verlos en la lista.
+  const perfilPaciente = paciente && (
+    <div className="mb-4">
+      <p className="text-sm text-gray-500 mb-2">
+        <span className="font-semibold text-nutri-navy">Objetivo:</span>{" "}
+        {paciente.objetivo}
+      </p>
+      {paciente.restricciones && (
+        <div
+          className={`flex items-start gap-2 rounded-lg px-3 py-2 text-xs mb-2 ${
+            sinRestricciones(paciente.restricciones)
+              ? "bg-gray-50 text-gray-500"
+              : "bg-nutri-orange/10 text-nutri-orange"
+          }`}
+        >
+          <IconAlertTriangle className="shrink-0 mt-0.5" />
+          <span>
+            <span className="font-semibold">Restricciones: </span>
+            {paciente.restricciones}
+          </span>
+        </div>
+      )}
+      {paciente.preferencias && (
+        <div className="flex items-start gap-2 bg-nutri-teal/10 text-nutri-teal rounded-lg px-3 py-2 text-xs">
+          <IconLeaf className="shrink-0 mt-0.5" />
+          <span>
+            <span className="font-semibold">Preferencias: </span>
+            {paciente.preferencias}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+
   if (vista === "formulario") {
     return (
-      <FormularioAlimento
-        idPaciente={idPaciente}
-        alimentoEditar={alimentoEditar}
-        onSuccess={handleSuccessFormulario}
-        onCancel={handleCancelFormulario}
-      />
+      <div>
+        {perfilPaciente}
+        <FormularioAlimento
+          idPaciente={idPaciente}
+          alimentoEditar={alimentoEditar}
+          onSuccess={handleSuccessFormulario}
+          onCancel={handleCancelFormulario}
+        />
+      </div>
     );
   }
 
@@ -78,6 +122,8 @@ function ListaAlimentos({ idPaciente }) {
 
   return (
     <div>
+      {perfilPaciente}
+
       <div className="flex justify-between items-center mb-4">
         <h2 className="font-semibold">Alimentos</h2>
         <button

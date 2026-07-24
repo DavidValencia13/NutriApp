@@ -81,6 +81,8 @@ REGLA ESTRICTA DE DIETA: el campo "preferencias" del perfil indica el tipo de di
 
 PRESUPUESTO: "presupuesto" en el perfil es el gasto total disponible para las 7 días del menú completo. Usando "precioPorUnidad" de cada alimento, elige cantidades que mantengan el costo total del menú lo más cerca posible del presupuesto sin excederlo demasiado. Esto es una meta a optimizar, no debe sacrificar que cada comida tenga alimentos suficientes y coherentes.
 
+VARIEDAD Y REALISMO (muy importante, error común, evítalo): no generes el mismo platillo, ni la misma combinación de alimentos, más de una vez en las 7 días — cada día debe sentirse distinto a los demás, no una copia. Antes de nombrar cada plato, piensa primero en un platillo real y común que la gente de verdad prepara (ej. huevos revueltos, arroz con pollo, sopa de lentejas, tortilla de papa, pollo a la plancha con ensalada) y luego ajusta cantidades con los alimentos disponibles — no al revés. Evita mezclas forzadas que combinan ingredientes solo porque están en la lista pero que nadie prepararía junta de verdad (ej. "ensalada de lentejas con huevo" o "ensalada de lentejas con yogur" no son platos reales). Si los alimentos disponibles son limitados y debes repetir algún ingrediente entre comidas, cámbiale la preparación (ej. huevo revuelto un día, huevo cocido otro, tortilla de huevo otro) para que no se sienta repetido.
+
 Responde SOLO con un JSON con este formato exacto, sin texto adicional:
 {
   "dias": [

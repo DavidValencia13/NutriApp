@@ -302,7 +302,10 @@ function Pacientes({ busqueda = "" }) {
           />
         )}
         {modal.tipo === "alimentos" && modal.paciente && (
-          <ListaAlimentos idPaciente={modal.paciente.id} />
+          <ListaAlimentos
+            idPaciente={modal.paciente.id}
+            paciente={modal.paciente}
+          />
         )}
         {modal.tipo === "menu" && modal.paciente && (
           <MenuPaciente
