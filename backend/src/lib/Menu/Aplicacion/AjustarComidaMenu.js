@@ -10,10 +10,9 @@ const {
 } = require("../Dominio/Servicios/CalculadoraNutricional");
 
 class AjustarComidaMenu {
-  constructor({ menuRepository, listarAlimentosPorPaciente, generarAlertas }) {
+  constructor({ menuRepository, listarAlimentosPorPaciente }) {
     this.menuRepository = menuRepository;
     this.listarAlimentosPorPaciente = listarAlimentosPorPaciente;
-    this.generarAlertas = generarAlertas;
   }
 
   async ejecutar(idComidaMenu, idNutriologo, cambios) {
@@ -74,14 +73,6 @@ class AjustarComidaMenu {
       nutrientes,
       alimentos: detallesConSnapshot,
     });
-
-    // Best-effort, igual criterio que en GenerarMenuSemanal: no debe tumbar
-    // el ajuste ya persistido; AprobarMenu re-evalúa de todos modos.
-    try {
-      await this.generarAlertas.ejecutar(comida.menu.id);
-    } catch (error) {
-      console.error("No se pudieron regenerar alertas para el menú", comida.menu.id, ":", error.message);
-    }
 
     return resultado;
   }

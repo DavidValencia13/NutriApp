@@ -77,7 +77,7 @@ class MenuRepositorySequelize {
   }
 
   // Igual que obtenerMasRecientePorPaciente pero por id específico — lo usa
-  // GenerarAlertas (contexto Alerta) para evaluar un menú puntual sin
+  // Sugerencia (ObtenerSugerenciasMenu) para evaluar un menú puntual sin
   // depender de que sea "el más reciente" del paciente.
   async obtenerConDetallesPorId(idMenu) {
     const doc = await MenuModel.findOne({

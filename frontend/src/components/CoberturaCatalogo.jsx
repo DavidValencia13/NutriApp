@@ -1,7 +1,7 @@
 import { labelGrupoAlimenticio } from "../constants/gruposAlimenticios";
 
-// Mismos tokens de nivel que AlertasMenu, para que "crítica/advertencia/info"
-// se lean igual en toda la app.
+// Mismos tokens de nivel usados en toda la app, para que "crítica/advertencia/info"
+// se lean igual en cualquier pantalla.
 const ESTILOS_NIVEL = {
   critica: { dot: "bg-nutri-pink", badge: "bg-nutri-pink/15 text-nutri-pink" },
   advertencia: { dot: "bg-nutri-orange", badge: "bg-nutri-orange/15 text-nutri-orange" },

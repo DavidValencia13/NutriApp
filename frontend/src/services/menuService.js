@@ -18,14 +18,10 @@ export async function ajustarComida(idPaciente, idComidaMenu, cambios) {
   });
 }
 
-// Aprueba el menú (cierra el bucle de revisión del BPM). Antes de aprobar,
-// el backend valida alertas: si hay críticas pendientes, lanza error; si
-// solo hay advertencias pendientes, responde { requiereConfirmacion: true }
-// sin aprobar — hay que reintentar con confirmarAdvertencias:true.
-export async function aprobarMenu(idPaciente, idMenu, confirmarAdvertencias = false) {
+// Aprueba (finaliza) el menú.
+export async function aprobarMenu(idPaciente, idMenu) {
   return await apiFetch(`/paciente/${idPaciente}/menu/${idMenu}/aprobar`, {
     method: "POST",
-    body: JSON.stringify({ confirmarAdvertencias }),
   });
 }
 

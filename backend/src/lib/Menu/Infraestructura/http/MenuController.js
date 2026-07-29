@@ -72,11 +72,7 @@ class MenuController {
       if (!Number.isInteger(idMenu) || idMenu <= 0) {
         return res.status(400).json({ message: "El id del menú no es válido" });
       }
-      const resultado = await this.aprobarMenu.ejecutar(idMenu, req.nutriologo.id, {
-        confirmarAdvertencias: req.body?.confirmarAdvertencias === true,
-      });
-      // requiereConfirmacion=true: NO se aprobó, el frontend debe reintentar
-      // con confirmarAdvertencias:true si el nutriólogo decide continuar.
+      const resultado = await this.aprobarMenu.ejecutar(idMenu, req.nutriologo.id);
       res.json(resultado);
     } catch (error) {
       this._manejarError(error, res, next);
@@ -85,9 +81,7 @@ class MenuController {
 
   _manejarError(error, res, next) {
     if (error instanceof AppError) {
-      const body = { message: error.message };
-      if (error.alertas) body.alertas = error.alertas;
-      return res.status(error.statusCode).json(body);
+      return res.status(error.statusCode).json({ message: error.message });
     }
     next(error);
   }

@@ -19,18 +19,9 @@ function crearDependencias({ comida, actualizarLanza } = {}) {
     },
   };
 
-  const generarAlertas = {
-    llamadas: [],
-    async ejecutar(idMenu) {
-      this.llamadas.push(idMenu);
-      return [];
-    },
-  };
-
   return {
     menuRepository,
     listarAlimentosPorPaciente: { async ejecutar() { return [alimento]; } },
-    generarAlertas,
   };
 }
 

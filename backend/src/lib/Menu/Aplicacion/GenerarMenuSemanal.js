@@ -12,14 +12,12 @@ class GenerarMenuSemanal {
     generadorMenuIA,
     menuRepository,
     registrarRecomendacion,
-    generarAlertas,
   }) {
     this.pacienteRepository = pacienteRepository;
     this.listarAlimentosPorPaciente = listarAlimentosPorPaciente;
     this.generadorMenuIA = generadorMenuIA;
     this.menuRepository = menuRepository;
     this.registrarRecomendacion = registrarRecomendacion;
-    this.generarAlertas = generarAlertas;
   }
 
   async ejecutar(idPaciente, idNutriologo) {
@@ -57,15 +55,6 @@ class GenerarMenuSemanal {
       );
       return menuCreado;
     });
-
-    // Best-effort: si falla, no debe tumbar la generación del menú, que ya
-    // se persistió. AprobarMenu vuelve a correr la evaluación de todos
-    // modos como validación autoritativa antes de aprobar.
-    try {
-      await this.generarAlertas.ejecutar(menu.id);
-    } catch (error) {
-      console.error("No se pudieron generar alertas para el menú", menu.id, ":", error.message);
-    }
 
     return menu;
   }

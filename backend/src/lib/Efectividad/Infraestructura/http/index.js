@@ -6,20 +6,17 @@ const authMiddleware = require("../../../Nutriologo/Infraestructura/http/authMid
 const verificarPropietarioPaciente = require("../../../Alimento/Infraestructura/http/verificarPropietarioPaciente");
 const PacienteRepositorySequelize = require("../../../Paciente/Infraestructura/PacienteRepositorySequelize");
 const MenuRepositorySequelize = require("../../../Menu/Infraestructura/MenuRepositorySequelize");
-const AlertaRepositorySequelize = require("../../../Alerta/Infraestructura/AlertaRepositorySequelize");
 const SeguimientoRepositorySequelize = require("../../../Seguimiento/Infraestructura/SeguimientoRepositorySequelize");
 
 module.exports = function registerEfectividadModule(app) {
   const menuRepo = new MenuRepositorySequelize();
   const pacienteRepo = new PacienteRepositorySequelize();
-  const alertaRepo = new AlertaRepositorySequelize();
   const seguimientoRepo = new SeguimientoRepositorySequelize();
 
   const controller = new EfectividadController({
     obtenerEfectividadMenu: new ObtenerEfectividadMenu({
       menuRepository: menuRepo,
       pacienteRepository: pacienteRepo,
-      alertaRepository: alertaRepo,
       seguimientoRepository: seguimientoRepo,
     }),
   });

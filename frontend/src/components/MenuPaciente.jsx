@@ -3,7 +3,6 @@ import { generarMenu, obtenerMenu, aprobarMenu } from "../services/menuService";
 import { listarRecomendaciones } from "../services/recomendacionService";
 import Modal from "./Modal";
 import FormularioAjustarComida from "./FormularioAjustarComida";
-import AlertasMenu from "./AlertasMenu";
 import SugerenciasMenu from "./SugerenciasMenu";
 import EfectividadMenu from "./EfectividadMenu";
 import { IconAlertTriangle } from "./Icons";
@@ -63,30 +62,13 @@ function MenuPaciente({ idPaciente, presupuesto }) {
     }
   }
 
-  async function handleAprobar(confirmarAdvertencias = false) {
+  async function handleAprobar() {
     if (!menu) return;
     setError("");
     try {
-      const resultado = await aprobarMenu(idPaciente, menu.id, confirmarAdvertencias);
-
-      // requiereConfirmacion=true: el backend NO aprobó, solo detectó
-      // advertencias (no críticas) pendientes. Se le pregunta al
-      // nutriólogo si de todas formas quiere continuar (RF punto 6).
-      if (resultado.requiereConfirmacion) {
-        const detalle = (resultado.advertencias || [])
-          .map((a) => `- ${a.mensaje}`)
-          .join("\n");
-        const continuar = confirm(
-          `El menú tiene advertencias nutricionales pendientes:\n\n${detalle}\n\n¿Deseas aprobarlo de todas formas?`,
-        );
-        if (continuar) await handleAprobar(true);
-        return;
-      }
-
-      // resultado.menu (no resultado) porque aprobarMenu() devuelve el Menu
-      // sin dias/comidas anidados (esa forma resumida solo trae
-      // id/estado/fechas). Se recarga con cargarDatos() para no perder el
-      // árbol completo (y con él, el costo del menú).
+      await aprobarMenu(idPaciente, menu.id);
+      // Se recarga con cargarDatos() para no perder el árbol completo del
+      // menú (aprobarMenu() devuelve el Menu sin dias/comidas anidados).
       await cargarDatos();
     } catch (err) {
       setError(err.message);
@@ -138,7 +120,7 @@ function MenuPaciente({ idPaciente, presupuesto }) {
             </span>
             {menu.estado === "generado" && (
               <button
-                onClick={() => handleAprobar()}
+                onClick={handleAprobar}
                 className="bg-nutri-teal text-white px-3.5 py-1.5 rounded-lg text-sm font-medium hover:bg-nutri-navy transition-colors"
               >
                 Aprobar menú
@@ -147,8 +129,6 @@ function MenuPaciente({ idPaciente, presupuesto }) {
           </div>
 
           <EfectividadMenu idPaciente={idPaciente} idMenu={menu.id} />
-
-          <AlertasMenu idPaciente={idPaciente} idMenu={menu.id} onCambio={cargarDatos} />
 
           <SugerenciasMenu idPaciente={idPaciente} idMenu={menu.id} />
 

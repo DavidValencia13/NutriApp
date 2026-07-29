@@ -108,8 +108,8 @@ function sumarNutrientes(listaDeResultados) {
 
 // Deriva la lista de alimentos (con sus datos completos del catálogo) que
 // aparecen usados en algún detalle del árbol de un menú (dias→comidas→
-// detalles), cruzando contra el catálogo completo del paciente. Reutilizado
-// tanto por Alerta (GenerarAlertas) como por Sugerencia (ObtenerSugerenciasMenu).
+// detalles), cruzando contra el catálogo completo del paciente. Usado por
+// Sugerencia (ObtenerSugerenciasMenu).
 function alimentosUsadosEnMenu(menu, alimentosDisponibles) {
   const alimentosPorId = new Map(alimentosDisponibles.map((a) => [a.id.toString(), a]));
   const idsUsados = new Set();

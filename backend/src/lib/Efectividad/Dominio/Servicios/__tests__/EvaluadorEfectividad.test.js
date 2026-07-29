@@ -19,7 +19,6 @@ test("informacion_insuficiente: sin registros de cumplimiento y menos de 2 regis
   const resultado = evaluar({
     paciente: pacienteBajar,
     resumenSeguimiento: resumen(null, 0),
-    alertas: [],
     registrosPeso: [puntoPeso(70, "2026-01-01")],
   });
   assert.equal(resultado.indicador, "informacion_insuficiente");
@@ -30,17 +29,15 @@ test("informacion_insuficiente: sin resumenSeguimiento (null) y sin registros de
   const resultado = evaluar({
     paciente: pacienteBajar,
     resumenSeguimiento: null,
-    alertas: [],
     registrosPeso: [],
   });
   assert.equal(resultado.indicador, "informacion_insuficiente");
 });
 
-test("efectiva: buen cumplimiento, peso bajando (objetivo bajar), sin alertas pendientes", () => {
+test("efectiva: buen cumplimiento y peso bajando hacia el objetivo (bajar)", () => {
   const resultado = evaluar({
     paciente: pacienteBajar,
     resumenSeguimiento: resumen(85),
-    alertas: [],
     registrosPeso: [puntoPeso(80, "2026-01-01"), puntoPeso(78, "2026-02-01")],
   });
   assert.equal(resultado.indicador, "efectiva");
@@ -48,34 +45,10 @@ test("efectiva: buen cumplimiento, peso bajando (objetivo bajar), sin alertas pe
   assert.equal(resultado.detalle.deltaPesoKg, -2);
 });
 
-test("necesita_ajustes: alerta crítica pendiente fuerza el indicador aunque el resto sea bueno", () => {
-  const resultado = evaluar({
-    paciente: pacienteBajar,
-    resumenSeguimiento: resumen(90),
-    alertas: [{ nivel: "critica", estado: "pendiente" }],
-    registrosPeso: [puntoPeso(80, "2026-01-01"), puntoPeso(78, "2026-02-01")],
-  });
-  assert.equal(resultado.indicador, "necesita_ajustes");
-  assert.equal(resultado.detalle.alertasCriticasPendientes, 1);
-  assert.ok(resultado.motivos.some((m) => m.includes("crítica")));
-});
-
-test("una alerta crítica ya resuelta no cuenta como pendiente", () => {
-  const resultado = evaluar({
-    paciente: pacienteBajar,
-    resumenSeguimiento: resumen(85),
-    alertas: [{ nivel: "critica", estado: "aceptada" }],
-    registrosPeso: [puntoPeso(80, "2026-01-01"), puntoPeso(78, "2026-02-01")],
-  });
-  assert.equal(resultado.detalle.alertasCriticasPendientes, 0);
-  assert.equal(resultado.indicador, "efectiva");
-});
-
-test("necesita_ajustes: cumplimiento bajo + peso retrocediendo respecto al objetivo, sin críticas", () => {
+test("necesita_ajustes: cumplimiento bajo + peso retrocediendo respecto al objetivo", () => {
   const resultado = evaluar({
     paciente: pacienteBajar,
     resumenSeguimiento: resumen(30),
-    alertas: [],
     registrosPeso: [puntoPeso(78, "2026-01-01"), puntoPeso(81, "2026-02-01")], // subió, objetivo era bajar
   });
   assert.equal(resultado.indicador, "necesita_ajustes");
@@ -86,7 +59,6 @@ test("parcialmente_efectiva: señales mixtas sin llegar a ningún extremo", () =
   const resultado = evaluar({
     paciente: pacienteBajar,
     resumenSeguimiento: resumen(60),
-    alertas: [],
     registrosPeso: [puntoPeso(80, "2026-01-01"), puntoPeso(79.8, "2026-02-01")], // dentro de tolerancia
   });
   assert.equal(resultado.indicador, "parcialmente_efectiva");
@@ -97,7 +69,6 @@ test("objetivo subir: peso subiendo es mejorando, peso bajando es retrocediendo"
   const mejorando = evaluar({
     paciente: pacienteSubir,
     resumenSeguimiento: resumen(70),
-    alertas: [],
     registrosPeso: [puntoPeso(60, "2026-01-01"), puntoPeso(62, "2026-02-01")],
   });
   assert.equal(mejorando.detalle.tendenciaPeso, "mejorando");
@@ -105,7 +76,6 @@ test("objetivo subir: peso subiendo es mejorando, peso bajando es retrocediendo"
   const retrocediendo = evaluar({
     paciente: pacienteSubir,
     resumenSeguimiento: resumen(70),
-    alertas: [],
     registrosPeso: [puntoPeso(62, "2026-01-01"), puntoPeso(60, "2026-02-01")],
   });
   assert.equal(retrocediendo.detalle.tendenciaPeso, "retrocediendo");
@@ -115,7 +85,6 @@ test("objetivo mantener: dentro de tolerancia es manteniendose, fuera es cambio_
   const estable = evaluar({
     paciente: pacienteMantener,
     resumenSeguimiento: resumen(70),
-    alertas: [],
     registrosPeso: [puntoPeso(70, "2026-01-01"), puntoPeso(70.2, "2026-02-01")],
   });
   assert.equal(estable.detalle.tendenciaPeso, "manteniendose");
@@ -123,7 +92,6 @@ test("objetivo mantener: dentro de tolerancia es manteniendose, fuera es cambio_
   const cambioNotable = evaluar({
     paciente: pacienteMantener,
     resumenSeguimiento: resumen(70),
-    alertas: [],
     registrosPeso: [puntoPeso(70, "2026-01-01"), puntoPeso(72, "2026-02-01")],
   });
   assert.equal(cambioNotable.detalle.tendenciaPeso, "cambio_notable");
@@ -133,7 +101,6 @@ test("compara el primer y el último registro de peso, no solo los dos últimos"
   const resultado = evaluar({
     paciente: pacienteBajar,
     resumenSeguimiento: resumen(70),
-    alertas: [],
     registrosPeso: [
       puntoPeso(85, "2026-01-01"),
       puntoPeso(82, "2026-02-01"),
@@ -143,26 +110,10 @@ test("compara el primer y el último registro de peso, no solo los dos últimos"
   assert.equal(resultado.detalle.deltaPesoKg, -5);
 });
 
-test("cuenta alertas de advertencia pendientes por separado de las críticas", () => {
-  const resultado = evaluar({
-    paciente: pacienteBajar,
-    resumenSeguimiento: resumen(85),
-    alertas: [
-      { nivel: "advertencia", estado: "pendiente" },
-      { nivel: "advertencia", estado: "pendiente" },
-      { nivel: "informativa", estado: "pendiente" },
-    ],
-    registrosPeso: [puntoPeso(80, "2026-01-01"), puntoPeso(78, "2026-02-01")],
-  });
-  assert.equal(resultado.detalle.alertasAdvertenciaPendientes, 2);
-  assert.equal(resultado.detalle.alertasCriticasPendientes, 0);
-});
-
 test("solo hay datos de cumplimiento (sin registros de peso suficientes): igual evalúa, sin tendencia de peso", () => {
   const resultado = evaluar({
     paciente: pacienteBajar,
     resumenSeguimiento: resumen(90),
-    alertas: [],
     registrosPeso: [],
   });
   assert.notEqual(resultado.indicador, "informacion_insuficiente");

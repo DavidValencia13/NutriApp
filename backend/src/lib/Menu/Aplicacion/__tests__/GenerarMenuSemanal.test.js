@@ -46,21 +46,12 @@ function crearDependencias({ resultadoIA, alimentosDisponibles = [alimento], gen
     },
   };
 
-  const generarAlertas = {
-    llamadas: [],
-    async ejecutar(idMenu) {
-      this.llamadas.push(idMenu);
-      return [];
-    },
-  };
-
   return {
     pacienteRepository: { async findById() { return paciente; } },
     listarAlimentosPorPaciente: { async ejecutar() { return alimentosDisponibles; } },
     generadorMenuIA,
     menuRepository,
     registrarRecomendacion,
-    generarAlertas,
   };
 }
 

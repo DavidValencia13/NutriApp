@@ -16,8 +16,8 @@ function SugerenciasMenu({ idPaciente, idMenu }) {
       const data = await listarSugerencias(idPaciente, idMenu);
       setSugerencias(data);
     } catch {
-      // Silencioso a propósito, igual que AlertasMenu: si fallan las
-      // sugerencias, no debe tumbar la vista del menú.
+      // Silencioso a propósito: si fallan las sugerencias, no debe tumbar
+      // la vista del menú.
     } finally {
       setCargando(false);
     }

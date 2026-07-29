@@ -56,13 +56,12 @@ const ETIQUETAS_VEREDICTO_PESO = {
 };
 
 // Combina el seguimiento del paciente (bitácora de fecha/peso/nivel de
-// cumplimiento) y alertas nutricionales pendientes (Alerta) del menú en un
-// indicador único de efectividad + los motivos que lo explican. La
-// evolución de peso se calcula con los registros de Seguimiento que traen
-// peso (no todos lo traen). Función pura: no persiste nada, no lanza. La
-// decisión de qué hacer con la dieta sigue siendo siempre del nutriólogo
-// (RF puntos 2 y 10) — esto es apoyo, no un diagnóstico automático.
-function evaluar({ paciente, resumenSeguimiento, alertas, registrosPeso }) {
+// cumplimiento) en un indicador único de efectividad + los motivos que lo
+// explican. La evolución de peso se calcula con los registros de Seguimiento
+// que traen peso (no todos lo traen). Función pura: no persiste nada, no
+// lanza. La decisión de qué hacer con la dieta sigue siendo siempre del
+// nutriólogo (RF puntos 2 y 10) — esto es apoyo, no un diagnóstico automático.
+function evaluar({ paciente, resumenSeguimiento, registrosPeso }) {
   const hayDatosCumplimiento = !!resumenSeguimiento && resumenSeguimiento.totalRegistros > 0;
   const hayDatosEvolucion = !!registrosPeso && registrosPeso.length >= 2;
 
@@ -77,20 +76,12 @@ function evaluar({ paciente, resumenSeguimiento, alertas, registrosPeso }) {
         porcentajeCumplimiento: null,
         tendenciaPeso: "sin_datos",
         deltaPesoKg: undefined,
-        alertasCriticasPendientes: 0,
-        alertasAdvertenciaPendientes: 0,
       },
     };
   }
 
-  const alertasPendientes = (alertas || []).filter((a) => a.estado === "pendiente");
-  const alertasCriticasPendientes = alertasPendientes.filter((a) => a.nivel === "critica").length;
-  const alertasAdvertenciaPendientes = alertasPendientes.filter((a) => a.nivel === "advertencia").length;
-
   let puntaje = 0;
   puntaje += puntosCumplimiento(resumenSeguimiento?.porcentajeCumplimiento ?? null);
-  puntaje -= alertasCriticasPendientes * 3;
-  puntaje -= Math.min(alertasAdvertenciaPendientes, 3);
 
   if (hayDatosCumplimiento) {
     motivos.push(`Cumplimiento de la dieta: ${resumenSeguimiento.porcentajeCumplimiento}%`);
@@ -115,17 +106,8 @@ function evaluar({ paciente, resumenSeguimiento, alertas, registrosPeso }) {
     motivos.push("Menos de 2 registros de peso: no se puede evaluar la tendencia de peso");
   }
 
-  if (alertasCriticasPendientes > 0) {
-    motivos.push(`${alertasCriticasPendientes} alerta(s) crítica(s) del menú sin resolver`);
-  }
-  if (alertasAdvertenciaPendientes > 0) {
-    motivos.push(`${alertasAdvertenciaPendientes} alerta(s) de advertencia del menú sin resolver`);
-  }
-
   let indicador;
-  if (alertasCriticasPendientes > 0) {
-    indicador = "necesita_ajustes";
-  } else if (puntaje >= PUNTAJE_EFECTIVA) {
+  if (puntaje >= PUNTAJE_EFECTIVA) {
     indicador = "efectiva";
   } else if (puntaje <= PUNTAJE_NECESITA_AJUSTES) {
     indicador = "necesita_ajustes";
@@ -140,8 +122,6 @@ function evaluar({ paciente, resumenSeguimiento, alertas, registrosPeso }) {
       porcentajeCumplimiento: resumenSeguimiento?.porcentajeCumplimiento ?? null,
       tendenciaPeso,
       deltaPesoKg,
-      alertasCriticasPendientes,
-      alertasAdvertenciaPendientes,
     },
   };
 }

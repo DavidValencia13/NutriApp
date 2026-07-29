@@ -29,23 +29,10 @@ class ServicioExternoError extends AppError {
   }
 }
 
-// Se usa cuando AprobarMenu detecta alertas críticas pendientes: no es un
-// dato inválido del request (400) ni un conflicto de concurrencia (409),
-// es que el propio contenido del menú no pasa la validación nutricional.
-// 422 = Unprocessable Entity. Trae `alertas` para que el frontend muestre
-// el detalle sin tener que volver a consultarlas.
-class AlertasCriticasError extends AppError {
-  constructor(alertas) {
-    super("El menú tiene alertas críticas sin resolver", 422);
-    this.alertas = alertas;
-  }
-}
-
 module.exports = {
   AppError,
   ValidationError,
   NotFoundError,
   ConflictError,
   ServicioExternoError,
-  AlertasCriticasError,
 };

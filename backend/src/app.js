@@ -5,7 +5,6 @@ const registerPacienteModule = require("./lib/Paciente/Infraestructura/http");
 const registerAlimentoModule = require("./lib/Alimento/Infraestructura/http");
 const registerMenuModule = require("./lib/Menu/Infraestructura/http");
 const registerRecomendacionModule = require("./lib/Recomendacion/Infraestructura/http");
-const registerAlertaModule = require("./lib/Alerta/Infraestructura/http");
 const registerSugerenciaModule = require("./lib/Sugerencia/Infraestructura/http");
 const registerSeguimientoModule = require("./lib/Seguimiento/Infraestructura/http");
 const registerEfectividadModule = require("./lib/Efectividad/Infraestructura/http");
@@ -23,7 +22,6 @@ function buildApp() {
   registerAlimentoModule(app);
   registerMenuModule(app);
   registerRecomendacionModule(app);
-  registerAlertaModule(app);
   registerSugerenciaModule(app);
   registerSeguimientoModule(app);
   registerEfectividadModule(app);

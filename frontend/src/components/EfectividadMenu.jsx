@@ -17,9 +17,9 @@ const ESTILOS_INDICADOR = {
 };
 
 // Indicador de si la dieta está ayudando al paciente a cumplir su objetivo,
-// combinando cumplimiento (Fase 6), evolución de peso (Consulta) y alertas
-// nutricionales pendientes (Alerta). Es apoyo profesional, no un
-// diagnóstico automático — la decisión final es siempre del nutriólogo
+// combinando el % de cumplimiento y la evolución de peso registrados en
+// Seguimiento. Es apoyo profesional, no un diagnóstico automático — la
+// decisión final es siempre del nutriólogo
 // (RF puntos 2 y 10).
 function EfectividadMenu({ idPaciente, idMenu }) {
   const [efectividad, setEfectividad] = useState(null);
