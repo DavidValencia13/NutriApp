@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { ajustarComida } from "../services/menuService";
 import { listarAlimentos } from "../services/alimentoService";
 import { calcularPreviewNutrientes } from "../services/previewNutrientesService";
 import FeedbackNutricionalComida from "./FeedbackNutricionalComida";
 
-function FormularioAjustarComida({ idPaciente, comida, onSuccess, onCancel }) {
+function FormularioAjustarComida({ idPaciente, idMenu, comida, onSuccess, onCancel }) {
   const [alimentosDisponibles, setAlimentosDisponibles] = useState([]);
   const [calorias, setCalorias] = useState(comida.calorias);
   const [nombrePlato, setNombrePlato] = useState(comida.nombrePlato);
@@ -20,35 +20,32 @@ function FormularioAjustarComida({ idPaciente, comida, onSuccess, onCancel }) {
   const [preview, setPreview] = useState(null);
   const [cargandoPreview, setCargandoPreview] = useState(false);
   const [errorPreview, setErrorPreview] = useState("");
-  const debounceTimer = useRef(null);
 
   useEffect(() => {
     cargarAlimentos();
   }, []);
 
-  // Debounce para calcular preview mientras edita
+  // Recalcula el resumen nutricional mientras el nutriólogo edita, con 500ms
+  // de espera para no pegarle al backend en cada tecla. Solo se envían las
+  // filas ya completas: una fila recién agregada tiene cantidad vacía y el
+  // backend la rechazaría (cantidad no plausible), tumbando todo el preview.
   useEffect(() => {
-    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    const completas = filas
+      .filter((f) => f.idAlimento && parseFloat(f.cantidad) > 0)
+      .map((f) => ({ idAlimento: f.idAlimento, cantidad: parseFloat(f.cantidad) }));
 
-    if (filas.length === 0) {
+    if (completas.length === 0) {
       setPreview(null);
+      setCargandoPreview(false);
       return;
     }
 
     setCargandoPreview(true);
     setErrorPreview("");
 
-    debounceTimer.current = setTimeout(async () => {
+    const timer = setTimeout(async () => {
       try {
-        const result = await calcularPreviewNutrientes(
-          idPaciente,
-          comida.idMenu,
-          filas.map((f) => ({
-            idAlimento: f.idAlimento,
-            cantidad: parseFloat(f.cantidad) || 0,
-          })),
-        );
-        setPreview(result);
+        setPreview(await calcularPreviewNutrientes(idPaciente, idMenu, completas));
       } catch (err) {
         setErrorPreview(err.message);
       } finally {
@@ -56,10 +53,8 @@ function FormularioAjustarComida({ idPaciente, comida, onSuccess, onCancel }) {
       }
     }, 500);
 
-    return () => {
-      if (debounceTimer.current) clearTimeout(debounceTimer.current);
-    };
-  }, [filas, idPaciente, comida.idMenu]);
+    return () => clearTimeout(timer);
+  }, [filas, idPaciente, idMenu]);
 
   async function cargarAlimentos() {
     try {

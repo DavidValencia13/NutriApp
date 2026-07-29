@@ -58,14 +58,24 @@ const NUTRIENTES_VACIOS = GRUPOS_NUTRIENTES.flatMap((g) => g.campos).reduce(
   {},
 );
 
-function FormularioAlimento({ idPaciente, alimentoEditar, onSuccess, onCancel }) {
+function FormularioAlimento({
+  idPaciente,
+  alimentoEditar,
+  gruposIniciales,
+  onSuccess,
+  onCancel,
+}) {
   const [form, setForm] = useState({
     nombre: "",
     cantidad: "",
     unidadMedida: "",
     precioTotal: "",
   });
-  const [gruposAlimenticios, setGruposAlimenticios] = useState([]);
+  // Al crear, puede venir preseleccionado desde un aviso de cobertura ("+
+  // Lácteos"); al editar, lo sobreescribe el efecto con los grupos guardados.
+  const [gruposAlimenticios, setGruposAlimenticios] = useState(
+    gruposIniciales || [],
+  );
   const [mostrarNutricional, setMostrarNutricional] = useState(false);
   const [refUnidad, setRefUnidad] = useState("g");
   const [gramosPorPorcion, setGramosPorPorcion] = useState("");

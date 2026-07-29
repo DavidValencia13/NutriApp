@@ -8,6 +8,7 @@ const EditarAlimento = require("../../Aplicacion/EditarAlimento");
 const EliminarAlimento = require("../../Aplicacion/EliminarAlimento");
 const ListarAlimentosPorPaciente = require("../../Aplicacion/ListarAlimentosPorPaciente");
 const BuscarInfoNutricional = require("../../Aplicacion/BuscarInfoNutricional");
+const EvaluarCoberturaCatalogo = require("../../Aplicacion/EvaluarCoberturaCatalogo");
 
 const { pedirCompletion } = require("../../../../Infraestructura/ia/groqClient");
 
@@ -29,6 +30,10 @@ module.exports = function registerAlimentoModule(app) {
     eliminarAlimento: new EliminarAlimento(repo),
     listarAlimentosPorPaciente: new ListarAlimentosPorPaciente(repo),
     buscarInfoNutricional: new BuscarInfoNutricional(buscadorNutricional),
+    evaluarCoberturaCatalogo: new EvaluarCoberturaCatalogo({
+      alimentoRepository: repo,
+      pacienteRepository: pacienteRepo,
+    }),
   });
 
   app.use(

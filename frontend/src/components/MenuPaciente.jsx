@@ -270,6 +270,7 @@ function MenuPaciente({ idPaciente, presupuesto }) {
         {comidaEditar && (
           <FormularioAjustarComida
             idPaciente={idPaciente}
+            idMenu={menu.id}
             comida={comidaEditar}
             onSuccess={handleSuccessAjuste}
             onCancel={() => setComidaEditar(null)}

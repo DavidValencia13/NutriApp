@@ -13,6 +13,7 @@ function comidaValida(orden) {
   return {
     orden,
     tipoComida: "Desayuno",
+    nombrePlato: "Arroz con pollo",
     calorias: 400,
     alimentos: [{ idAlimento: "507f1f77bcf86cd799439011", cantidad: 100 }],
   };

@@ -8,12 +8,14 @@ class AlimentoController {
     eliminarAlimento,
     listarAlimentosPorPaciente,
     buscarInfoNutricional,
+    evaluarCoberturaCatalogo,
   }) {
     this.registrarAlimento = registrarAlimento;
     this.editarAlimento = editarAlimento;
     this.eliminarAlimento = eliminarAlimento;
     this.listarAlimentosPorPaciente = listarAlimentosPorPaciente;
     this.buscarInfoNutricional = buscarInfoNutricional;
+    this.evaluarCoberturaCatalogo = evaluarCoberturaCatalogo;
   }
 
   registrar = async (req, res, next) => {
@@ -73,6 +75,20 @@ class AlimentoController {
         req.idPaciente,
       );
       res.json(alimentos);
+    } catch (error) {
+      this._manejarError(error, res, next);
+    }
+  };
+
+  // Guía de cobertura del catálogo: qué le falta al paciente para poder
+  // armarle una dieta balanceada. Se recalcula en cada consulta porque cambia
+  // con cada alimento registrado.
+  cobertura = async (req, res, next) => {
+    try {
+      const resultado = await this.evaluarCoberturaCatalogo.ejecutar(
+        req.idPaciente,
+      );
+      res.json(resultado);
     } catch (error) {
       this._manejarError(error, res, next);
     }

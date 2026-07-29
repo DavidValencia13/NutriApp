@@ -28,6 +28,13 @@ export async function eliminarAlimento(idPaciente, idAlimento) {
   });
 }
 
+// Guía de cobertura del catálogo: qué grupos/nutrientes le faltan al paciente
+// para poder armarle una dieta balanceada. Se recalcula en el backend en cada
+// llamada, así que hay que volver a pedirla tras crear/editar/eliminar.
+export async function obtenerCoberturaCatalogo(idPaciente) {
+  return await apiFetch(`/paciente/${idPaciente}/alimento/cobertura`);
+}
+
 // Busca información nutricional sugerida en USDA FoodData Central (o null
 // si no se encontró nada / falló el servicio externo). Nunca guarda nada.
 export async function buscarInfoNutricional(idPaciente, nombre) {

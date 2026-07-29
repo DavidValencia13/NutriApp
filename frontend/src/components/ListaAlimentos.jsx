@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import {
   listarAlimentos,
   eliminarAlimento,
+  obtenerCoberturaCatalogo,
 } from "../services/alimentoService";
 import FormularioAlimento from "./FormularioAlimento";
+import CoberturaCatalogo from "./CoberturaCatalogo";
 import { IconAlertTriangle, IconLeaf } from "./Icons";
 import { labelGrupoAlimenticio } from "../constants/gruposAlimenticios";
 
@@ -16,10 +18,13 @@ function sinRestricciones(texto) {
 // evita abrir un segundo <Modal> apilado sobre el que ya está abierto.
 function ListaAlimentos({ idPaciente, paciente }) {
   const [alimentos, setAlimentos] = useState([]);
+  const [cobertura, setCobertura] = useState(null);
+  const [cargandoCobertura, setCargandoCobertura] = useState(true);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
   const [vista, setVista] = useState("lista"); // "lista" | "formulario"
   const [alimentoEditar, setAlimentoEditar] = useState(null); // null = modo crear
+  const [gruposIniciales, setGruposIniciales] = useState([]); // preselección al crear
 
   useEffect(() => {
     cargarAlimentos();
@@ -36,6 +41,21 @@ function ListaAlimentos({ idPaciente, paciente }) {
     } finally {
       setCargando(false);
     }
+    cargarCobertura();
+  }
+
+  // La cobertura se recalcula en el backend a partir del catálogo completo,
+  // así que hay que volver a pedirla después de cada alta/edición/baja. Falla
+  // en silencio: es una guía, no debe impedir gestionar los alimentos.
+  async function cargarCobertura() {
+    setCargandoCobertura(true);
+    try {
+      setCobertura(await obtenerCoberturaCatalogo(idPaciente));
+    } catch {
+      setCobertura(null);
+    } finally {
+      setCargandoCobertura(false);
+    }
   }
 
   async function handleEliminar(id) {
@@ -50,23 +70,36 @@ function ListaAlimentos({ idPaciente, paciente }) {
 
   function abrirFormularioCrear() {
     setAlimentoEditar(null);
+    setGruposIniciales([]);
+    setVista("formulario");
+  }
+
+  // Atajo desde un aviso de cobertura: abre el formulario de alta con el
+  // grupo faltante ya marcado, para no obligar al nutriólogo a recordar cuál
+  // era el hueco que estaba llenando.
+  function abrirFormularioConGrupo(grupo) {
+    setAlimentoEditar(null);
+    setGruposIniciales([grupo]);
     setVista("formulario");
   }
 
   function abrirFormularioEditar(alimento) {
     setAlimentoEditar(alimento);
+    setGruposIniciales([]);
     setVista("formulario");
   }
 
   function handleSuccessFormulario() {
     setVista("lista");
     setAlimentoEditar(null);
+    setGruposIniciales([]);
     cargarAlimentos();
   }
 
   function handleCancelFormulario() {
     setVista("lista");
     setAlimentoEditar(null);
+    setGruposIniciales([]);
   }
 
   // Perfil del paciente: se muestra siempre (lista y formulario) para que
@@ -109,9 +142,14 @@ function ListaAlimentos({ idPaciente, paciente }) {
     return (
       <div>
         {perfilPaciente}
+        {/* Se muestra también aquí (sin los chips de atajo, que reiniciarían
+            el formulario) para que el nutriólogo tenga a la vista qué hueco
+            está llenando mientras captura el alimento. */}
+        <CoberturaCatalogo cobertura={cobertura} cargando={cargandoCobertura} />
         <FormularioAlimento
           idPaciente={idPaciente}
           alimentoEditar={alimentoEditar}
+          gruposIniciales={gruposIniciales}
           onSuccess={handleSuccessFormulario}
           onCancel={handleCancelFormulario}
         />
@@ -124,6 +162,12 @@ function ListaAlimentos({ idPaciente, paciente }) {
   return (
     <div>
       {perfilPaciente}
+
+      <CoberturaCatalogo
+        cobertura={cobertura}
+        cargando={cargandoCobertura}
+        onAgregarGrupo={abrirFormularioConGrupo}
+      />
 
       <div className="flex justify-between items-center mb-4">
         <h2 className="font-semibold">Alimentos</h2>
