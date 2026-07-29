@@ -15,7 +15,7 @@ function comidaValida(orden) {
     tipoComida: "Desayuno",
     nombrePlato: "Arroz con pollo",
     calorias: 400,
-    alimentos: [{ idAlimento: "507f1f77bcf86cd799439011", cantidad: 100 }],
+    alimentos: [{ indiceAlimento: 1, cantidad: 100 }],
   };
 }
 
@@ -150,9 +150,19 @@ test("rechaza recomendacion vacía", async () => {
   );
 });
 
-test("rechaza idAlimento con formato inválido", async () => {
+test("rechaza indiceAlimento no entero", async () => {
   const respuesta = respuestaValida();
-  respuesta.dias[0].comidas[0].alimentos[0].idAlimento = "no-es-un-objectid";
+  respuesta.dias[0].comidas[0].alimentos[0].indiceAlimento = "1";
+  const generador = crearGenerador(respuesta);
+  await assert.rejects(
+    () => generador.generar({ perfilPaciente, alimentosDisponibles }),
+    ServicioExternoError,
+  );
+});
+
+test("rechaza indiceAlimento fuera de rango (mayor al total de alimentos disponibles)", async () => {
+  const respuesta = respuestaValida();
+  respuesta.dias[0].comidas[0].alimentos[0].indiceAlimento = 2; // solo hay 1 alimento disponible
   const generador = crearGenerador(respuesta);
   await assert.rejects(
     () => generador.generar({ perfilPaciente, alimentosDisponibles }),

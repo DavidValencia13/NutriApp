@@ -89,22 +89,6 @@ class MenuRepositorySequelize {
     return doc;
   }
 
-  // Historial de menús de un paciente: solo el resumen por día (nutrientes,
-  // calorías, costo ya vienen agregados en DiaMenuModel), sin bajar hasta
-  // comidas/detalles — más liviano que el árbol completo, suficiente para
-  // armar un resumen por menú (ver ListarMenusPorPaciente).
-  async listarPorPaciente(idPaciente) {
-    const docs = await MenuModel.findAll({
-      where: { idPaciente },
-      order: [["fechaGeneracion", "DESC"]],
-      include: { model: DiaMenuModel, as: "dias" },
-    });
-    for (const doc of docs) {
-      doc.dias.sort((a, b) => a.numeroDia - b.numeroDia);
-    }
-    return docs;
-  }
-
   _includeArbolCompleto() {
     return {
       model: DiaMenuModel,

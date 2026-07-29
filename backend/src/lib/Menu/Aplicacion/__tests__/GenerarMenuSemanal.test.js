@@ -7,13 +7,13 @@ const { ValidationError, ServicioExternoError } = require("../../Dominio/Errores
 const paciente = { id: 1, idNutriologo: 10, numeroComidas: 1 };
 const alimento = { id: "507f1f77bcf86cd799439011", nombre: "Arroz", unidadMedida: "g" };
 
-function comidaCon(idAlimento, calorias = 400) {
-  return { orden: 1, tipoComida: "Desayuno", calorias, alimentos: [{ idAlimento, cantidad: 100 }] };
+function comidaCon(indiceAlimento, calorias = 400) {
+  return { orden: 1, tipoComida: "Desayuno", calorias, alimentos: [{ indiceAlimento, cantidad: 100 }] };
 }
 
 function resultadoIAValido() {
   return {
-    dias: Array.from({ length: 7 }, (_, i) => ({ numeroDia: i + 1, comidas: [comidaCon(alimento.id)] })),
+    dias: Array.from({ length: 7 }, (_, i) => ({ numeroDia: i + 1, comidas: [comidaCon(1)] })), // índice 1 = único alimento disponible por defecto
     recomendacion: "Comer más fibra.",
   };
 }
@@ -84,9 +84,9 @@ test("propaga el error del generador de IA sin persistir nada", async () => {
   assert.equal(deps.menuRepository.llamadasCrear.length, 0);
 });
 
-test("un idAlimento inventado por la IA lanza ServicioExternoError (502), no ValidationError", async () => {
+test("un indiceAlimento fuera de rango lanza ServicioExternoError (502), no ValidationError", async () => {
   const resultadoIA = resultadoIAValido();
-  resultadoIA.dias[0].comidas[0].alimentos[0].idAlimento = "000000000000000000000000"; // no está en la lista
+  resultadoIA.dias[0].comidas[0].alimentos[0].indiceAlimento = 99; // no existe esa posición en la lista
   const deps = crearDependencias({ resultadoIA });
   const caso = new GenerarMenuSemanal(deps);
   await assert.rejects(() => caso.ejecutar(1, 10), ServicioExternoError);

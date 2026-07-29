@@ -6,11 +6,9 @@ const registerAlimentoModule = require("./lib/Alimento/Infraestructura/http");
 const registerMenuModule = require("./lib/Menu/Infraestructura/http");
 const registerRecomendacionModule = require("./lib/Recomendacion/Infraestructura/http");
 const registerAlertaModule = require("./lib/Alerta/Infraestructura/http");
-const registerConsultaModule = require("./lib/Consulta/Infraestructura/http");
 const registerSugerenciaModule = require("./lib/Sugerencia/Infraestructura/http");
-const registerCumplimientoModule = require("./lib/Cumplimiento/Infraestructura/http");
+const registerSeguimientoModule = require("./lib/Seguimiento/Infraestructura/http");
 const registerEfectividadModule = require("./lib/Efectividad/Infraestructura/http");
-const registerReporteModule = require("./lib/Reporte/Infraestructura/http");
 
 function buildApp() {
   const app = express();
@@ -26,11 +24,9 @@ function buildApp() {
   registerMenuModule(app);
   registerRecomendacionModule(app);
   registerAlertaModule(app);
-  registerConsultaModule(app);
   registerSugerenciaModule(app);
-  registerCumplimientoModule(app);
+  registerSeguimientoModule(app);
   registerEfectividadModule(app);
-  registerReporteModule(app);
 
   // Catch-all (atrapa todo lo que no coincidió arriba) → 404 = ruta no existe
   app.use((req, res) => {

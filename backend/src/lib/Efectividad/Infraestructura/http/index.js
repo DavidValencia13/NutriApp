@@ -7,29 +7,20 @@ const verificarPropietarioPaciente = require("../../../Alimento/Infraestructura/
 const PacienteRepositorySequelize = require("../../../Paciente/Infraestructura/PacienteRepositorySequelize");
 const MenuRepositorySequelize = require("../../../Menu/Infraestructura/MenuRepositorySequelize");
 const AlertaRepositorySequelize = require("../../../Alerta/Infraestructura/AlertaRepositorySequelize");
-const ConsultaRepositorySequelize = require("../../../Consulta/Infraestructura/ConsultaRepositorySequelize");
-const CumplimientoRepositorySequelize = require("../../../Cumplimiento/Infraestructura/CumplimientoRepositorySequelize");
-const ObtenerResumenCumplimiento = require("../../../Cumplimiento/Aplicacion/ObtenerResumenCumplimiento");
+const SeguimientoRepositorySequelize = require("../../../Seguimiento/Infraestructura/SeguimientoRepositorySequelize");
 
 module.exports = function registerEfectividadModule(app) {
   const menuRepo = new MenuRepositorySequelize();
   const pacienteRepo = new PacienteRepositorySequelize();
   const alertaRepo = new AlertaRepositorySequelize();
-  const consultaRepo = new ConsultaRepositorySequelize();
-  const cumplimientoRepo = new CumplimientoRepositorySequelize();
-
-  const obtenerResumenCumplimiento = new ObtenerResumenCumplimiento({
-    cumplimientoRepository: cumplimientoRepo,
-    menuRepository: menuRepo,
-  });
+  const seguimientoRepo = new SeguimientoRepositorySequelize();
 
   const controller = new EfectividadController({
     obtenerEfectividadMenu: new ObtenerEfectividadMenu({
       menuRepository: menuRepo,
       pacienteRepository: pacienteRepo,
       alertaRepository: alertaRepo,
-      consultaRepository: consultaRepo,
-      obtenerResumenCumplimiento,
+      seguimientoRepository: seguimientoRepo,
     }),
   });
 

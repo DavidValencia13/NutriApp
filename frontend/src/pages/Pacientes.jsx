@@ -4,7 +4,7 @@ import Modal from "../components/Modal";
 import FormularioPaciente from "../components/FormularioPaciente";
 import ListaAlimentos from "../components/ListaAlimentos";
 import MenuPaciente from "../components/MenuPaciente";
-import HistorialPaciente from "../components/HistorialPaciente";
+import SeguimientoPaciente from "../components/SeguimientoPaciente";
 import {
   IconUsers,
   IconPlus,
@@ -17,6 +17,7 @@ import {
   IconActivity,
   IconAlertTriangle,
   IconLeaf,
+  IconCalendarCheck,
 } from "../components/Icons";
 
 function sinRestricciones(texto) {
@@ -95,8 +96,8 @@ function Pacientes({ busqueda = "" }) {
     setModal({ tipo: "menu", paciente });
   }
 
-  function abrirModalHistorial(paciente) {
-    setModal({ tipo: "historial", paciente });
+  function abrirModalSeguimiento(paciente) {
+    setModal({ tipo: "seguimiento", paciente });
   }
 
   function cerrarModal() {
@@ -119,8 +120,8 @@ function Pacientes({ busqueda = "" }) {
         ? `Alimentos de ${modal.paciente?.nombre}`
         : modal.tipo === "menu"
           ? `Menú de ${modal.paciente?.nombre}`
-          : modal.tipo === "historial"
-            ? `Historial de ${modal.paciente?.nombre}`
+          : modal.tipo === "seguimiento"
+            ? `Seguimiento de ${modal.paciente?.nombre}`
             : "";
 
   const pacientesFiltrados = pacientes.filter((p) =>
@@ -276,11 +277,11 @@ function Pacientes({ busqueda = "" }) {
                   Menú
                 </button>
                 <button
-                  onClick={() => abrirModalHistorial(p)}
+                  onClick={() => abrirModalSeguimiento(p)}
                   className="flex flex-col items-center gap-1 py-2 rounded-lg text-nutri-navy hover:bg-gray-50 text-xs"
                 >
-                  <IconActivity />
-                  Historial
+                  <IconCalendarCheck />
+                  Seguimiento
                 </button>
                 <button
                   onClick={() => abrirModalEditar(p)}
@@ -306,7 +307,7 @@ function Pacientes({ busqueda = "" }) {
         isOpen={modal.tipo !== null}
         onClose={cerrarModal}
         title={tituloModal}
-        ancho={modal.tipo === "menu" || modal.tipo === "historial" ? "max-w-5xl" : "max-w-lg"}
+        ancho={modal.tipo === "menu" ? "max-w-5xl" : modal.tipo === "seguimiento" ? "max-w-2xl" : "max-w-lg"}
       >
         {modal.tipo === "paciente" && (
           <FormularioPaciente
@@ -327,8 +328,8 @@ function Pacientes({ busqueda = "" }) {
             presupuesto={modal.paciente.presupuesto}
           />
         )}
-        {modal.tipo === "historial" && modal.paciente && (
-          <HistorialPaciente paciente={modal.paciente} />
+        {modal.tipo === "seguimiento" && modal.paciente && (
+          <SeguimientoPaciente idPaciente={modal.paciente.id} />
         )}
       </Modal>
     </div>

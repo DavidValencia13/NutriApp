@@ -29,7 +29,3 @@ export async function aprobarMenu(idPaciente, idMenu, confirmarAdvertencias = fa
   });
 }
 
-// Historial de dietas asignadas anteriormente (resumen por menú, no el árbol completo)
-export async function listarHistorialMenus(idPaciente) {
-  return await apiFetch(`/paciente/${idPaciente}/menu/historial`);
-}

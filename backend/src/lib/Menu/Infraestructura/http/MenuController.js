@@ -2,12 +2,11 @@ const { AppError } = require("../../Dominio/Errores");
 const { sumarNutrientes } = require("../../Dominio/Servicios/CalculadoraNutricional");
 
 class MenuController {
-  constructor({ generarMenuSemanal, obtenerMenuPorPaciente, ajustarComidaMenu, aprobarMenu, listarMenusPorPaciente, calcularNutrientesPreviewComida }) {
+  constructor({ generarMenuSemanal, obtenerMenuPorPaciente, ajustarComidaMenu, aprobarMenu, calcularNutrientesPreviewComida }) {
     this.generarMenuSemanal = generarMenuSemanal;
     this.obtenerMenuPorPaciente = obtenerMenuPorPaciente;
     this.ajustarComidaMenu = ajustarComidaMenu;
     this.aprobarMenu = aprobarMenu;
-    this.listarMenusPorPaciente = listarMenusPorPaciente;
     this.calcularNutrientesPreviewComida = calcularNutrientesPreviewComida;
   }
 
@@ -45,15 +44,6 @@ class MenuController {
       }
       const comida = await this.ajustarComidaMenu.ejecutar(idComidaMenu, req.nutriologo.id, req.body);
       res.json(comida);
-    } catch (error) {
-      this._manejarError(error, res, next);
-    }
-  };
-
-  historial = async (req, res, next) => {
-    try {
-      const menus = await this.listarMenusPorPaciente.ejecutar(req.idPaciente, req.nutriologo.id);
-      res.json(menus);
     } catch (error) {
       this._manejarError(error, res, next);
     }
