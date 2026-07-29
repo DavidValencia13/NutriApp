@@ -23,6 +23,7 @@ test("guarda un alimento válido y devuelve el resultado del repositorio", async
     nombre: "Arroz",
     cantidad: 500,
     unidadMedida: "g",
+    gruposAlimenticios: ["carbohidratos"],
   });
 
   assert.equal(repo.guardados.length, 1);

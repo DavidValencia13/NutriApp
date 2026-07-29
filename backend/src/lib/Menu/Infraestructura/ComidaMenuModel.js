@@ -16,6 +16,8 @@ const ComidaMenuModel = sequelize.define(
       defaultValue: 0,
       validate: { min: 0 },
     },
+    // Suma de nutrientes de sus detalles: { nutrientes: {...}, completo, camposFaltantes }.
+    nutrientes: { type: DataTypes.JSONB, allowNull: true },
   },
   {
     timestamps: true,

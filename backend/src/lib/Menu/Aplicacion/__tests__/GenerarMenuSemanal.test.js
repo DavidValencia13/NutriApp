@@ -46,12 +46,21 @@ function crearDependencias({ resultadoIA, alimentosDisponibles = [alimento], gen
     },
   };
 
+  const generarAlertas = {
+    llamadas: [],
+    async ejecutar(idMenu) {
+      this.llamadas.push(idMenu);
+      return [];
+    },
+  };
+
   return {
     pacienteRepository: { async findById() { return paciente; } },
     listarAlimentosPorPaciente: { async ejecutar() { return alimentosDisponibles; } },
     generadorMenuIA,
     menuRepository,
     registrarRecomendacion,
+    generarAlertas,
   };
 }
 
@@ -82,6 +91,36 @@ test("un idAlimento inventado por la IA lanza ServicioExternoError (502), no Val
   const caso = new GenerarMenuSemanal(deps);
   await assert.rejects(() => caso.ejecutar(1, 10), ServicioExternoError);
   assert.equal(deps.menuRepository.llamadasCrear.length, 0);
+});
+
+test("una cantidad fuera de escala para la unidad del alimento (ej. 150 kg) lanza ServicioExternoError sin persistir nada", async () => {
+  const alimentoEnKg = { id: alimento.id, nombre: "Pollo", unidadMedida: "kg" };
+  const resultadoIA = resultadoIAValido();
+  resultadoIA.dias[0].comidas[0].alimentos[0].cantidad = 150; // debería ser una fracción, ej. 0.15
+  const deps = crearDependencias({ resultadoIA, alimentosDisponibles: [alimentoEnKg] });
+  const caso = new GenerarMenuSemanal(deps);
+  await assert.rejects(() => caso.ejecutar(1, 10), ServicioExternoError);
+  assert.equal(deps.menuRepository.llamadasCrear.length, 0);
+});
+
+test("un menú cuyo costo real (con precios reales) excede demasiado el presupuesto lanza ServicioExternoError sin persistir nada", async () => {
+  const alimentoCaro = { id: alimento.id, nombre: "Carne premium", unidadMedida: "g", precio: 5 };
+  const pacienteConPresupuesto = { ...paciente, presupuesto: 10 };
+  const deps = crearDependencias({ alimentosDisponibles: [alimentoCaro] });
+  deps.pacienteRepository = { async findById() { return pacienteConPresupuesto; } };
+  const caso = new GenerarMenuSemanal(deps);
+  await assert.rejects(() => caso.ejecutar(1, 10), ServicioExternoError);
+  assert.equal(deps.menuRepository.llamadasCrear.length, 0);
+});
+
+test("un menú dentro del margen del 15% sobre presupuesto sí se persiste", async () => {
+  const alimentoAjustado = { id: alimento.id, nombre: "Arroz", unidadMedida: "g", precio: 0.01 }; // 100g * 0.01 = 1$/día = 7$/semana
+  const pacienteConPresupuesto = { ...paciente, presupuesto: 7 };
+  const deps = crearDependencias({ alimentosDisponibles: [alimentoAjustado] });
+  deps.pacienteRepository = { async findById() { return pacienteConPresupuesto; } };
+  const caso = new GenerarMenuSemanal(deps);
+  await caso.ejecutar(1, 10);
+  assert.equal(deps.menuRepository.llamadasCrear.length, 1);
 });
 
 test("el perfil enviado a la IA no incluye id/idNutriologo/nombre del paciente", async () => {
@@ -129,4 +168,34 @@ test("ignora el nombre/unidad que la IA intente colar (usa siempre el snapshot d
 
   const detalle = deps.menuRepository.llamadasCrear[0].dias[0].comidas[0].alimentos[0];
   assert.equal(detalle.nombreAlimento, "Arroz");
+});
+
+test("nutrientes queda incompleto cuando el alimento no tiene infoNutricional", async () => {
+  const deps = crearDependencias(); // fixture "alimento" no tiene infoNutricional
+  const caso = new GenerarMenuSemanal(deps);
+  await caso.ejecutar(1, 10);
+
+  const dia = deps.menuRepository.llamadasCrear[0].dias[0];
+  const comida = dia.comidas[0];
+  const detalle = comida.alimentos[0];
+  assert.equal(detalle.nutrientes.completo, false);
+  assert.equal(comida.nutrientes.completo, false);
+  assert.equal(dia.nutrientes.completo, false);
+});
+
+test("calcula nutrientes reales a partir de infoNutricional del alimento", async () => {
+  const alimentoConInfo = {
+    id: alimento.id,
+    nombre: "Arroz",
+    unidadMedida: "g",
+    infoNutricional: { refCantidad: 100, refUnidad: "g", calorias: 130, proteinas: 2.7 },
+  };
+  const deps = crearDependencias({ alimentosDisponibles: [alimentoConInfo] });
+  const caso = new GenerarMenuSemanal(deps);
+  await caso.ejecutar(1, 10);
+
+  // cantidad usada: 100g (ver comidaCon) => mismo factor que la referencia (100g)
+  const detalle = deps.menuRepository.llamadasCrear[0].dias[0].comidas[0].alimentos[0];
+  assert.equal(detalle.nutrientes.nutrientes.calorias, 130);
+  assert.equal(detalle.nutrientes.nutrientes.proteinas, 2.7);
 });

@@ -21,3 +21,12 @@ test("rechaza caloriasTotales negativas o no numéricas", () => {
   assert.throws(() => new DiaMenu({ ...datosValidos, caloriasTotales: -1 }), ValidationError);
   assert.throws(() => new DiaMenu({ ...datosValidos, caloriasTotales: NaN }), ValidationError);
 });
+
+test("nutrientes es opcional", () => {
+  const sinNutrientes = new DiaMenu(datosValidos);
+  assert.equal(sinNutrientes.nutrientes, undefined);
+
+  const nutrientes = { nutrientes: { calorias: 1800 }, completo: false, camposFaltantes: [] };
+  const conNutrientes = new DiaMenu({ ...datosValidos, nutrientes });
+  assert.equal(conNutrientes.nutrientes, nutrientes);
+});

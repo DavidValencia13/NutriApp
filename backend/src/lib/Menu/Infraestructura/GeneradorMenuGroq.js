@@ -52,7 +52,15 @@ class GeneradorMenuGroq {
       );
     }
 
-    this._validarForma(resultado, perfilPaciente.numeroComidas);
+    try {
+      this._validarForma(resultado, perfilPaciente.numeroComidas);
+    } catch (error) {
+      // Diagnóstico temporal: sin esto es imposible saber QUÉ parte de la
+      // respuesta de la IA no cumplió el formato esperado.
+      console.error("Menú de la IA rechazado por _validarForma. Respuesta cruda:");
+      console.error(JSON.stringify(resultado, null, 2));
+      throw error;
+    }
     return resultado;
   }
 
@@ -79,9 +87,13 @@ CUIDADO CON LA UNIDAD DE MEDIDA (error común, evítalo): antes de elegir "canti
 
 REGLA ESTRICTA DE DIETA: el campo "preferencias" del perfil indica el tipo de dieta del paciente (ej. vegetariano, vegano, carnívoro, sin lácteos, etc.) y "restricciones" indica alergias o alimentos prohibidos. Usa tu conocimiento de qué alimentos son de origen animal, vegetal, contienen lácteos, gluten, etc. según su nombre, y EXCLUYE por completo cualquier alimento de la lista que viole esas preferencias o restricciones, aunque esté disponible. Por ejemplo: si "preferencias" dice "vegetariano", nunca uses carnes, pollo, pescado ni mariscos; si dice "carne" o similar, prioriza alimentos de origen animal disponibles. Si "restricciones" menciona una alergia (ej. "alérgico al maní"), no uses ese alimento ni derivados bajo ninguna circunstancia.
 
-PRESUPUESTO: "presupuesto" en el perfil es el gasto total disponible para las 7 días del menú completo. Usando "precioPorUnidad" de cada alimento, elige cantidades que mantengan el costo total del menú lo más cerca posible del presupuesto sin excederlo demasiado. Esto es una meta a optimizar, no debe sacrificar que cada comida tenga alimentos suficientes y coherentes.
+PRESUPUESTO (restricción dura, no solo una meta a optimizar — si te pasas, el menú entero se rechaza y hay que regenerarlo): "presupuesto" en el perfil es el gasto TOTAL disponible para las 7 días completas. Referencia rápida: presupuesto / 7 ≈ gasto por día, y eso entre "numeroComidas" ≈ gasto por comida — úsalo como techo mental mientras eliges cantidades, no como un cálculo que hagas al final. Ve sumando mentalmente "cantidad × precioPorUnidad" de cada alimento que agregas a una comida, y si una comida ya se está pasando de su parte proporcional del presupuesto, usa cantidades más chicas o alimentos más baratos de la lista en esa comida. El costo total de las 7 días NUNCA debe superar el presupuesto por más de un 10%. Prioriza quedarte por debajo del presupuesto antes que justo en el límite — es más seguro un menú un poco más barato que uno que se pasa.
 
-VARIEDAD Y REALISMO (muy importante, error común, evítalo): no generes el mismo platillo, ni la misma combinación de alimentos, más de una vez en las 7 días — cada día debe sentirse distinto a los demás, no una copia. Antes de nombrar cada plato, piensa primero en un platillo real y común que la gente de verdad prepara (ej. huevos revueltos, arroz con pollo, sopa de lentejas, tortilla de papa, pollo a la plancha con ensalada) y luego ajusta cantidades con los alimentos disponibles — no al revés. Evita mezclas forzadas que combinan ingredientes solo porque están en la lista pero que nadie prepararía junta de verdad (ej. "ensalada de lentejas con huevo" o "ensalada de lentejas con yogur" no son platos reales). Si los alimentos disponibles son limitados y debes repetir algún ingrediente entre comidas, cámbiale la preparación (ej. huevo revuelto un día, huevo cocido otro, tortilla de huevo otro) para que no se sienta repetido.
+VARIEDAD Y REALISMO (muy importante, error común, evítalo): no generes el mismo platillo, ni la misma combinación de alimentos, más de una vez en las 7 días — cada día debe sentirse distinto a los demás, no una copia. Antes de nombrar cada plato, piensa primero en un platillo real y común que la gente de verdad prepara y come en el día a día (ej. huevos revueltos con pan y fruta, arroz con pollo y ensalada, sopa de lentejas con arroz, tortilla de papa, pollo a la plancha con puré y verduras) y luego ajusta cantidades con los alimentos disponibles — no al revés. Si los alimentos disponibles son limitados y debes repetir algún ingrediente entre comidas, cámbiale la preparación (ej. huevo revuelto un día, huevo cocido otro, tortilla de huevo otro) para que no se sienta repetido.
+
+COMPOSICIÓN DE CADA COMIDA (muy importante, error común, evítalo): imagina el plato de una persona real comiendo en su casa, no una lista de ingredientes sueltos que combinaste porque estaban disponibles. "Desayuno", "Almuerzo" y "Cena" deben combinar VARIOS alimentos (idealmente 3, mínimo 2) que de verdad se comen juntos en una misma comida — normalmente una proteína + un carbohidrato/cereal + una fruta o verdura, o combinaciones típicas de desayuno (huevo + pan/cereal + fruta o lácteo). Como cada plato ya trae varios alimentos, usa una cantidad MÁS CHICA de cada uno (no la porción completa de una comida de un solo ingrediente) para que el total del plato tenga sentido, no se sobrecargue de calorías ni de un solo nutriente.
+- SÍ son comidas reales: "Huevos revueltos con tostada y fruta" (huevo + pan + fruta), "Pollo a la plancha con arroz y ensalada" (proteína + carbohidrato + vegetal), "Yogur con fruta y avena" (lácteo + fruta + cereal).
+- NO son comidas reales, EVÍTALAS: cualquier plato de un solo alimento como "Huevos" o "Pollo" solos (salvo una merienda/snack ligero, ej. una fruta sola, donde 1 alimento sí alcanza); y mezclas que nadie prepararía de verdad, como "huevos revueltos con lechuga" (lechuga cruda no se come revuelta con huevo — si quieres agregar una verdura a un plato de huevo, que sea como acompañamiento aparte, ej. "Huevos revueltos con tostada y ensalada al lado", no mezclada en la preparación), o "ensalada de lentejas con yogur".
 
 Responde SOLO con un JSON con este formato exacto, sin texto adicional:
 {

@@ -36,6 +36,10 @@ const DetalleComidaAlimentoModel = sequelize.define(
       defaultValue: 0,
       validate: { min: 0 },
     },
+    // Nutrientes calculados para la cantidadUtilizada de este alimento en
+    // esta comida: { nutrientes: {...}, completo, camposFaltantes }. Igual
+    // criterio de snapshot que precioUnitario/costoTotal.
+    nutrientes: { type: DataTypes.JSONB, allowNull: true },
   },
   { timestamps: true },
 );

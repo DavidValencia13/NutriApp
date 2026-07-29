@@ -4,6 +4,7 @@ import Modal from "../components/Modal";
 import FormularioPaciente from "../components/FormularioPaciente";
 import ListaAlimentos from "../components/ListaAlimentos";
 import MenuPaciente from "../components/MenuPaciente";
+import HistorialPaciente from "../components/HistorialPaciente";
 import {
   IconUsers,
   IconPlus,
@@ -94,6 +95,10 @@ function Pacientes({ busqueda = "" }) {
     setModal({ tipo: "menu", paciente });
   }
 
+  function abrirModalHistorial(paciente) {
+    setModal({ tipo: "historial", paciente });
+  }
+
   function cerrarModal() {
     setModal({ tipo: null, paciente: null });
   }
@@ -114,7 +119,9 @@ function Pacientes({ busqueda = "" }) {
         ? `Alimentos de ${modal.paciente?.nombre}`
         : modal.tipo === "menu"
           ? `Menú de ${modal.paciente?.nombre}`
-          : "";
+          : modal.tipo === "historial"
+            ? `Historial de ${modal.paciente?.nombre}`
+            : "";
 
   const pacientesFiltrados = pacientes.filter((p) =>
     p.nombre.toLowerCase().includes(busqueda.trim().toLowerCase()),
@@ -253,7 +260,7 @@ function Pacientes({ busqueda = "" }) {
                 </div>
               )}
 
-              <div className="grid grid-cols-4 gap-1 pt-3 border-t border-gray-100">
+              <div className="grid grid-cols-5 gap-1 pt-3 border-t border-gray-100">
                 <button
                   onClick={() => abrirModalAlimentos(p)}
                   className="flex flex-col items-center gap-1 py-2 rounded-lg text-nutri-navy hover:bg-gray-50 text-xs"
@@ -267,6 +274,13 @@ function Pacientes({ busqueda = "" }) {
                 >
                   <IconList />
                   Menú
+                </button>
+                <button
+                  onClick={() => abrirModalHistorial(p)}
+                  className="flex flex-col items-center gap-1 py-2 rounded-lg text-nutri-navy hover:bg-gray-50 text-xs"
+                >
+                  <IconActivity />
+                  Historial
                 </button>
                 <button
                   onClick={() => abrirModalEditar(p)}
@@ -292,7 +306,7 @@ function Pacientes({ busqueda = "" }) {
         isOpen={modal.tipo !== null}
         onClose={cerrarModal}
         title={tituloModal}
-        ancho={modal.tipo === "menu" ? "max-w-5xl" : "max-w-lg"}
+        ancho={modal.tipo === "menu" || modal.tipo === "historial" ? "max-w-5xl" : "max-w-lg"}
       >
         {modal.tipo === "paciente" && (
           <FormularioPaciente
@@ -312,6 +326,9 @@ function Pacientes({ busqueda = "" }) {
             idPaciente={modal.paciente.id}
             presupuesto={modal.paciente.presupuesto}
           />
+        )}
+        {modal.tipo === "historial" && modal.paciente && (
+          <HistorialPaciente paciente={modal.paciente} />
         )}
       </Modal>
     </div>

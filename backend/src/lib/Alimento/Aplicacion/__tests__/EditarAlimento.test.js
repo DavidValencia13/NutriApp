@@ -26,6 +26,7 @@ const alimentoExistente = {
   nombre: "Arroz",
   cantidad: 500,
   unidadMedida: "g",
+  gruposAlimenticios: ["carbohidratos"],
 };
 
 test("lanza NotFoundError si el alimento no existe para ese paciente", async () => {
@@ -72,6 +73,8 @@ test("llama a updateByIdAndPaciente con (id, idPaciente, cambios) solo con campo
   assert.equal(llamada.idPaciente, 1);
   assert.deepEqual(Object.keys(llamada.cambios).sort(), [
     "cantidad",
+    "gruposAlimenticios",
+    "infoNutricional",
     "nombre",
     "precio",
     "unidadMedida",

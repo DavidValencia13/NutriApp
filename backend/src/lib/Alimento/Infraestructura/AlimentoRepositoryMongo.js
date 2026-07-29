@@ -9,6 +9,8 @@ class AlimentoRepositoryMongo {
       cantidad: alimento.cantidad,
       unidadMedida: alimento.unidadMedida,
       precio: alimento.precio,
+      gruposAlimenticios: alimento.gruposAlimenticios,
+      infoNutricional: alimento.infoNutricional,
     });
     return this._toEntity(doc);
   }
@@ -52,6 +54,10 @@ class AlimentoRepositoryMongo {
       cantidad: doc.cantidad,
       unidadMedida: doc.unidadMedida,
       precio: doc.precio,
+      gruposAlimenticios: doc.gruposAlimenticios,
+      infoNutricional: doc.infoNutricional
+        ? JSON.parse(JSON.stringify(doc.infoNutricional))
+        : undefined,
     });
   }
 }

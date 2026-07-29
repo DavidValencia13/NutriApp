@@ -18,7 +18,18 @@ export async function ajustarComida(idPaciente, idComidaMenu, cambios) {
   });
 }
 
-// Aprueba el menú (cierra el bucle de revisión del BPM)
-export async function aprobarMenu(idPaciente, idMenu) {
-  return await apiFetch(`/paciente/${idPaciente}/menu/${idMenu}/aprobar`, { method: "POST" });
+// Aprueba el menú (cierra el bucle de revisión del BPM). Antes de aprobar,
+// el backend valida alertas: si hay críticas pendientes, lanza error; si
+// solo hay advertencias pendientes, responde { requiereConfirmacion: true }
+// sin aprobar — hay que reintentar con confirmarAdvertencias:true.
+export async function aprobarMenu(idPaciente, idMenu, confirmarAdvertencias = false) {
+  return await apiFetch(`/paciente/${idPaciente}/menu/${idMenu}/aprobar`, {
+    method: "POST",
+    body: JSON.stringify({ confirmarAdvertencias }),
+  });
+}
+
+// Historial de dietas asignadas anteriormente (resumen por menú, no el árbol completo)
+export async function listarHistorialMenus(idPaciente) {
+  return await apiFetch(`/paciente/${idPaciente}/menu/historial`);
 }

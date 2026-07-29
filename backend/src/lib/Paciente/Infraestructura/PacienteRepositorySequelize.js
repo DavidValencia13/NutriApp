@@ -15,6 +15,11 @@ class PacienteRepositorySequelize {
       tiempoParaCocinar: paciente.tiempoParaCocinar,
       restricciones: paciente.restricciones,
       preferencias: paciente.preferencias,
+      alergias: paciente.alergias,
+      enfermedades: paciente.enfermedades,
+      pesoInicial: paciente.pesoInicial,
+      edad: paciente.edad,
+      sexo: paciente.sexo,
     });
     return this._toEntity(doc);
   }
@@ -56,6 +61,17 @@ class PacienteRepositorySequelize {
       tiempoParaCocinar: doc.tiempoParaCocinar,
       restricciones: doc.restricciones,
       preferencias: doc.preferencias,
+      alergias: doc.alergias,
+      enfermedades: doc.enfermedades,
+      // Pacientes registrados antes de este campo tienen pesoInicial null
+      // en la base; se deja undefined para que la entidad aplique su
+      // default (= peso actual), en vez de convertirlo en NaN.
+      pesoInicial:
+        doc.pesoInicial === null || doc.pesoInicial === undefined
+          ? undefined
+          : parseFloat(doc.pesoInicial),
+      edad: doc.edad === null ? undefined : doc.edad,
+      sexo: doc.sexo === null ? undefined : doc.sexo,
     });
   }
 }

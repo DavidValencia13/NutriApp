@@ -3,11 +3,17 @@ const {
   ConflictError,
   ValidationError,
 } = require("../Dominio/Errores");
+const {
+  calcularNutrientesDetalle,
+  sumarNutrientes,
+  cantidadEsPlausible,
+} = require("../Dominio/Servicios/CalculadoraNutricional");
 
 class AjustarComidaMenu {
-  constructor({ menuRepository, listarAlimentosPorPaciente }) {
+  constructor({ menuRepository, listarAlimentosPorPaciente, generarAlertas }) {
     this.menuRepository = menuRepository;
     this.listarAlimentosPorPaciente = listarAlimentosPorPaciente;
+    this.generarAlertas = generarAlertas;
   }
 
   async ejecutar(idComidaMenu, idNutriologo, cambios) {
@@ -30,8 +36,13 @@ class AjustarComidaMenu {
     );
 
     for (const detalle of cambios.alimentos) {
-      if (!alimentosPorId.has(detalle.idAlimento.toString()))
+      const alimento = alimentosPorId.get(detalle.idAlimento.toString());
+      if (!alimento)
         throw new ValidationError("Alimento no disponible para este paciente");
+      if (!cantidadEsPlausible(detalle.cantidad, alimento.unidadMedida))
+        throw new ValidationError(
+          `Cantidad poco realista para "${alimento.nombre}" (${detalle.cantidad} ${alimento.unidadMedida}) — revisa la unidad de medida`,
+        );
     }
 
     const detallesConSnapshot = cambios.alimentos.map((d) => {
@@ -44,6 +55,7 @@ class AjustarComidaMenu {
         cantidadUtilizada: d.cantidad,
         precioUnitario,
         costoTotal: precioUnitario * d.cantidad,
+        nutrientes: calcularNutrientesDetalle(alimento, d.cantidad),
       };
     });
 
@@ -51,13 +63,27 @@ class AjustarComidaMenu {
       (total, d) => total + d.costoTotal,
       0,
     );
+    const nutrientes = sumarNutrientes(
+      detallesConSnapshot.map((d) => d.nutrientes),
+    );
 
-    return await this.menuRepository.actualizarComida(idComidaMenu, {
+    const resultado = await this.menuRepository.actualizarComida(idComidaMenu, {
       calorias: cambios.calorias,
       nombrePlato: cambios.nombrePlato.trim(),
       costoTotal,
+      nutrientes,
       alimentos: detallesConSnapshot,
     });
+
+    // Best-effort, igual criterio que en GenerarMenuSemanal: no debe tumbar
+    // el ajuste ya persistido; AprobarMenu re-evalúa de todos modos.
+    try {
+      await this.generarAlertas.ejecutar(comida.menu.id);
+    } catch (error) {
+      console.error("No se pudieron regenerar alertas para el menú", comida.menu.id, ":", error.message);
+    }
+
+    return resultado;
   }
 }
 

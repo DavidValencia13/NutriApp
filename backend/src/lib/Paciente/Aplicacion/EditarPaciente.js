@@ -24,9 +24,10 @@ class EditarPaciente {
       ...data,
       id,
       idNutriologo: paciente.idNutriologo,
+      pesoInicial: paciente.pesoInicial, // inmutable: nunca se toma de data
     });
 
-    // Solo campos de negocio pasan al repositorio; nunca id/idNutriologo
+    // Solo campos de negocio pasan al repositorio; nunca id/idNutriologo/pesoInicial
     const cambios = {
       nombre: actualizado.nombre,
       peso: actualizado.peso,
@@ -38,6 +39,10 @@ class EditarPaciente {
       tiempoParaCocinar: actualizado.tiempoParaCocinar,
       restricciones: actualizado.restricciones,
       preferencias: actualizado.preferencias,
+      alergias: actualizado.alergias,
+      enfermedades: actualizado.enfermedades,
+      edad: actualizado.edad ?? null,
+      sexo: actualizado.sexo ?? null,
     };
 
     return await this.pacienteRepository.updateById(id, cambios);

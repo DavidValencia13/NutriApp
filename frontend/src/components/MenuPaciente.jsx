@@ -3,34 +3,13 @@ import { generarMenu, obtenerMenu, aprobarMenu } from "../services/menuService";
 import { listarRecomendaciones } from "../services/recomendacionService";
 import Modal from "./Modal";
 import FormularioAjustarComida from "./FormularioAjustarComida";
+import AlertasMenu from "./AlertasMenu";
+import { IconAlertTriangle } from "./Icons";
 
-// No hay fotos reales de platos: se infiere un emoji representativo a partir
-// del nombre del platillo y sus ingredientes, para que cada tarjeta tenga una
-// identidad visual sin depender de imágenes externas.
-const ICONOS_POR_PALABRA_CLAVE = [
-  [/res|chancho|cerdo|cordero|carne/, "🥩"],
-  [/pollo|gallina|pavo/, "🍗"],
-  [/pescado|atún|salmón|tilapia|mariscos|camar/, "🐟"],
-  [/huevo/, "🥚"],
-  [/leche|yogur|queso|lácte/, "🥛"],
-  [/arroz/, "🍚"],
-  [/pan|tostada/, "🍞"],
-  [/papa|patata/, "🥔"],
-  [/fideo|pasta|espagueti/, "🍝"],
-  [/avena/, "🥣"],
-  [/frijol|lenteja|garbanzo/, "🫘"],
-  [/lechuga|ensalada|espinaca|verdura|vegetal|tomate|brócoli/, "🥗"],
-  [/manzana|banana|plátano|naranja|fruta/, "🍎"],
-];
-
-function iconoAlimento(nombrePlato, detalles) {
-  const texto = `${nombrePlato} ${(detalles || [])
-    .map((d) => d.nombreAlimento)
-    .join(" ")}`.toLowerCase();
-  const match = ICONOS_POR_PALABRA_CLAVE.find(([regex]) => regex.test(texto));
-  return match ? match[1] : "🍽️";
-}
-
+// Un solo emoji por momento del día (desayuno/almuerzo/cena/merienda) — se
+// quitaron los emojis por ingrediente (🥩🍗🥚...) porque adivinar uno solo a
+// partir del nombre del plato no reflejaba bien platos con varios
+// ingredientes.
 const ICONOS_POR_MOMENTO = [
   [/desayuno/, "☀️"],
   [/almuerzo/, "🌤️"],
@@ -82,13 +61,30 @@ function MenuPaciente({ idPaciente, presupuesto }) {
     }
   }
 
-  async function handleAprobar() {
+  async function handleAprobar(confirmarAdvertencias = false) {
     if (!menu) return;
+    setError("");
     try {
-      // aprobarMenu() devuelve el Menu sin dias/comidas anidados (esa forma
-      // resumida solo trae id/estado/fechas). Se recarga con cargarDatos()
-      // para no perder el árbol completo (y con él, el costo del menú).
-      await aprobarMenu(idPaciente, menu.id);
+      const resultado = await aprobarMenu(idPaciente, menu.id, confirmarAdvertencias);
+
+      // requiereConfirmacion=true: el backend NO aprobó, solo detectó
+      // advertencias (no críticas) pendientes. Se le pregunta al
+      // nutriólogo si de todas formas quiere continuar (RF punto 6).
+      if (resultado.requiereConfirmacion) {
+        const detalle = (resultado.advertencias || [])
+          .map((a) => `- ${a.mensaje}`)
+          .join("\n");
+        const continuar = confirm(
+          `El menú tiene advertencias nutricionales pendientes:\n\n${detalle}\n\n¿Deseas aprobarlo de todas formas?`,
+        );
+        if (continuar) await handleAprobar(true);
+        return;
+      }
+
+      // resultado.menu (no resultado) porque aprobarMenu() devuelve el Menu
+      // sin dias/comidas anidados (esa forma resumida solo trae
+      // id/estado/fechas). Se recarga con cargarDatos() para no perder el
+      // árbol completo (y con él, el costo del menú).
       await cargarDatos();
     } catch (err) {
       setError(err.message);
@@ -140,7 +136,7 @@ function MenuPaciente({ idPaciente, presupuesto }) {
             </span>
             {menu.estado === "generado" && (
               <button
-                onClick={handleAprobar}
+                onClick={() => handleAprobar()}
                 className="bg-nutri-teal text-white px-3.5 py-1.5 rounded-lg text-sm font-medium hover:bg-nutri-navy transition-colors"
               >
                 Aprobar menú
@@ -148,8 +144,14 @@ function MenuPaciente({ idPaciente, presupuesto }) {
             )}
           </div>
 
+          <AlertasMenu idPaciente={idPaciente} idMenu={menu.id} onCambio={cargarDatos} />
+
           {presupuesto !== undefined && (
             <ResumenPresupuesto dias={menu.dias || []} presupuesto={presupuesto} />
+          )}
+
+          {menu.resumenNutricionalSemanal && (
+            <ResumenNutricional resumen={menu.resumenNutricionalSemanal} />
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -163,6 +165,16 @@ function MenuPaciente({ idPaciente, presupuesto }) {
                   <span className="font-semibold">Día {dia.numeroDia}</span>
                   <span className="text-sm text-right">
                     {dia.caloriasTotales} kcal
+                    {dia.nutrientes?.nutrientes && (
+                      <>
+                        <br />
+                        <span className="text-xs opacity-80">
+                          P:{Math.round(dia.nutrientes.nutrientes.proteinas || 0)}g · C:
+                          {Math.round(dia.nutrientes.nutrientes.carbohidratos || 0)}g · G:
+                          {Math.round(dia.nutrientes.nutrientes.grasasTotales || 0)}g
+                        </span>
+                      </>
+                    )}
                     <br />
                     <span className="text-xs opacity-80">
                       {Number(dia.costoTotalDia || 0).toFixed(2)}$
@@ -179,17 +191,22 @@ function MenuPaciente({ idPaciente, presupuesto }) {
                         className="text-xl leading-none shrink-0 mt-0.5"
                         aria-hidden="true"
                       >
-                        {iconoAlimento(comida.nombrePlato, comida.detalles)}
+                        {iconoMomento(comida.tipoComida)}
                       </span>
                       <div className="min-w-0 flex-1">
                         <div className="flex justify-between items-baseline">
                           <p className="font-medium">
-                            <span aria-hidden="true">
-                              {iconoMomento(comida.tipoComida)}
-                            </span>{" "}
                             {comida.tipoComida}: {comida.nombrePlato}
                           </p>
                           <span className="text-xs text-gray-500 whitespace-nowrap ml-2 text-right">
+                            {comida.nutrientes?.completo === false && (
+                              <span
+                                title="Información nutricional incompleta para esta comida (falta info nutricional en alguno de sus alimentos)"
+                                className="inline-flex text-nutri-orange mr-1 align-middle"
+                              >
+                                <IconAlertTriangle className="w-3.5 h-3.5" />
+                              </span>
+                            )}
                             {comida.calorias} kcal
                             <br />
                             {Number(comida.costoTotal || 0).toFixed(2)}$
@@ -300,6 +317,54 @@ function ResumenPresupuesto({ dias, presupuesto }) {
           {(costoTotal - presupuesto).toFixed(2)}$.
         </p>
       )}
+    </div>
+  );
+}
+
+// Resumen de los "4 grandes" (calorías + macros) de toda la semana. Se
+// mantiene simple a propósito (no los 16 nutrientes) para no saturar la
+// interfaz — el detalle completo por comida ya está disponible al ajustar.
+function ResumenNutricional({ resumen }) {
+  const n = resumen.nutrientes || {};
+  const items = [
+    { label: "Calorías", valor: n.calorias, unidad: "kcal" },
+    { label: "Proteínas", valor: n.proteinas, unidad: "g" },
+    { label: "Carbohidratos", valor: n.carbohidratos, unidad: "g" },
+    { label: "Grasas totales", valor: n.grasasTotales, unidad: "g" },
+    { label: "Grasas saturadas", valor: n.grasasSaturadas, unidad: "g" },
+    { label: "Fibra", valor: n.fibra, unidad: "g" },
+    { label: "Azúcares", valor: n.azucares, unidad: "g" },
+    { label: "Sodio", valor: n.sodio, unidad: "mg" },
+    { label: "Potasio", valor: n.potasio, unidad: "mg" },
+    { label: "Calcio", valor: n.calcio, unidad: "mg" },
+    { label: "Hierro", valor: n.hierro, unidad: "mg" },
+    { label: "Magnesio", valor: n.magnesio, unidad: "mg" },
+  ];
+
+  if (items.every((i) => i.valor === undefined)) return null;
+
+  return (
+    <div className="rounded-lg p-3 mb-4 border bg-nutri-teal/10 border-nutri-teal/30">
+      <div className="flex justify-between items-baseline text-sm mb-2">
+        <span className="font-medium text-nutri-navy">
+          Resumen nutricional semanal
+        </span>
+        {!resumen.completo && (
+          <span className="text-xs text-nutri-orange">
+            Datos incompletos (faltan valores en algunos alimentos)
+          </span>
+        )}
+      </div>
+      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2 text-center">
+        {items.map((i) => (
+          <div key={i.label} className="bg-white rounded-lg py-2 px-1">
+            <p className="text-[11px] text-gray-500 leading-tight">{i.label}</p>
+            <p className="text-sm font-semibold text-nutri-navy">
+              {i.valor !== undefined ? `${Math.round(i.valor)} ${i.unidad}` : "—"}
+            </p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

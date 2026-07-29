@@ -8,6 +8,7 @@ const {
 } = require("./associations");
 const Menu = require("../Dominio/Entidades/Menu");
 const { NotFoundError, ConflictError } = require("../Dominio/Errores");
+const { sumarNutrientes } = require("../Dominio/Servicios/CalculadoraNutricional");
 
 class MenuRepositorySequelize {
   async ejecutarEnTransaccion(fn) {
@@ -32,6 +33,7 @@ class MenuRepositorySequelize {
           numeroDia: dia.numeroDia,
           caloriasTotales: dia.caloriasTotales,
           costoTotalDia: dia.costoTotalDia,
+          nutrientes: dia.nutrientes,
         },
         { transaction: contextoPersistencia },
       );
@@ -44,6 +46,7 @@ class MenuRepositorySequelize {
             nombrePlato: comida.nombrePlato,
             calorias: comida.calorias,
             costoTotal: comida.costoTotal,
+            nutrientes: comida.nutrientes,
           },
           { transaction: contextoPersistencia },
         );
@@ -66,29 +69,64 @@ class MenuRepositorySequelize {
         ["fechaGeneracion", "DESC"],
         ["id", "DESC"],
       ],
-      include: {
-        model: DiaMenuModel,
-        as: "dias",
-        include: {
-          model: ComidaMenuModel,
-          as: "comidas",
-          include: { model: DetalleComidaAlimentoModel, as: "detalles" },
-        },
-      },
+      include: this._includeArbolCompleto(),
     });
     if (!doc) return null;
+    this._ordenarArbol(doc);
+    return doc; // el controller serializa el árbol completo tal cual (RF-009/RF-0010)
+  }
 
-    // Sequelize no garantiza el orden de una colección hasMany incluida sin un
-    // ORDER BY explícito por fila del JOIN (comprobado: sin esto, "comidas"
-    // podía llegar con orden: 2 antes que orden: 1). Se ordena en memoria en
-    // vez de depender de la sintaxis de "order" anidado de Sequelize, que es
-    // frágil con include a varios niveles.
+  // Igual que obtenerMasRecientePorPaciente pero por id específico — lo usa
+  // GenerarAlertas (contexto Alerta) para evaluar un menú puntual sin
+  // depender de que sea "el más reciente" del paciente.
+  async obtenerConDetallesPorId(idMenu) {
+    const doc = await MenuModel.findOne({
+      where: { id: idMenu },
+      include: this._includeArbolCompleto(),
+    });
+    if (!doc) return null;
+    this._ordenarArbol(doc);
+    return doc;
+  }
+
+  // Historial de menús de un paciente: solo el resumen por día (nutrientes,
+  // calorías, costo ya vienen agregados en DiaMenuModel), sin bajar hasta
+  // comidas/detalles — más liviano que el árbol completo, suficiente para
+  // armar un resumen por menú (ver ListarMenusPorPaciente).
+  async listarPorPaciente(idPaciente) {
+    const docs = await MenuModel.findAll({
+      where: { idPaciente },
+      order: [["fechaGeneracion", "DESC"]],
+      include: { model: DiaMenuModel, as: "dias" },
+    });
+    for (const doc of docs) {
+      doc.dias.sort((a, b) => a.numeroDia - b.numeroDia);
+    }
+    return docs;
+  }
+
+  _includeArbolCompleto() {
+    return {
+      model: DiaMenuModel,
+      as: "dias",
+      include: {
+        model: ComidaMenuModel,
+        as: "comidas",
+        include: { model: DetalleComidaAlimentoModel, as: "detalles" },
+      },
+    };
+  }
+
+  // Sequelize no garantiza el orden de una colección hasMany incluida sin un
+  // ORDER BY explícito por fila del JOIN (comprobado: sin esto, "comidas"
+  // podía llegar con orden: 2 antes que orden: 1). Se ordena en memoria en
+  // vez de depender de la sintaxis de "order" anidado de Sequelize, que es
+  // frágil con include a varios niveles.
+  _ordenarArbol(doc) {
     doc.dias.sort((a, b) => a.numeroDia - b.numeroDia);
     for (const dia of doc.dias) {
       dia.comidas.sort((a, b) => a.orden - b.orden);
     }
-
-    return doc; // el controller serializa el árbol completo tal cual (RF-009/RF-0010)
   }
 
   async obtenerMenuConPropietario(idMenu, idNutriologo) {
@@ -168,6 +206,7 @@ class MenuRepositorySequelize {
           calorias: cambios.calorias,
           nombrePlato: cambios.nombrePlato,
           costoTotal: cambios.costoTotal,
+          nutrientes: cambios.nutrientes,
         },
         { transaction },
       );
@@ -184,8 +223,15 @@ class MenuRepositorySequelize {
         (total, c) => total + Number(c.costoTotal),
         0,
       );
+      const nuevosNutrientes = sumarNutrientes(
+        comidasDelDia.map((c) => c.nutrientes),
+      );
       await DiaMenuModel.update(
-        { caloriasTotales: nuevoTotalCalorias, costoTotalDia: nuevoTotalCosto },
+        {
+          caloriasTotales: nuevoTotalCalorias,
+          costoTotalDia: nuevoTotalCosto,
+          nutrientes: nuevosNutrientes,
+        },
         { where: { id: comida.idDiaMenu }, transaction },
       );
 
@@ -194,6 +240,7 @@ class MenuRepositorySequelize {
         calorias: cambios.calorias,
         nombrePlato: cambios.nombrePlato,
         costoTotal: cambios.costoTotal,
+        nutrientes: cambios.nutrientes,
         alimentos: cambios.alimentos,
       };
     });

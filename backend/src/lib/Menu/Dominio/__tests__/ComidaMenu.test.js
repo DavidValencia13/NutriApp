@@ -4,11 +4,34 @@ const assert = require("node:assert/strict");
 const ComidaMenu = require("../Entidades/ComidaMenu");
 const { ValidationError } = require("../Errores");
 
-const datosValidos = { idDiaMenu: 1, orden: 1, tipoComida: "Desayuno", calorias: 450 };
+const datosValidos = {
+  idDiaMenu: 1,
+  orden: 1,
+  tipoComida: "Desayuno",
+  nombrePlato: "Avena con fruta",
+  calorias: 450,
+};
 
 test("construye una ComidaMenu válida", () => {
   const comida = new ComidaMenu(datosValidos);
   assert.equal(comida.tipoComida, "Desayuno");
+  assert.equal(comida.nombrePlato, "Avena con fruta");
+});
+
+test("nutrientes es opcional", () => {
+  const sinNutrientes = new ComidaMenu(datosValidos);
+  assert.equal(sinNutrientes.nutrientes, undefined);
+
+  const nutrientes = { nutrientes: { calorias: 450 }, completo: false, camposFaltantes: [] };
+  const conNutrientes = new ComidaMenu({ ...datosValidos, nutrientes });
+  assert.equal(conNutrientes.nutrientes, nutrientes);
+});
+
+test("rechaza nombrePlato vacío", () => {
+  assert.throws(
+    () => new ComidaMenu({ ...datosValidos, nombrePlato: "" }),
+    ValidationError,
+  );
 });
 
 test("rechaza orden no positivo", () => {

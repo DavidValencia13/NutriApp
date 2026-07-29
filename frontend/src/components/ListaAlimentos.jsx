@@ -5,6 +5,7 @@ import {
 } from "../services/alimentoService";
 import FormularioAlimento from "./FormularioAlimento";
 import { IconAlertTriangle, IconLeaf } from "./Icons";
+import { labelGrupoAlimenticio } from "../constants/gruposAlimenticios";
 
 function sinRestricciones(texto) {
   return /^(ninguna?|no aplica|n\/a|-)$/i.test(texto.trim());
@@ -158,6 +159,18 @@ function ListaAlimentos({ idPaciente, paciente }) {
                   {(Number(a.precio) * Number(a.cantidad)).toFixed(2)} total (
                   {Number(a.precio).toFixed(4)}$/{a.unidadMedida})
                 </p>
+                {a.gruposAlimenticios?.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {a.gruposAlimenticios.map((g) => (
+                      <span
+                        key={g}
+                        className="text-[10px] px-1.5 py-0.5 rounded-full bg-nutri-teal/10 text-nutri-teal"
+                      >
+                        {labelGrupoAlimenticio(g)}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="flex gap-3">
                 <button

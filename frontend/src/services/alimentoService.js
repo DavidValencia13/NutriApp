@@ -27,3 +27,11 @@ export async function eliminarAlimento(idPaciente, idAlimento) {
     method: "DELETE",
   });
 }
+
+// Busca información nutricional sugerida en USDA FoodData Central (o null
+// si no se encontró nada / falló el servicio externo). Nunca guarda nada.
+export async function buscarInfoNutricional(idPaciente, nombre) {
+  return await apiFetch(
+    `/paciente/${idPaciente}/alimento/buscar-nutricion?nombre=${encodeURIComponent(nombre)}`,
+  );
+}

@@ -13,6 +13,10 @@ function FormularioPaciente({ pacienteEditar, onSuccess, onCancel }) {
     tiempoParaCocinar: "",
     restricciones: "",
     preferencias: "",
+    alergias: "",
+    enfermedades: "",
+    edad: "",
+    sexo: "",
   });
   const [error, setError] = useState("");
   const [guardando, setGuardando] = useState(false);
@@ -31,6 +35,10 @@ function FormularioPaciente({ pacienteEditar, onSuccess, onCancel }) {
         tiempoParaCocinar: pacienteEditar.tiempoParaCocinar,
         restricciones: pacienteEditar.restricciones || "",
         preferencias: pacienteEditar.preferencias || "",
+        alergias: (pacienteEditar.alergias || []).join(", "),
+        enfermedades: (pacienteEditar.enfermedades || []).join(", "),
+        edad: pacienteEditar.edad ?? "",
+        sexo: pacienteEditar.sexo || "",
       });
     }
   }, [pacienteEditar]);
@@ -52,6 +60,16 @@ function FormularioPaciente({ pacienteEditar, onSuccess, onCancel }) {
         numeroComidas: parseInt(form.numeroComidas),
         presupuesto: parseFloat(form.presupuesto),
         tiempoParaCocinar: parseInt(form.tiempoParaCocinar),
+        alergias: form.alergias
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean),
+        enfermedades: form.enfermedades
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean),
+        edad: form.edad === "" ? null : parseInt(form.edad),
+        sexo: form.sexo === "" ? null : form.sexo,
       };
 
       // Si hay un pacienteEditar, actualiza; si no, crea uno nuevo
@@ -120,6 +138,37 @@ function FormularioPaciente({ pacienteEditar, onSuccess, onCancel }) {
         </div>
       </div>
 
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <div>
+          <label className={labelClass}>Edad</label>
+          <input
+            type="number"
+            name="edad"
+            value={form.edad}
+            onChange={handleChange}
+            className={inputClass}
+            placeholder="Opcional"
+          />
+        </div>
+        <div>
+          <label className={labelClass}>Sexo</label>
+          <select
+            name="sexo"
+            value={form.sexo}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-nutri-teal"
+          >
+            <option value="">Prefiero no decir</option>
+            <option value="masculino">Masculino</option>
+            <option value="femenino">Femenino</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+      </div>
+      {/* Edad y sexo son opcionales: solo se usan para personalizar la
+          alerta de rango calórico (fórmula Mifflin-St Jeor). Sin ellos, esa
+          alerta específica no se genera, el resto de la app sigue igual. */}
+
       <div className="mb-4">
         <label className={labelClass}>Objetivo</label>
         <input
@@ -157,7 +206,7 @@ function FormularioPaciente({ pacienteEditar, onSuccess, onCancel }) {
           />
         </div>
         <div>
-          <label className={labelClass}>Presupuesto</label>
+          <label className={labelClass}>Presupuesto (semanal)</label>
           <div className="flex items-center gap-1.5">
             <input
               type="number"
@@ -182,6 +231,28 @@ function FormularioPaciente({ pacienteEditar, onSuccess, onCancel }) {
           onChange={handleChange}
           required
           className={inputClass}
+        />
+      </div>
+
+      <div className="mb-4">
+        <label className={labelClass}>Alergias</label>
+        <input
+          name="alergias"
+          value={form.alergias}
+          onChange={handleChange}
+          className={inputClass}
+          placeholder="Ej: maní, mariscos (separadas por coma)"
+        />
+      </div>
+
+      <div className="mb-4">
+        <label className={labelClass}>Enfermedades</label>
+        <input
+          name="enfermedades"
+          value={form.enfermedades}
+          onChange={handleChange}
+          className={inputClass}
+          placeholder="Ej: diabetes tipo 2, hipertensión (separadas por coma)"
         />
       </div>
 

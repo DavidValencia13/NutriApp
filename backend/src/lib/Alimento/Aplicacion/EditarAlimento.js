@@ -28,6 +28,8 @@ class EditarAlimento {
       cantidad: actualizado.cantidad,
       unidadMedida: actualizado.unidadMedida,
       precio: actualizado.precio,
+      gruposAlimenticios: actualizado.gruposAlimenticios,
+      infoNutricional: actualizado.infoNutricional,
     };
 
     return await this.alimentoRepository.updateByIdAndPaciente(

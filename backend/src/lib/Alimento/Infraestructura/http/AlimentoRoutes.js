@@ -7,6 +7,7 @@ const router = express.Router({ mergeParams: true });
 module.exports = (controller) => {
   router.post("/", controller.registrar);
   router.get("/", controller.listar);
+  router.get("/buscar-nutricion", controller.buscarNutricion);
   router.put("/:id", controller.editar);
   router.delete("/:id", controller.eliminar);
 

@@ -1,5 +1,15 @@
+const { ValidationError } = require("../Errores");
+
 class ComidaMenu {
-  constructor({ id, idDiaMenu, orden, tipoComida, nombrePlato, calorias }) {
+  constructor({
+    id,
+    idDiaMenu,
+    orden,
+    tipoComida,
+    nombrePlato,
+    calorias,
+    nutrientes,
+  }) {
     if (!Number.isInteger(orden) || orden < 1)
       throw new ValidationError("orden debe ser un entero positivo");
 
@@ -18,5 +28,11 @@ class ComidaMenu {
     this.tipoComida = tipoComida.trim();
     this.nombrePlato = nombrePlato.trim();
     this.calorias = calorias;
+    // Desglose real de macro/micronutrientes calculado a partir de los
+    // alimentos usados (ver CalculadoraNutricional) — opcional porque
+    // ComidaMenu puede construirse antes de que exista ese cálculo.
+    this.nutrientes = nutrientes;
   }
 }
+
+module.exports = ComidaMenu;

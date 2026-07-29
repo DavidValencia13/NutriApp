@@ -7,11 +7,13 @@ class AlimentoController {
     editarAlimento,
     eliminarAlimento,
     listarAlimentosPorPaciente,
+    buscarInfoNutricional,
   }) {
     this.registrarAlimento = registrarAlimento;
     this.editarAlimento = editarAlimento;
     this.eliminarAlimento = eliminarAlimento;
     this.listarAlimentosPorPaciente = listarAlimentosPorPaciente;
+    this.buscarInfoNutricional = buscarInfoNutricional;
   }
 
   registrar = async (req, res, next) => {
@@ -72,6 +74,25 @@ class AlimentoController {
       );
       res.json(alimentos);
     } catch (error) {
+      this._manejarError(error, res, next);
+    }
+  };
+
+  // Sugerencia de información nutricional desde una fuente externa (USDA
+  // FoodData Central). Nunca guarda nada; el nutriólogo revisa/edita el
+  // resultado antes de registrar el alimento. Un "no encontrado" o una
+  // falla del servicio externo no deben tratarse como error 500 — se
+  // responde con éxito y el frontend cae a captura manual.
+  buscarNutricion = async (req, res, next) => {
+    try {
+      const nombre = req.query.nombre;
+      const resultado = await this.buscarInfoNutricional.ejecutar(nombre);
+      res.json(resultado);
+    } catch (error) {
+      if (error instanceof AppError && error.statusCode >= 500) {
+        console.error("Búsqueda nutricional externa falló:", error.message);
+        return res.json(null);
+      }
       this._manejarError(error, res, next);
     }
   };

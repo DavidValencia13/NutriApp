@@ -1,3 +1,5 @@
+const SEXOS_VALIDOS = ["masculino", "femenino", "otro"];
+
 // Entidad principal del dominio Paciente
 // (entidad = clase que representa un objeto real del negocio, con sus reglas de validación)
 class Paciente {
@@ -14,6 +16,11 @@ class Paciente {
     tiempoParaCocinar,
     restricciones,
     preferencias,
+    alergias,
+    enfermedades,
+    pesoInicial,
+    edad,
+    sexo,
   }) {
     // Validaciones (reglas de negocio: qué datos son obligatorios y válidos)
     if (!idNutriologo)
@@ -41,6 +48,30 @@ class Paciente {
     if (!tiempoParaCocinar || tiempoParaCocinar < 0)
       throw new Error("El tiempo para cocinar no puede ser negativo");
 
+    if (alergias !== undefined && !Array.isArray(alergias))
+      throw new Error("Las alergias deben ser una lista");
+
+    if (enfermedades !== undefined && !Array.isArray(enfermedades))
+      throw new Error("Las enfermedades deben ser una lista");
+
+    // pesoInicial se fija una sola vez: en el registro, si no viene, se toma
+    // el peso actual. En ediciones posteriores, el caso de uso EditarPaciente
+    // siempre reenvía el pesoInicial ya existente, así que nunca se
+    // recalcula a partir de un peso más reciente.
+    const pesoInicialNum =
+      pesoInicial === undefined || pesoInicial === null ? peso : pesoInicial;
+    if (!pesoInicialNum || pesoInicialNum <= 0)
+      throw new Error("El peso inicial debe ser mayor a 0");
+
+    // edad/sexo: opcionales. Habilitan un cálculo calórico personalizado
+    // (Mifflin-St Jeor) en la evaluación de alertas; sin ellos, esa alerta
+    // específica simplemente no se genera, el resto del sistema sigue igual.
+    if (edad !== undefined && edad !== null && (!Number.isInteger(edad) || edad <= 0 || edad >= 130))
+      throw new Error("La edad debe ser un entero entre 1 y 129");
+
+    if (sexo !== undefined && sexo !== null && !SEXOS_VALIDOS.includes(sexo))
+      throw new Error(`El sexo debe ser uno de: ${SEXOS_VALIDOS.join(", ")}`);
+
     // Asignar valores
     this.id = id;
     this.idNutriologo = idNutriologo;
@@ -54,7 +85,13 @@ class Paciente {
     this.tiempoParaCocinar = tiempoParaCocinar;
     this.restricciones = restricciones ? restricciones.trim() : "";
     this.preferencias = preferencias ? preferencias.trim() : "";
+    this.alergias = alergias || [];
+    this.enfermedades = enfermedades || [];
+    this.pesoInicial = pesoInicialNum;
+    this.edad = edad ?? undefined;
+    this.sexo = sexo ?? undefined;
   }
 }
 
 module.exports = Paciente;
+module.exports.SEXOS_VALIDOS = SEXOS_VALIDOS;

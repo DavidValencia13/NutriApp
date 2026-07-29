@@ -14,6 +14,9 @@ const DiaMenuModel = sequelize.define(
       defaultValue: 0,
       validate: { min: 0 },
     },
+    // Suma de nutrientes de sus comidas: { nutrientes: {...}, completo, camposFaltantes }.
+    // Nullable y sin default: filas anteriores a este campo simplemente no lo tienen.
+    nutrientes: { type: DataTypes.JSONB, allowNull: true },
   },
   {
     timestamps: true,
