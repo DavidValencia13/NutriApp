@@ -106,11 +106,27 @@ function sumarNutrientes(listaDeResultados) {
   return { nutrientes, completo, camposFaltantes: [...camposFaltantesSet] };
 }
 
+// Deriva la lista de alimentos (con sus datos completos del catálogo) que
+// aparecen usados en algún detalle del árbol de un menú (dias→comidas→
+// detalles), cruzando contra el catálogo completo del paciente. Reutilizado
+// tanto por Alerta (GenerarAlertas) como por Sugerencia (ObtenerSugerenciasMenu).
+function alimentosUsadosEnMenu(menu, alimentosDisponibles) {
+  const alimentosPorId = new Map(alimentosDisponibles.map((a) => [a.id.toString(), a]));
+  const idsUsados = new Set();
+  for (const dia of menu.dias) {
+    for (const comida of dia.comidas) {
+      for (const detalle of comida.detalles) idsUsados.add(detalle.idAlimento);
+    }
+  }
+  return [...idsUsados].map((id) => alimentosPorId.get(id)).filter(Boolean);
+}
+
 module.exports = {
   gramosEquivalentes,
   calcularNutrientesDetalle,
   sumarNutrientes,
   cantidadEsPlausible,
+  alimentosUsadosEnMenu,
   GRAMOS_POR_UNIDAD_MEDIDA,
   LIMITE_CANTIDAD_POR_UNIDAD,
 };

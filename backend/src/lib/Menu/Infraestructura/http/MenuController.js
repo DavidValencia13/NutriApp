@@ -2,12 +2,13 @@ const { AppError } = require("../../Dominio/Errores");
 const { sumarNutrientes } = require("../../Dominio/Servicios/CalculadoraNutricional");
 
 class MenuController {
-  constructor({ generarMenuSemanal, obtenerMenuPorPaciente, ajustarComidaMenu, aprobarMenu, listarMenusPorPaciente }) {
+  constructor({ generarMenuSemanal, obtenerMenuPorPaciente, ajustarComidaMenu, aprobarMenu, listarMenusPorPaciente, calcularNutrientesPreviewComida }) {
     this.generarMenuSemanal = generarMenuSemanal;
     this.obtenerMenuPorPaciente = obtenerMenuPorPaciente;
     this.ajustarComidaMenu = ajustarComidaMenu;
     this.aprobarMenu = aprobarMenu;
     this.listarMenusPorPaciente = listarMenusPorPaciente;
+    this.calcularNutrientesPreviewComida = calcularNutrientesPreviewComida;
   }
 
   generar = async (req, res, next) => {
@@ -53,6 +54,23 @@ class MenuController {
     try {
       const menus = await this.listarMenusPorPaciente.ejecutar(req.idPaciente, req.nutriologo.id);
       res.json(menus);
+    } catch (error) {
+      this._manejarError(error, res, next);
+    }
+  };
+
+  previewNutrientes = async (req, res, next) => {
+    try {
+      const idMenu = Number(req.params.idMenu);
+      if (!Number.isInteger(idMenu) || idMenu <= 0) {
+        return res.status(400).json({ message: "El id del menú no es válido" });
+      }
+      const resultado = await this.calcularNutrientesPreviewComida.ejecutar(
+        idMenu,
+        req.nutriologo.id,
+        req.body?.alimentos || [],
+      );
+      res.json(resultado);
     } catch (error) {
       this._manejarError(error, res, next);
     }

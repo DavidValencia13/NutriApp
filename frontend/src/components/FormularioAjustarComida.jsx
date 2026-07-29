@@ -1,6 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ajustarComida } from "../services/menuService";
 import { listarAlimentos } from "../services/alimentoService";
+import { calcularPreviewNutrientes } from "../services/previewNutrientesService";
+import FeedbackNutricionalComida from "./FeedbackNutricionalComida";
 
 function FormularioAjustarComida({ idPaciente, comida, onSuccess, onCancel }) {
   const [alimentosDisponibles, setAlimentosDisponibles] = useState([]);
@@ -15,10 +17,49 @@ function FormularioAjustarComida({ idPaciente, comida, onSuccess, onCancel }) {
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
+  const [preview, setPreview] = useState(null);
+  const [cargandoPreview, setCargandoPreview] = useState(false);
+  const [errorPreview, setErrorPreview] = useState("");
+  const debounceTimer = useRef(null);
 
   useEffect(() => {
     cargarAlimentos();
   }, []);
+
+  // Debounce para calcular preview mientras edita
+  useEffect(() => {
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+
+    if (filas.length === 0) {
+      setPreview(null);
+      return;
+    }
+
+    setCargandoPreview(true);
+    setErrorPreview("");
+
+    debounceTimer.current = setTimeout(async () => {
+      try {
+        const result = await calcularPreviewNutrientes(
+          idPaciente,
+          comida.idMenu,
+          filas.map((f) => ({
+            idAlimento: f.idAlimento,
+            cantidad: parseFloat(f.cantidad) || 0,
+          })),
+        );
+        setPreview(result);
+      } catch (err) {
+        setErrorPreview(err.message);
+      } finally {
+        setCargandoPreview(false);
+      }
+    }, 500);
+
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
+  }, [filas, idPaciente, comida.idMenu]);
 
   async function cargarAlimentos() {
     try {
@@ -162,7 +203,13 @@ function FormularioAjustarComida({ idPaciente, comida, onSuccess, onCancel }) {
         + Agregar alimento
       </button>
 
-      <div className="flex justify-end gap-2 mt-2">
+      <FeedbackNutricionalComida
+        preview={preview}
+        cargando={cargandoPreview}
+        error={errorPreview}
+      />
+
+      <div className="flex justify-end gap-2 mt-4">
         <button
           type="button"
           onClick={onCancel}

@@ -9,6 +9,7 @@ const ObtenerMenuPorPaciente = require("../../Aplicacion/ObtenerMenuPorPaciente"
 const AjustarComidaMenu = require("../../Aplicacion/AjustarComidaMenu");
 const AprobarMenu = require("../../Aplicacion/AprobarMenu");
 const ListarMenusPorPaciente = require("../../Aplicacion/ListarMenusPorPaciente");
+const CalcularNutrientesPreviewComida = require("../../Aplicacion/CalcularNutrientesPreviewComida");
 
 const authMiddleware = require("../../../Nutriologo/Infraestructura/http/authMiddleware");
 const verificarPropietarioPaciente = require("../../../Alimento/Infraestructura/http/verificarPropietarioPaciente");
@@ -47,6 +48,7 @@ module.exports = function registerMenuModule(app) {
     ajustarComidaMenu: new AjustarComidaMenu({ menuRepository: menuRepo, listarAlimentosPorPaciente, generarAlertas }),
     aprobarMenu: new AprobarMenu({ menuRepository: menuRepo, generarAlertas }),
     listarMenusPorPaciente: new ListarMenusPorPaciente(pacienteRepo, menuRepo),
+    calcularNutrientesPreviewComida: new CalcularNutrientesPreviewComida({ menuRepository: menuRepo, listarAlimentosPorPaciente, pacienteRepository: pacienteRepo }),
   });
 
   app.use(

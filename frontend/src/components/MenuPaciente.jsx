@@ -4,6 +4,10 @@ import { listarRecomendaciones } from "../services/recomendacionService";
 import Modal from "./Modal";
 import FormularioAjustarComida from "./FormularioAjustarComida";
 import AlertasMenu from "./AlertasMenu";
+import SugerenciasMenu from "./SugerenciasMenu";
+import CumplimientoMenu from "./CumplimientoMenu";
+import EfectividadMenu from "./EfectividadMenu";
+import ReporteNutricional from "./ReporteNutricional";
 import { IconAlertTriangle } from "./Icons";
 
 // Un solo emoji por momento del día (desayuno/almuerzo/cena/merienda) — se
@@ -142,9 +146,18 @@ function MenuPaciente({ idPaciente, presupuesto }) {
                 Aprobar menú
               </button>
             )}
+            <span className="ml-auto">
+              <ReporteNutricional idPaciente={idPaciente} idMenu={menu.id} />
+            </span>
           </div>
 
+          <EfectividadMenu idPaciente={idPaciente} idMenu={menu.id} />
+
           <AlertasMenu idPaciente={idPaciente} idMenu={menu.id} onCambio={cargarDatos} />
+
+          <SugerenciasMenu idPaciente={idPaciente} idMenu={menu.id} />
+
+          <CumplimientoMenu idPaciente={idPaciente} idMenu={menu.id} dias={menu.dias} />
 
           {presupuesto !== undefined && (
             <ResumenPresupuesto dias={menu.dias || []} presupuesto={presupuesto} />
