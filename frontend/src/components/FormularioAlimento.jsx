@@ -9,6 +9,7 @@ import {
   labelGrupoAlimenticio,
 } from "../constants/gruposAlimenticios";
 import { CATALOGO_ALIMENTOS_BORRADOR } from "../constants/catalogoAlimentosBorrador";
+import IndicadorPresupuesto from "./IndicadorPresupuesto";
 
 // Quita tildes/mayúsculas para comparar texto libre (preferencias) sin
 // depender de cómo lo haya escrito el nutriólogo.
@@ -62,10 +63,10 @@ const UNIDADES_MEDIDA = [
   { value: "unidad", label: "Unidad" },
 ];
 
-// Solo las unidades de peso permiten calcular "total para lo que compré": no
-// hay forma confiable de convertir ml/l/unidad a gramos sin conocer densidad
-// o peso por unidad, así que para esas se sigue mostrando por 100 g/porción.
-const GRAMOS_POR_UNIDAD = { g: 1, kg: 1000, lb: 453.592 };
+// Las unidades de volumen usan una equivalencia aproximada de 1 ml ≈ 1 g.
+// La interfaz lo advierte porque la densidad exacta depende del producto.
+const BASE_POR_UNIDAD = { g: 1, kg: 1000, lb: 453.592, ml: 1, l: 1000 };
+const UNIDADES_VOLUMEN = new Set(["ml", "l"]);
 
 // Debe coincidir con CAMPOS_NUTRIENTES del backend
 // (backend/src/lib/Alimento/Dominio/Entidades/Alimento.js)
@@ -108,12 +109,39 @@ const NUTRIENTES_VACIOS = GRUPOS_NUTRIENTES.flatMap((g) => g.campos).reduce(
   {},
 );
 
+const APORTES_DESTACABLES = [
+  { key: "proteinas", label: "proteína", minimo: 5 },
+  { key: "fibra", label: "fibra", minimo: 2.5 },
+  { key: "calcio", label: "calcio", minimo: 100 },
+  { key: "hierro", label: "hierro", minimo: 1.5 },
+  { key: "vitaminaC", label: "vitamina C", minimo: 10 },
+  { key: "potasio", label: "potasio", minimo: 300 },
+];
+
+function mensajeAporteNutricional(info) {
+  const aportes = APORTES_DESTACABLES
+    .filter(({ key, minimo }) => Number(info?.[key]) >= minimo)
+    .sort((a, b) => Number(info[b.key]) / b.minimo - Number(info[a.key]) / a.minimo)
+    .slice(0, 2)
+    .map(({ label }) => label);
+
+  if (aportes.length === 0) {
+    return "Información nutricional disponible para revisar.";
+  }
+  if (aportes.length === 1) {
+    return `Aporte destacado: ${aportes[0]}.`;
+  }
+  return `Aportes destacados: ${aportes[0]} y ${aportes[1]}.`;
+}
+
 function FormularioAlimento({
   idPaciente,
   alimentoEditar,
   gruposIniciales,
   paciente,
   cobertura,
+  costoCatalogo = 0,
+  presupuesto,
   onSuccess,
   onCancel,
 }) {
@@ -137,6 +165,8 @@ function FormularioAlimento({
   const [buscandoNutricion, setBuscandoNutricion] = useState(false);
   const [mensajeBusqueda, setMensajeBusqueda] = useState("");
   const [estadoBusqueda, setEstadoBusqueda] = useState("aviso");
+  const [tipoMedida, setTipoMedida] = useState(null);
+  const [sugerenciasBusqueda, setSugerenciasBusqueda] = useState([]);
   // Preferencia de vista de los nutrientes: total para lo comprado (por
   // defecto) o por 100 g/porción. Los valores GUARDADOS (estado `nutrientes`)
   // siempre quedan en base 100 g/porción — esto es solo una conversión de
@@ -172,6 +202,9 @@ function FormularioAlimento({
         precioTotal: alimentoEditar.precio * alimentoEditar.cantidad,
       });
       setGruposAlimenticios(alimentoEditar.gruposAlimenticios || []);
+      setTipoMedida(
+        UNIDADES_VOLUMEN.has(alimentoEditar.unidadMedida) ? "volumen" : "peso",
+      );
       const info = alimentoEditar.infoNutricional;
       if (info) {
         setMostrarNutricional(true);
@@ -202,15 +235,39 @@ function FormularioAlimento({
   // unidad es de peso: g/kg/lb). Sin esto no hay forma confiable de mostrar
   // "el total para lo que compré".
   const puedeCalcularTotal =
-    Boolean(GRAMOS_POR_UNIDAD[form.unidadMedida]) && Number(form.cantidad) > 0;
+    Boolean(BASE_POR_UNIDAD[form.unidadMedida]) && Number(form.cantidad) > 0;
   const gramosTotalCantidad = puedeCalcularTotal
-    ? Number(form.cantidad) * GRAMOS_POR_UNIDAD[form.unidadMedida]
+    ? Number(form.cantidad) * BASE_POR_UNIDAD[form.unidadMedida]
     : 0;
   // Base sobre la que están guardados los valores en `nutrientes` ahora
   // mismo: 100 g, o los gramos de una porción si refUnidad es "porcion".
   const gramosBase = refUnidad === "porcion" ? Number(gramosPorPorcion) || 0 : 100;
   const mostrandoTotal = verTotal && puedeCalcularTotal;
   const factorVista = mostrandoTotal && gramosBase > 0 ? gramosTotalCantidad / gramosBase : 1;
+  const tieneDatosNutricionales = Object.values(nutrientes).some(
+    (valor) => valor !== "" && valor !== null && valor !== undefined,
+  );
+  const costoAnterior = alimentoEditar
+    ? Number(alimentoEditar.cantidad || 0) * Number(alimentoEditar.precio || 0)
+    : 0;
+  const precioTotalIngresado = Number(form.precioTotal);
+  const costoProyectado =
+    Number(costoCatalogo) -
+    costoAnterior +
+    (Number.isFinite(precioTotalIngresado) ? precioTotalIngresado : 0);
+  const presupuestoExcedido =
+    Number(presupuesto) > 0 && costoProyectado > Number(presupuesto);
+  const precioPor100g =
+    form.unidadMedida === "g" && Number(form.cantidad) > 0
+      ? (precioTotalIngresado / Number(form.cantidad)) * 100
+      : 0;
+  const precioPorUnidad =
+    Number(form.cantidad) > 0 ? precioTotalIngresado / Number(form.cantidad) : 0;
+  const unidadesDisponibles = UNIDADES_MEDIDA.filter((unidad) => {
+    if (tipoMedida === "volumen") return UNIDADES_VOLUMEN.has(unidad.value);
+    if (tipoMedida === "peso") return !UNIDADES_VOLUMEN.has(unidad.value);
+    return true;
+  });
 
   // Convierte el valor guardado (por 100 g/porción) a lo que corresponde
   // mostrar según la vista activa, solo para pintarlo en el input.
@@ -239,22 +296,47 @@ function FormularioAlimento({
   }
 
   async function handleBuscarNutricion(nombreOverride) {
-    const nombre = nombreOverride ?? form.nombre;
+    const nombre =
+      typeof nombreOverride === "string" ? nombreOverride : form.nombre;
     if (!nombre || nombre.trim().length === 0) return;
     setMensajeBusqueda("");
+    setSugerenciasBusqueda([]);
     setEstadoBusqueda("aviso");
     setBuscandoNutricion(true);
     try {
       const resultado = await buscarInfoNutricional(idPaciente, nombre);
       if (!resultado) {
         setMensajeBusqueda(
-          "No se encontraron datos automáticos para este alimento, complétalo manualmente.",
+          "No encontramos una coincidencia exacta. Prueba una sugerencia o completa los datos manualmente.",
+        );
+        const grupo = gruposAlimenticios[0] || grupoSeleccionado;
+        setSugerenciasBusqueda(
+          CATALOGO_ALIMENTOS_BORRADOR.filter(
+            (item) =>
+              (!grupo || item.gruposAlimenticios.includes(grupo)) &&
+              normalizar(item.nombre) !== normalizar(nombre),
+          ).slice(0, 3),
         );
         return;
       }
       setMostrarNutricional(true);
       setEstadoBusqueda("exito");
       setRefUnidad("g");
+      setTipoMedida(resultado.tipoMedicion);
+      setForm((prev) => {
+        if (resultado.tipoMedicion === "volumen") {
+          return {
+            ...prev,
+            unidadMedida: UNIDADES_VOLUMEN.has(prev.unidadMedida)
+              ? prev.unidadMedida
+              : "l",
+          };
+        }
+        if (UNIDADES_VOLUMEN.has(prev.unidadMedida)) {
+          return { ...prev, unidadMedida: "g" };
+        }
+        return prev;
+      });
       setNutrientes((prev) => ({
         ...prev,
         ...Object.fromEntries(
@@ -262,10 +344,11 @@ function FormularioAlimento({
         ),
       }));
       setMensajeBusqueda(
-        "Datos nutricionales encontrados correctamente en FoodData Central, una fuente de referencia confiable. Confirma que correspondan a la presentación del alimento.",
+        mensajeAporteNutricional(resultado),
       );
     } catch {
       setEstadoBusqueda("aviso");
+      setSugerenciasBusqueda([]);
       setMensajeBusqueda(
         "No se pudo completar la búsqueda automática, complétalo manualmente.",
       );
@@ -285,7 +368,16 @@ function FormularioAlimento({
   // abajo), y busca en USDA con el término en inglés ya preparado para cada
   // alimento — así funciona aunque la traducción por IA no esté disponible.
   function elegirAlimentoSugerido(item) {
-    setForm((prev) => ({ ...prev, nombre: item.nombre }));
+    setTipoMedida(item.tipoMedida || null);
+    setForm((prev) => ({
+      ...prev,
+      nombre: item.nombre,
+      unidadMedida:
+        item.tipoMedida === "volumen" &&
+        !UNIDADES_VOLUMEN.has(prev.unidadMedida)
+          ? "l"
+          : prev.unidadMedida,
+    }));
     setGruposAlimenticios(item.gruposAlimenticios);
     setOrigenCatalogo(true);
     setPaso("form");
@@ -305,6 +397,14 @@ function FormularioAlimento({
     setError("");
     if (gruposAlimenticios.length === 0) {
       setError("Selecciona al menos un grupo alimenticio");
+      return;
+    }
+    if (presupuestoExcedido) {
+      setError(
+        `El costo del catálogo superaría el presupuesto semanal por $${(
+          costoProyectado - Number(presupuesto)
+        ).toFixed(2)}. Ajusta el precio o la cantidad antes de guardar.`,
+      );
       return;
     }
     setGuardando(true);
@@ -500,6 +600,20 @@ function FormularioAlimento({
               <span className="mr-1 font-semibold">Fuente USDA:</span>
             )}
             {mensajeBusqueda}
+            {sugerenciasBusqueda.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {sugerenciasBusqueda.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => elegirAlimentoSugerido(item)}
+                    className="rounded-full border border-amber-300 bg-white px-2.5 py-1 text-xs font-medium text-amber-800 hover:bg-amber-100"
+                  >
+                    {item.nombre}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -574,7 +688,7 @@ function FormularioAlimento({
             <option value="" disabled>
               Selecciona...
             </option>
-            {UNIDADES_MEDIDA.map((u) => (
+            {unidadesDisponibles.map((u) => (
               <option key={u.value} value={u.value}>
                 {u.label}
               </option>
@@ -587,6 +701,11 @@ function FormularioAlimento({
                 <option value={form.unidadMedida}>{form.unidadMedida}</option>
               )}
           </select>
+          {tipoMedida === "volumen" && (
+            <p className="mt-1 text-xs text-nutri-teal">
+              Alimento líquido: registra la cantidad en ml o l.
+            </p>
+          )}
         </div>
       </div>
 
@@ -612,8 +731,23 @@ function FormularioAlimento({
             que es lo que realmente se guarda y usa la IA para calcular costos. */}
         {form.cantidad > 0 && form.precioTotal !== "" && (
           <p className="text-xs text-gray-400 mt-1">
-            ≈ {(parseFloat(form.precioTotal) / parseFloat(form.cantidad)).toFixed(4)}{" "}
-            $ por {form.unidadMedida || "unidad"}
+            {form.unidadMedida === "g"
+              ? `≈ $${precioPor100g.toFixed(2)} por 100 g`
+              : `≈ $${precioPorUnidad.toFixed(4)} por ${form.unidadMedida || "unidad"}`}
+          </p>
+        )}
+      </div>
+
+      <div className="mb-4">
+        <IndicadorPresupuesto
+          costo={costoProyectado}
+          presupuesto={presupuesto}
+          titulo="Presupuesto después de guardar"
+        />
+        {precioPor100g > Number(presupuesto) && Number(presupuesto) > 0 && (
+          <p className="mt-2 rounded-lg bg-nutri-pink/10 px-3 py-2 text-xs font-medium text-nutri-pink">
+            Revisa la cantidad o la unidad: con estos datos, 100 g costarían $
+            {precioPor100g.toFixed(2)}.
           </p>
         )}
       </div>
@@ -624,70 +758,50 @@ function FormularioAlimento({
           onClick={() => setMostrarNutricional((v) => !v)}
           className="text-sm text-nutri-teal hover:underline"
         >
-          {mostrarNutricional ? "− Ocultar" : "+ Agregar"} información
-          nutricional (opcional)
+          {mostrarNutricional
+            ? "− Ocultar detalles nutricionales"
+            : tieneDatosNutricionales
+              ? "Ver detalles nutricionales"
+              : "+ Completar datos nutricionales manualmente (opcional)"}
         </button>
 
         {mostrarNutricional && (
           <div className="mt-3 border border-gray-200 rounded-lg p-3">
-            <label className={labelClass}>Mostrando</label>
-            <div className="flex flex-wrap gap-1.5 mb-2">
+            <h3 className="mb-3 text-sm font-semibold text-nutri-navy">
+              Composición nutricional
+            </h3>
+            <label htmlFor="base-nutricional" className={labelClass}>
+              Presentación de los valores
+            </label>
+            <select
+              id="base-nutricional"
+              value={mostrandoTotal ? "total" : "referencia"}
+              onChange={(e) => setVerTotal(e.target.value === "total")}
+              className="mb-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-nutri-teal sm:w-auto"
+            >
               {puedeCalcularTotal && (
-                <button
-                  type="button"
-                  onClick={() => setVerTotal(true)}
-                  className={`text-xs px-2.5 py-1 rounded-full border ${
-                    mostrandoTotal
-                      ? "bg-nutri-teal text-white border-nutri-teal"
-                      : "border-gray-300 text-gray-600"
-                  }`}
-                >
-                  Total para {form.cantidad} {form.unidadMedida}
-                </button>
+                <option value="total">
+                  Aporte nutricional total ({form.cantidad} {form.unidadMedida})
+                </option>
               )}
-              <button
-                type="button"
-                onClick={() => setVerTotal(false)}
-                className={`text-xs px-2.5 py-1 rounded-full border ${
-                  !mostrandoTotal
-                    ? "bg-nutri-teal text-white border-nutri-teal"
-                    : "border-gray-300 text-gray-600"
-                }`}
-              >
-                Por 100 g / porción
-              </button>
-            </div>
-
-            {!mostrandoTotal && (
-              <div className="flex items-center gap-3 mb-1">
-                <select
-                  value={refUnidad}
-                  onChange={(e) => setRefUnidad(e.target.value)}
-                  className="border border-gray-300 rounded-lg px-2 py-1 text-sm"
-                >
-                  <option value="g">100 gramos</option>
-                  <option value="porcion">porción</option>
-                </select>
-                {refUnidad === "porcion" && (
-                  <input
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    value={gramosPorPorcion}
-                    onChange={(e) => setGramosPorPorcion(e.target.value)}
-                    placeholder="gramos por porción"
-                    className="w-40 border border-gray-300 rounded-lg px-2 py-1 text-sm"
-                    required={refUnidad === "porcion"}
-                  />
-                )}
-              </div>
-            )}
+              <option value="referencia">
+                {refUnidad === "porcion"
+                  ? "Valores nutricionales por porción"
+                  : tipoMedida === "volumen"
+                    ? "Composición nutricional por 100 ml (aprox.)"
+                    : "Composición nutricional por 100 g"}
+              </option>
+            </select>
             <p className="text-xs text-gray-400 mb-3">
               {mostrandoTotal
-                ? `Valores totales para ${form.cantidad} ${form.unidadMedida} de este alimento.`
+                ? "Nutrientes calculados para toda la cantidad registrada."
                 : puedeCalcularTotal
-                  ? "Referencia estándar de etiqueta nutricional, independiente de la cantidad comprada."
-                  : "Para ver el total según lo comprado, usa una unidad de peso (g, kg o lb) arriba."}
+                  ? tipoMedida === "volumen"
+                    ? "Referencia estimada con 1 ml ≈ 1 g; la densidad del producto puede modificar el valor real."
+                    : "Referencia estandarizada para analizar y comparar alimentos."
+                  : tipoMedida === "volumen"
+                    ? "Usa ml o l para calcular el aporte nutricional total."
+                    : "Usa una unidad de peso (g, kg o lb) para calcular el aporte total."}
             </p>
 
             {GRUPOS_NUTRIENTES.map((grupo) => (

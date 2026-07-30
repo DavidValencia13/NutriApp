@@ -19,6 +19,12 @@ class NotFoundError extends AppError {
   }
 }
 
+class ConflictError extends AppError {
+  constructor(message) {
+    super(message, 409);
+  }
+}
+
 // Para fallas de servicios externos (ej. USDA FoodData Central caído o sin
 // responder): nunca debe bloquear el registro manual, solo se usa para que
 // el controller le avise al frontend que la búsqueda automática falló.
@@ -28,4 +34,10 @@ class ServicioExternoError extends AppError {
   }
 }
 
-module.exports = { AppError, ValidationError, NotFoundError, ServicioExternoError };
+module.exports = {
+  AppError,
+  ValidationError,
+  NotFoundError,
+  ConflictError,
+  ServicioExternoError,
+};

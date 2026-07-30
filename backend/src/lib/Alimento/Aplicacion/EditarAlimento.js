@@ -1,5 +1,5 @@
 const Alimento = require("../Dominio/Entidades/Alimento");
-const { NotFoundError } = require("../Dominio/Errores");
+const { NotFoundError, ConflictError } = require("../Dominio/Errores");
 
 // Caso de uso: editar un alimento existente de un paciente
 class EditarAlimento {
@@ -21,6 +21,18 @@ class EditarAlimento {
       id,
       idPaciente,
     });
+
+    const duplicado =
+      await this.alimentoRepository.findByNombreAndPaciente(
+        actualizado.nombre,
+        idPaciente,
+        id,
+      );
+    if (duplicado) {
+      throw new ConflictError(
+        `"${actualizado.nombre}" ya está registrado para este paciente. Edita el alimento existente en lugar de duplicarlo.`,
+      );
+    }
 
     // Solo los campos de negocio pasan al repositorio; nunca id/idPaciente/timestamps
     const cambios = {

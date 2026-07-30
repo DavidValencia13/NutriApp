@@ -7,11 +7,15 @@ const { ValidationError, NotFoundError } = require("../../Dominio/Errores");
 function crearRepoFalso(existente) {
   return {
     llamadasUpdate: [],
+    duplicado: null,
     async findByIdAndPaciente(id, idPaciente) {
       if (!existente) return null;
       if (existente.id !== id || existente.idPaciente !== idPaciente)
         return null;
       return existente;
+    },
+    async findByNombreAndPaciente() {
+      return this.duplicado;
     },
     async updateByIdAndPaciente(id, idPaciente, cambios) {
       this.llamadasUpdate.push({ id, idPaciente, cambios });
@@ -80,4 +84,16 @@ test("llama a updateByIdAndPaciente con (id, idPaciente, cambios) solo con campo
     "unidadMedida",
   ]);
   assert.equal(llamada.cambios.nombre, "Papa");
+});
+
+test("rechaza renombrar un alimento con el nombre de otro del paciente", async () => {
+  const repo = crearRepoFalso(alimentoExistente);
+  repo.duplicado = { id: "otro-id", idPaciente: 1, nombre: "Papa" };
+  const caso = new EditarAlimento(repo);
+
+  await assert.rejects(
+    () => caso.ejecutar("abc123", 1, { nombre: "Papa" }),
+    (error) => error.statusCode === 409,
+  );
+  assert.equal(repo.llamadasUpdate.length, 0);
 });

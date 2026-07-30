@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
 import { generarMenu, obtenerMenu, aprobarMenu } from "../services/menuService";
-import { listarRecomendaciones } from "../services/recomendacionService";
 import Modal from "./Modal";
 import FormularioAjustarComida from "./FormularioAjustarComida";
-import SugerenciasMenu from "./SugerenciasMenu";
 import EfectividadMenu from "./EfectividadMenu";
 import { IconAlertTriangle } from "./Icons";
 
@@ -26,8 +24,8 @@ function iconoMomento(tipoComida) {
 
 function MenuPaciente({ idPaciente, presupuesto }) {
   const [menu, setMenu] = useState(null);
-  const [recomendaciones, setRecomendaciones] = useState([]);
   const [cargando, setCargando] = useState(true);
+  const [generando, setGenerando] = useState(false);
   const [error, setError] = useState("");
   const [comidaEditar, setComidaEditar] = useState(null);
 
@@ -39,12 +37,8 @@ function MenuPaciente({ idPaciente, presupuesto }) {
     setCargando(true);
     setError("");
     try {
-      const [menuData, recomendacionesData] = await Promise.all([
-        obtenerMenu(idPaciente),
-        listarRecomendaciones(idPaciente),
-      ]);
+      const menuData = await obtenerMenu(idPaciente);
       setMenu(menuData);
-      setRecomendaciones(recomendacionesData);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -53,12 +47,16 @@ function MenuPaciente({ idPaciente, presupuesto }) {
   }
 
   async function handleGenerar() {
+    if (generando) return;
     setError("");
+    setGenerando(true);
     try {
       await generarMenu(idPaciente);
       await cargarDatos();
     } catch (err) {
       setError(err.message);
+    } finally {
+      setGenerando(false);
     }
   }
 
@@ -92,9 +90,10 @@ function MenuPaciente({ idPaciente, presupuesto }) {
 
       <button
         onClick={handleGenerar}
-        className="bg-nutri-teal text-white px-4 py-2 rounded hover:bg-nutri-navy mb-4"
+        disabled={generando}
+        className="bg-nutri-teal text-white px-4 py-2 rounded hover:bg-nutri-navy mb-4 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        Generar menú semanal
+        {generando ? "Generando menú..." : "Generar menú semanal"}
       </button>
 
       {!menu ? (
@@ -129,8 +128,6 @@ function MenuPaciente({ idPaciente, presupuesto }) {
           </div>
 
           <EfectividadMenu idPaciente={idPaciente} idMenu={menu.id} />
-
-          <SugerenciasMenu idPaciente={idPaciente} idMenu={menu.id} />
 
           {presupuesto !== undefined && (
             <ResumenPresupuesto dias={menu.dias || []} presupuesto={presupuesto} />
@@ -221,17 +218,6 @@ function MenuPaciente({ idPaciente, presupuesto }) {
               </div>
             ))}
           </div>
-        </div>
-      )}
-
-      {recomendaciones.length > 0 && (
-        <div className="mt-4">
-          <p className="font-semibold">Recomendaciones</p>
-          <ul className="list-disc ml-5 text-sm">
-            {recomendaciones.map((r) => (
-              <li key={r.id}>{r.texto}</li>
-            ))}
-          </ul>
         </div>
       )}
 

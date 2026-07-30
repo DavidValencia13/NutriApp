@@ -63,16 +63,16 @@ export const CATALOGO_ALIMENTOS_BORRADOR = [
   { id: "zapallo", nombre: "Zapallo (calabaza)", grupoPrincipal: "verduras_hortalizas", gruposAlimenticios: ["verduras_hortalizas"] , terminosBusquedaUsda: ["squash, winter, cooked"]},
 
   // ---- Lácteos ----
-  { id: "leche-entera", nombre: "Leche entera", grupoPrincipal: "lacteos", gruposAlimenticios: ["lacteos"] , terminosBusquedaUsda: ["milk, whole"]},
-  { id: "leche-descremada", nombre: "Leche descremada", grupoPrincipal: "lacteos", gruposAlimenticios: ["lacteos"] , terminosBusquedaUsda: ["milk, nonfat, skim"]},
+  { id: "leche-entera", nombre: "Leche entera", grupoPrincipal: "lacteos", gruposAlimenticios: ["lacteos"] , terminosBusquedaUsda: ["milk, whole"], tipoMedida: "volumen"},
+  { id: "leche-descremada", nombre: "Leche descremada", grupoPrincipal: "lacteos", gruposAlimenticios: ["lacteos"] , terminosBusquedaUsda: ["milk, nonfat, skim"], tipoMedida: "volumen"},
   { id: "yogur-natural", nombre: "Yogur natural", grupoPrincipal: "lacteos", gruposAlimenticios: ["lacteos"] , terminosBusquedaUsda: ["yogurt, plain"]},
   { id: "queso-fresco", nombre: "Queso fresco", grupoPrincipal: "lacteos", gruposAlimenticios: ["lacteos", "proteinas"] , terminosBusquedaUsda: ["cheese, fresh, queso fresco"]},
   { id: "queso-maduro", nombre: "Queso maduro", grupoPrincipal: "lacteos", gruposAlimenticios: ["lacteos", "proteinas"] , terminosBusquedaUsda: ["cheese, cheddar"]},
 
   // ---- Grasas saludables ----
   { id: "aguacate", nombre: "Aguacate", grupoPrincipal: "grasas_saludables", gruposAlimenticios: ["grasas_saludables"] , terminosBusquedaUsda: ["avocado, raw"]},
-  { id: "aceite-oliva", nombre: "Aceite de oliva", grupoPrincipal: "grasas_saludables", gruposAlimenticios: ["grasas_saludables"] , terminosBusquedaUsda: ["olive oil"]},
-  { id: "aceite-girasol", nombre: "Aceite de girasol", grupoPrincipal: "grasas_saludables", gruposAlimenticios: ["grasas_saludables"] , terminosBusquedaUsda: ["sunflower oil"]},
+  { id: "aceite-oliva", nombre: "Aceite de oliva", grupoPrincipal: "grasas_saludables", gruposAlimenticios: ["grasas_saludables"] , terminosBusquedaUsda: ["olive oil"], tipoMedida: "volumen"},
+  { id: "aceite-girasol", nombre: "Aceite de girasol", grupoPrincipal: "grasas_saludables", gruposAlimenticios: ["grasas_saludables"] , terminosBusquedaUsda: ["sunflower oil"], tipoMedida: "volumen"},
   { id: "aceitunas", nombre: "Aceitunas", grupoPrincipal: "grasas_saludables", gruposAlimenticios: ["grasas_saludables"] , terminosBusquedaUsda: ["olives, ripe"]},
   { id: "coco-fresco", nombre: "Coco fresco", grupoPrincipal: "grasas_saludables", gruposAlimenticios: ["grasas_saludables"] , terminosBusquedaUsda: ["coconut, raw"]},
 
@@ -85,11 +85,11 @@ export const CATALOGO_ALIMENTOS_BORRADOR = [
   { id: "semillas-zapallo", nombre: "Semillas de zapallo", grupoPrincipal: "frutos_secos_semillas", gruposAlimenticios: ["frutos_secos_semillas"] , terminosBusquedaUsda: ["pumpkin seeds"]},
 
   // ---- Bebidas ----
-  { id: "agua", nombre: "Agua", grupoPrincipal: "bebidas", gruposAlimenticios: ["bebidas"] , terminosBusquedaUsda: ["water, tap"]},
-  { id: "agua-coco", nombre: "Agua de coco", grupoPrincipal: "bebidas", gruposAlimenticios: ["bebidas"] , terminosBusquedaUsda: ["coconut water"]},
-  { id: "te-sin-azucar", nombre: "Té (sin azúcar)", grupoPrincipal: "bebidas", gruposAlimenticios: ["bebidas"] , terminosBusquedaUsda: ["tea, black, brewed"]},
-  { id: "cafe-sin-azucar", nombre: "Café (sin azúcar)", grupoPrincipal: "bebidas", gruposAlimenticios: ["bebidas"] , terminosBusquedaUsda: ["coffee, brewed"]},
-  { id: "jugo-natural-sin-azucar", nombre: "Jugo natural (sin azúcar añadida)", grupoPrincipal: "bebidas", gruposAlimenticios: ["bebidas"] , terminosBusquedaUsda: ["fruit juice, 100%, no sugar added"]},
+  { id: "agua", nombre: "Agua", grupoPrincipal: "bebidas", gruposAlimenticios: ["bebidas"] , terminosBusquedaUsda: ["water, tap"], tipoMedida: "volumen"},
+  { id: "agua-coco", nombre: "Agua de coco", grupoPrincipal: "bebidas", gruposAlimenticios: ["bebidas"] , terminosBusquedaUsda: ["coconut water"], tipoMedida: "volumen"},
+  { id: "te-sin-azucar", nombre: "Té (sin azúcar)", grupoPrincipal: "bebidas", gruposAlimenticios: ["bebidas"] , terminosBusquedaUsda: ["tea, black, brewed"], tipoMedida: "volumen"},
+  { id: "cafe-sin-azucar", nombre: "Café (sin azúcar)", grupoPrincipal: "bebidas", gruposAlimenticios: ["bebidas"] , terminosBusquedaUsda: ["coffee, brewed"], tipoMedida: "volumen"},
+  { id: "jugo-natural-sin-azucar", nombre: "Jugo natural (sin azúcar añadida)", grupoPrincipal: "bebidas", gruposAlimenticios: ["bebidas"] , terminosBusquedaUsda: ["fruit juice, 100%, no sugar added"], tipoMedida: "volumen"},
 
   // "procesados" y "suplementos" quedan sin curar a propósito — ver
   // docs/alimentos/catalogo-alimentos-borrador.js para la explicación.

@@ -26,7 +26,6 @@ function diaValido(numeroDia) {
 function respuestaValida() {
   return {
     dias: Array.from({ length: 7 }, (_, i) => diaValido(i + 1)),
-    recomendacion: "Aumentar el consumo de fibra.",
   };
 }
 
@@ -35,11 +34,10 @@ function crearGenerador(textoRespuesta) {
   return new GeneradorMenuGroq(pedirCompletionFalso);
 }
 
-test("respuesta válida: devuelve dias y recomendacion", async () => {
+test("respuesta válida: devuelve los días del menú", async () => {
   const generador = crearGenerador(respuestaValida());
   const resultado = await generador.generar({ perfilPaciente, alimentosDisponibles });
   assert.equal(resultado.dias.length, 7);
-  assert.equal(resultado.recomendacion, "Aumentar el consumo de fibra.");
 });
 
 test("rechaza JSON no parseable", async () => {
@@ -140,15 +138,6 @@ test("rechaza tipoComida vacío", async () => {
   );
 });
 
-test("rechaza recomendacion vacía", async () => {
-  const respuesta = respuestaValida();
-  respuesta.recomendacion = "";
-  const generador = crearGenerador(respuesta);
-  await assert.rejects(
-    () => generador.generar({ perfilPaciente, alimentosDisponibles }),
-    ServicioExternoError,
-  );
-});
 
 test("rechaza indiceAlimento no entero", async () => {
   const respuesta = respuestaValida();
@@ -179,5 +168,20 @@ test("propaga timeout como ServicioExternoError con statusCode 504", async () =>
   await assert.rejects(
     () => generador.generar({ perfilPaciente, alimentosDisponibles }),
     (error) => error instanceof ServicioExternoError && error.statusCode === 504,
+  );
+});
+
+test("informa cuánto esperar cuando Groq devuelve rate limit", async () => {
+  const { GroqRateLimitError } = require("../../../../Infraestructura/ia/groqClient");
+  const generador = new GeneradorMenuGroq(async () => {
+    throw new GroqRateLimitError("rate limit", 12);
+  });
+
+  await assert.rejects(
+    () => generador.generar({ perfilPaciente, alimentosDisponibles }),
+    (error) =>
+      error instanceof ServicioExternoError &&
+      error.statusCode === 429 &&
+      error.message.includes("12 segundos"),
   );
 });

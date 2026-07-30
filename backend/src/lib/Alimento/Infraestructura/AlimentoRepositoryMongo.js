@@ -28,6 +28,17 @@ class AlimentoRepositoryMongo {
     return docs.map((doc) => this._toEntity(doc));
   }
 
+  async findByNombreAndPaciente(nombre, idPaciente, idExcluir) {
+    const filtro = { idPaciente, nombre: nombre.trim() };
+    if (idExcluir) filtro._id = { $ne: idExcluir };
+
+    const doc = await AlimentoModel.findOne(filtro).collation({
+      locale: "es",
+      strength: 1,
+    });
+    return doc ? this._toEntity(doc) : null;
+  }
+
   async updateByIdAndPaciente(id, idPaciente, cambios) {
     // Solo nombre/cantidad/unidadMedida llegan aquí (lista blanca armada en
     // el caso de uso) — nunca se deja pasar _id/idPaciente/timestamps.

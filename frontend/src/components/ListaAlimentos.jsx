@@ -6,6 +6,7 @@ import {
 } from "../services/alimentoService";
 import FormularioAlimento from "./FormularioAlimento";
 import CoberturaCatalogo from "./CoberturaCatalogo";
+import IndicadorPresupuesto from "./IndicadorPresupuesto";
 import { IconAlertTriangle, IconLeaf, IconSearch } from "./Icons";
 import {
   GRUPOS_ALIMENTICIOS,
@@ -14,6 +15,14 @@ import {
 
 function sinRestricciones(texto) {
   return /^(ninguna?|no aplica|n\/a|-)$/i.test(texto.trim());
+}
+
+function precioDeReferencia(alimento) {
+  const precio = Number(alimento.precio);
+  if (alimento.unidadMedida === "g") {
+    return `${(precio * 100).toFixed(2)}$/100 g`;
+  }
+  return `${precio.toFixed(4)}$/${alimento.unidadMedida}`;
 }
 
 // Gestiona los alimentos de un paciente dentro del modal "Alimentos".
@@ -142,6 +151,12 @@ function ListaAlimentos({ idPaciente, paciente }) {
     return "Nuevo alimento";
   }
 
+  const costoCatalogo = alimentos.reduce(
+    (total, alimento) =>
+      total + Number(alimento.cantidad || 0) * Number(alimento.precio || 0),
+    0,
+  );
+
   if (vista === "formulario") {
     return (
       // Ancho cómodo de lectura para un formulario, aunque la modal ahora
@@ -156,6 +171,8 @@ function ListaAlimentos({ idPaciente, paciente }) {
           gruposIniciales={gruposIniciales}
           paciente={paciente}
           cobertura={cobertura}
+          costoCatalogo={costoCatalogo}
+          presupuesto={paciente?.presupuesto}
           onSuccess={handleSuccessFormulario}
           onCancel={handleCancelFormulario}
         />
@@ -199,6 +216,13 @@ function ListaAlimentos({ idPaciente, paciente }) {
           >
             + Nuevo alimento
           </button>
+        </div>
+
+        <div className="mb-3">
+          <IndicadorPresupuesto
+            costo={costoCatalogo}
+            presupuesto={paciente?.presupuesto}
+          />
         </div>
 
         {error && (
@@ -254,8 +278,16 @@ function ListaAlimentos({ idPaciente, paciente }) {
                   <p className="text-sm text-gray-500">
                     {a.cantidad} {a.unidadMedida} · $
                     {(Number(a.precio) * Number(a.cantidad)).toFixed(2)} total (
-                    {Number(a.precio).toFixed(4)}$/{a.unidadMedida})
+                    {precioDeReferencia(a)})
                   </p>
+                  {a.unidadMedida === "g" &&
+                    Number(a.precio) * 100 > Number(paciente?.presupuesto) && (
+                      <p className="mt-1 text-xs font-medium text-nutri-pink">
+                        Revisa precio y unidad: 100 g cuestan $
+                        {(Number(a.precio) * 100).toFixed(2)}, más que el
+                        presupuesto semanal.
+                      </p>
+                    )}
                   {a.gruposAlimenticios?.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1">
                       {a.gruposAlimenticios.map((g) => (
