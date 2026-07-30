@@ -129,7 +129,13 @@ test("rechaza un menú que usa más cantidad que la registrada", async () => {
     () => caso.ejecutar(1, 10),
     (error) =>
       error instanceof ServicioExternoError &&
-      error.message.includes("solo hay 600 g registradas"),
+      error.message.includes("solo hay 600 g registradas") &&
+      error.message.includes("Faltan 100.00 g"),
+  );
+  assert.equal(deps.generadorMenuIA.llamadas.length, 3);
+  assert.match(
+    deps.generadorMenuIA.llamadas[1].correccionAnterior,
+    /solo hay 600 g registradas/,
   );
   assert.equal(deps.menuRepository.llamadasCrear.length, 0);
 });

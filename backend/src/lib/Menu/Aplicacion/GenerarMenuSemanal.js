@@ -66,11 +66,13 @@ class GenerarMenuSemanal {
   // ayuda (o empeora el rate limit).
   async _generarConReintentos(perfilParaIA, alimentosDisponibles, paciente) {
     const MAX_INTENTOS = 3;
+    let correccionAnterior;
     for (let intento = 1; intento <= MAX_INTENTOS; intento++) {
       try {
         const resultado = await this.generadorMenuIA.generar({
           perfilPaciente: perfilParaIA,
           alimentosDisponibles,
+          correccionAnterior,
         });
         const diasPersistibles = this._construirDiasPersistibles(resultado, alimentosDisponibles);
         this._validarDisponibilidad(diasPersistibles, alimentosDisponibles);
@@ -80,6 +82,7 @@ class GenerarMenuSemanal {
         const esUltimoIntento = intento === MAX_INTENTOS;
         const noReintentable = error.statusCode === 429 || error.statusCode === 504;
         if (esUltimoIntento || noReintentable) throw error;
+        correccionAnterior = error.message;
         console.error(`Intento ${intento} de generación de menú falló, reintentando:`, error.message);
       }
     }
@@ -181,8 +184,9 @@ class GenerarMenuSemanal {
     for (const [idAlimento, cantidadUsada] of usadoPorId) {
       const disponible = disponiblePorId.get(idAlimento);
       if (disponible && cantidadUsada > disponible.cantidad + 1e-9) {
+        const cantidadFaltante = cantidadUsada - disponible.cantidad;
         throw new ServicioExternoError(
-          `El menú requiere ${cantidadUsada.toFixed(2)} ${disponible.unidadMedida} de "${disponible.nombre}", pero solo hay ${disponible.cantidad} ${disponible.unidadMedida} registradas. Revisa la cantidad disponible antes de generar.`,
+          `El menú requiere ${cantidadUsada.toFixed(2)} ${disponible.unidadMedida} de "${disponible.nombre}", pero solo hay ${disponible.cantidad} ${disponible.unidadMedida} registradas. Faltan ${cantidadFaltante.toFixed(2)} ${disponible.unidadMedida}. Edita la cantidad disponible o vuelve a generar para que la IA reduzca sus porciones.`,
         );
       }
     }

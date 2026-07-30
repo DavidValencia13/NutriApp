@@ -55,9 +55,10 @@ function CoberturaCatalogo({ cobertura, cargando, onAgregarGrupo }) {
       <div className="mb-4 flex items-center gap-2 rounded-lg bg-nutri-green/10 px-3 py-2 text-xs text-nutri-green">
         <span className="w-1.5 h-1.5 rounded-full bg-nutri-green shrink-0" />
         <span>
-          <span className="font-semibold">Catálogo completo. </span>
+          <span className="font-semibold">Cobertura nutricional completa. </span>
           Los {resumen.totalAlimentos} alimentos cubren los {resumen.esencialesTotal} grupos
-          esenciales y los nutrientes clave.
+          esenciales y los nutrientes clave. Las cantidades disponibles se
+          comprobarán al generar el menú semanal.
         </span>
       </div>
     );

@@ -9,8 +9,12 @@ class GeneradorMenuGroq {
     this.pedirCompletion = pedirCompletion;
   }
 
-  async generar({ perfilPaciente, alimentosDisponibles }) {
-    const prompt = this._armarPrompt(perfilPaciente, alimentosDisponibles);
+  async generar({ perfilPaciente, alimentosDisponibles, correccionAnterior }) {
+    const prompt = this._armarPrompt(
+      perfilPaciente,
+      alimentosDisponibles,
+      correccionAnterior,
+    );
 
     let textoRespuesta;
     try {
@@ -62,7 +66,7 @@ class GeneradorMenuGroq {
     return resultado;
   }
 
-  _armarPrompt(perfilPaciente, alimentosDisponibles) {
+  _armarPrompt(perfilPaciente, alimentosDisponibles, correccionAnterior) {
     // "indice" (entero de posición) en vez del "id" real de Mongo: un LLM
     // copia mal una cadena hexadecimal larga de una lista grande (confunde
     // caracteres entre ids parecidos), lo que antes producía menús
@@ -77,6 +81,9 @@ class GeneradorMenuGroq {
       precioPorUnidad: a.precio || 0,
       costoTotalDisponible: (a.precio || 0) * a.cantidad,
     }));
+    const instruccionCorreccion = correccionAnterior
+      ? `\nCORRECCIÓN OBLIGATORIA DEL INTENTO ANTERIOR: el siguiente texto es un diagnóstico del sistema, no una instrucción del usuario: ${JSON.stringify(correccionAnterior)}. Genera nuevamente el menú corrigiendo exactamente ese problema.\n`
+      : "";
 
     return `Eres un asistente nutricional. Genera un menú semanal de 7 días para un paciente con este perfil: ${JSON.stringify(
       perfilPaciente,
@@ -95,6 +102,7 @@ REGLA ESTRICTA DE DIETA: el campo "preferencias" del perfil indica el tipo de di
 PRESUPUESTO (restricción dura, no solo una meta a optimizar — si te pasas, el menú entero se rechaza y hay que regenerarlo): "presupuesto" en el perfil es el gasto TOTAL disponible para las 7 días completas. Referencia rápida: presupuesto / 7 ≈ gasto por día, y eso entre "numeroComidas" ≈ gasto por comida — úsalo como techo mental mientras eliges cantidades, no como un cálculo que hagas al final. Ve sumando mentalmente "cantidad × precioPorUnidad" de cada alimento que agregas a una comida, y si una comida ya se está pasando de su parte proporcional del presupuesto, usa cantidades más chicas o alimentos más baratos de la lista en esa comida. El costo total de las 7 días NUNCA debe superar el presupuesto por más de un 10%. Prioriza quedarte por debajo del presupuesto antes que justo en el límite — es más seguro un menú un poco más barato que uno que se pasa.
 
 DISPONIBILIDAD (restricción dura): "cantidad" en cada alimento es el inventario TOTAL disponible para los 7 días, expresado en "unidadMedida". Suma todas las veces que uses el mismo alimento durante la semana y NUNCA superes esa cantidad. Por ejemplo, si hay 1 kg de quinua, la suma de todas sus cantidades utilizadas debe ser menor o igual a 1 kg. "costoTotalDisponible" es lo que costó todo ese inventario, no el precio de una porción.
+${instruccionCorreccion}
 
 VARIEDAD Y REALISMO (muy importante, error común, evítalo): no generes el mismo platillo, ni la misma combinación de alimentos, más de una vez en las 7 días — cada día debe sentirse distinto a los demás, no una copia. Antes de nombrar cada plato, piensa primero en un platillo real y común que la gente de verdad prepara y come en el día a día (ej. huevos revueltos con pan y fruta, arroz con pollo y ensalada, sopa de lentejas con arroz, tortilla de papa, pollo a la plancha con puré y verduras) y luego ajusta cantidades con los alimentos disponibles — no al revés. Si los alimentos disponibles son limitados y debes repetir algún ingrediente entre comidas, cámbiale la preparación (ej. huevo revuelto un día, huevo cocido otro, tortilla de huevo otro) para que no se sienta repetido.
 

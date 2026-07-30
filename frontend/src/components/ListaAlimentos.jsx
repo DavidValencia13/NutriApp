@@ -223,6 +223,11 @@ function ListaAlimentos({ idPaciente, paciente }) {
             costo={costoCatalogo}
             presupuesto={paciente?.presupuesto}
           />
+          <p className="mt-1.5 text-[11px] text-gray-500">
+            La cobertura evalúa variedad y nutrientes. El generador comprueba
+            después que las cantidades alcancen para los siete días y ajusta
+            automáticamente las porciones cuando sea necesario.
+          </p>
         </div>
 
         {error && (

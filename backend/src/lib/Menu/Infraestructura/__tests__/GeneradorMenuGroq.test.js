@@ -40,6 +40,23 @@ test("respuesta válida: devuelve los días del menú", async () => {
   assert.equal(resultado.dias.length, 7);
 });
 
+test("incluye el diagnóstico anterior como corrección obligatoria", async () => {
+  let promptEnviado;
+  const generador = new GeneradorMenuGroq(async (messages) => {
+    promptEnviado = messages[0].content;
+    return JSON.stringify(respuestaValida());
+  });
+
+  await generador.generar({
+    perfilPaciente,
+    alimentosDisponibles,
+    correccionAnterior: 'Faltan 0.20 kg de "Pechuga de pollo"',
+  });
+
+  assert.match(promptEnviado, /CORRECCIÓN OBLIGATORIA/);
+  assert.match(promptEnviado, /Faltan 0.20 kg/);
+});
+
 test("rechaza JSON no parseable", async () => {
   const generador = new GeneradorMenuGroq(async () => "esto no es JSON");
   await assert.rejects(
