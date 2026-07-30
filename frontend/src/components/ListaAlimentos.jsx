@@ -6,11 +6,23 @@ import {
 } from "../services/alimentoService";
 import FormularioAlimento from "./FormularioAlimento";
 import CoberturaCatalogo from "./CoberturaCatalogo";
-import { IconAlertTriangle, IconLeaf } from "./Icons";
-import { labelGrupoAlimenticio } from "../constants/gruposAlimenticios";
+import IndicadorPresupuesto from "./IndicadorPresupuesto";
+import { IconAlertTriangle, IconLeaf, IconSearch } from "./Icons";
+import {
+  GRUPOS_ALIMENTICIOS,
+  labelGrupoAlimenticio,
+} from "../constants/gruposAlimenticios";
 
 function sinRestricciones(texto) {
   return /^(ninguna?|no aplica|n\/a|-)$/i.test(texto.trim());
+}
+
+function precioDeReferencia(alimento) {
+  const precio = Number(alimento.precio);
+  if (alimento.unidadMedida === "g") {
+    return `${(precio * 100).toFixed(2)}$/100 g`;
+  }
+  return `${precio.toFixed(4)}$/${alimento.unidadMedida}`;
 }
 
 // Gestiona los alimentos de un paciente dentro del modal "Alimentos".
@@ -25,6 +37,8 @@ function ListaAlimentos({ idPaciente, paciente }) {
   const [vista, setVista] = useState("lista"); // "lista" | "formulario"
   const [alimentoEditar, setAlimentoEditar] = useState(null); // null = modo crear
   const [gruposIniciales, setGruposIniciales] = useState([]); // preselección al crear
+  const [busqueda, setBusqueda] = useState("");
+  const [filtroGrupo, setFiltroGrupo] = useState("");
 
   useEffect(() => {
     cargarAlimentos();
@@ -102,54 +116,63 @@ function ListaAlimentos({ idPaciente, paciente }) {
     setGruposIniciales([]);
   }
 
-  // Perfil del paciente: se muestra siempre (lista y formulario) para que
-  // el nutriólogo tenga presente restricciones/preferencias/objetivo al
-  // registrar o editar alimentos, no solo al verlos en la lista.
+  // Perfil compacto del paciente: una sola línea (envuelve si hace falta) en
+  // vez de tarjetas apiladas. Se usa tanto en la lista como en el formulario
+  // para no perder de vista restricciones/preferencias/objetivo, pero sin
+  // ocupar el espacio vertical que ocupaban las tarjetas de color completas.
   const perfilPaciente = paciente && (
-    <div className="mb-4">
-      <p className="text-sm text-gray-500 mb-2">
+    <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+      <span>
         <span className="font-semibold text-nutri-navy">Objetivo:</span>{" "}
         {paciente.objetivo}
-      </p>
-      {paciente.restricciones && (
-        <div
-          className={`flex items-start gap-2 rounded-lg px-3 py-2 text-xs mb-2 ${
-            sinRestricciones(paciente.restricciones)
-              ? "bg-gray-50 text-gray-500"
-              : "bg-nutri-orange/10 text-nutri-orange"
-          }`}
-        >
-          <IconAlertTriangle className="shrink-0 mt-0.5" />
-          <span>
-            <span className="font-semibold">Restricciones: </span>
-            {paciente.restricciones}
-          </span>
-        </div>
+      </span>
+      {paciente.restricciones && !sinRestricciones(paciente.restricciones) && (
+        <span className="inline-flex items-center gap-1 text-nutri-orange">
+          <IconAlertTriangle className="shrink-0" />
+          {paciente.restricciones}
+        </span>
       )}
       {paciente.preferencias && (
-        <div className="flex items-start gap-2 bg-nutri-teal/10 text-nutri-teal rounded-lg px-3 py-2 text-xs">
-          <IconLeaf className="shrink-0 mt-0.5" />
-          <span>
-            <span className="font-semibold">Preferencias: </span>
-            {paciente.preferencias}
-          </span>
-        </div>
+        <span className="inline-flex items-center gap-1 text-nutri-teal">
+          <IconLeaf className="shrink-0" />
+          {paciente.preferencias}
+        </span>
       )}
     </div>
   );
 
+  // Título contextual del formulario: reemplaza el panel completo de
+  // cobertura por una frase que dice exactamente qué hueco se está llenando
+  // (o qué se está editando), sin que el nutriólogo tenga que releer todo.
+  function contextoFormulario() {
+    if (alimentoEditar) return `Editando "${alimentoEditar.nombre}"`;
+    if (gruposIniciales.length > 0)
+      return `Agregando una fuente de ${gruposIniciales.map(labelGrupoAlimenticio).join(", ")}`;
+    return "Nuevo alimento";
+  }
+
+  const costoCatalogo = alimentos.reduce(
+    (total, alimento) =>
+      total + Number(alimento.cantidad || 0) * Number(alimento.precio || 0),
+    0,
+  );
+
   if (vista === "formulario") {
     return (
-      <div>
+      // Ancho cómodo de lectura para un formulario, aunque la modal ahora
+      // sea ancha (max-w-5xl a nivel de Modal): ensanchar cada campo hasta
+      // ocupar todo el ancho disponible empeoraría la lectura, no la mejora.
+      <div className="max-w-xl mx-auto">
+        <p className="font-semibold text-nutri-navy mb-1">{contextoFormulario()}</p>
         {perfilPaciente}
-        {/* Se muestra también aquí (sin los chips de atajo, que reiniciarían
-            el formulario) para que el nutriólogo tenga a la vista qué hueco
-            está llenando mientras captura el alimento. */}
-        <CoberturaCatalogo cobertura={cobertura} cargando={cargandoCobertura} />
         <FormularioAlimento
           idPaciente={idPaciente}
           alimentoEditar={alimentoEditar}
           gruposIniciales={gruposIniciales}
+          paciente={paciente}
+          cobertura={cobertura}
+          costoCatalogo={costoCatalogo}
+          presupuesto={paciente?.presupuesto}
           onSuccess={handleSuccessFormulario}
           onCancel={handleCancelFormulario}
         />
@@ -159,81 +182,149 @@ function ListaAlimentos({ idPaciente, paciente }) {
 
   if (cargando) return <p>Cargando alimentos...</p>;
 
+  const alimentosFiltrados = alimentos.filter((a) => {
+    const coincideNombre = a.nombre
+      .toLowerCase()
+      .includes(busqueda.trim().toLowerCase());
+    const coincideGrupo =
+      !filtroGrupo || (a.gruposAlimenticios || []).includes(filtroGrupo);
+    return coincideNombre && coincideGrupo;
+  });
+
   return (
-    <div>
-      {perfilPaciente}
-
-      <CoberturaCatalogo
-        cobertura={cobertura}
-        cargando={cargandoCobertura}
-        onAgregarGrupo={abrirFormularioConGrupo}
-      />
-
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="font-semibold">Alimentos</h2>
-        <button
-          onClick={abrirFormularioCrear}
-          className="bg-nutri-teal text-white px-3 py-1 rounded text-sm hover:bg-nutri-navy"
-        >
-          + Nuevo alimento
-        </button>
+    <div className="flex flex-col lg:flex-row gap-6">
+      {/* Columna izquierda: contexto del paciente + guía de cobertura.
+          Apilada arriba en móvil, al costado en escritorio — no empuja
+          "+ Nuevo alimento" fuera de la pantalla porque ambas van
+          colapsadas/compactas por defecto. */}
+      <div className="lg:w-[35%] shrink-0">
+        {perfilPaciente}
+        <CoberturaCatalogo
+          cobertura={cobertura}
+          cargando={cargandoCobertura}
+          onAgregarGrupo={abrirFormularioConGrupo}
+        />
       </div>
 
-      {error && (
-        <p className="bg-red-100 text-red-700 text-sm p-2 rounded mb-3">
-          {error}
-        </p>
-      )}
-
-      {alimentos.length === 0 ? (
-        <p className="text-gray-500">
-          Este paciente todavía no tiene alimentos registrados.
-        </p>
-      ) : (
-        <div className="grid gap-2">
-          {alimentos.map((a) => (
-            <div
-              key={a.id}
-              className="bg-gray-50 p-3 rounded flex justify-between items-center"
-            >
-              <div>
-                <p className="font-medium">{a.nombre}</p>
-                <p className="text-sm text-gray-500">
-                  {a.cantidad} {a.unidadMedida} · $
-                  {(Number(a.precio) * Number(a.cantidad)).toFixed(2)} total (
-                  {Number(a.precio).toFixed(4)}$/{a.unidadMedida})
-                </p>
-                {a.gruposAlimenticios?.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {a.gruposAlimenticios.map((g) => (
-                      <span
-                        key={g}
-                        className="text-[10px] px-1.5 py-0.5 rounded-full bg-nutri-teal/10 text-nutri-teal"
-                      >
-                        {labelGrupoAlimenticio(g)}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => abrirFormularioEditar(a)}
-                  className="text-nutri-teal hover:opacity-70 text-sm"
-                >
-                  Editar
-                </button>
-                <button
-                  onClick={() => handleEliminar(a.id)}
-                  className="text-nutri-pink hover:opacity-70 text-sm"
-                >
-                  Eliminar
-                </button>
-              </div>
-            </div>
-          ))}
+      {/* Columna derecha: la acción principal y el catálogo. */}
+      <div className="lg:w-[65%] min-w-0">
+        <div className="flex justify-between items-center mb-3">
+          <h2 className="font-semibold">Alimentos</h2>
+          <button
+            onClick={abrirFormularioCrear}
+            className="bg-nutri-teal text-white px-3 py-1 rounded text-sm hover:bg-nutri-navy"
+          >
+            + Nuevo alimento
+          </button>
         </div>
-      )}
+
+        <div className="mb-3">
+          <IndicadorPresupuesto
+            costo={costoCatalogo}
+            presupuesto={paciente?.presupuesto}
+          />
+          <p className="mt-1.5 text-[11px] text-gray-500">
+            La cobertura evalúa variedad y nutrientes. El generador comprueba
+            después que las cantidades alcancen para los siete días y ajusta
+            automáticamente las porciones cuando sea necesario.
+          </p>
+        </div>
+
+        {error && (
+          <p className="bg-red-100 text-red-700 text-sm p-2 rounded mb-3">
+            {error}
+          </p>
+        )}
+
+        {alimentos.length > 0 && (
+          <div className="flex flex-col sm:flex-row gap-2 mb-3">
+            <div className="relative flex-1">
+              <IconSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                placeholder="Buscar por nombre..."
+                className="w-full border border-gray-300 rounded-lg pl-8 pr-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-nutri-teal"
+              />
+            </div>
+            <select
+              value={filtroGrupo}
+              onChange={(e) => setFiltroGrupo(e.target.value)}
+              className="border border-gray-300 rounded-lg px-2 py-1.5 text-sm sm:w-48 focus:outline-none focus:ring-2 focus:ring-nutri-teal"
+            >
+              <option value="">Todos los grupos</option>
+              {GRUPOS_ALIMENTICIOS.map((g) => (
+                <option key={g.value} value={g.value}>
+                  {g.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {alimentos.length === 0 ? (
+          <p className="text-gray-500">
+            Este paciente todavía no tiene alimentos registrados.
+          </p>
+        ) : alimentosFiltrados.length === 0 ? (
+          <p className="text-gray-500">
+            Ningún alimento coincide con la búsqueda o el filtro.
+          </p>
+        ) : (
+          <div className="grid gap-2">
+            {alimentosFiltrados.map((a) => (
+              <div
+                key={a.id}
+                className="bg-gray-50 p-3 rounded flex justify-between items-center"
+              >
+                <div>
+                  <p className="font-medium">{a.nombre}</p>
+                  <p className="text-sm text-gray-500">
+                    {a.cantidad} {a.unidadMedida} · $
+                    {(Number(a.precio) * Number(a.cantidad)).toFixed(2)} total (
+                    {precioDeReferencia(a)})
+                  </p>
+                  {a.unidadMedida === "g" &&
+                    Number(a.precio) * 100 > Number(paciente?.presupuesto) && (
+                      <p className="mt-1 text-xs font-medium text-nutri-pink">
+                        Revisa precio y unidad: 100 g cuestan $
+                        {(Number(a.precio) * 100).toFixed(2)}, más que el
+                        presupuesto semanal.
+                      </p>
+                    )}
+                  {a.gruposAlimenticios?.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {a.gruposAlimenticios.map((g) => (
+                        <span
+                          key={g}
+                          className="text-[10px] px-1.5 py-0.5 rounded-full bg-nutri-teal/10 text-nutri-teal"
+                        >
+                          {labelGrupoAlimenticio(g)}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => abrirFormularioEditar(a)}
+                    className="text-nutri-teal hover:opacity-70 text-sm"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => handleEliminar(a.id)}
+                    className="text-nutri-pink hover:opacity-70 text-sm"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

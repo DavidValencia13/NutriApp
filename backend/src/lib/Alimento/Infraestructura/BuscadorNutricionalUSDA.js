@@ -3,6 +3,38 @@ const { ServicioExternoError } = require("../Dominio/Errores");
 const USDA_SEARCH_URL = "https://api.nal.usda.gov/fdc/v1/foods/search";
 const USDA_TIMEOUT_MS = Number(process.env.USDA_FDC_TIMEOUT_MS) || 10000;
 
+const BUSQUEDAS_ESPECIFICAS = {
+  leche: "milk, whole, 3.25% milkfat",
+  "leche entera": "milk, whole, 3.25% milkfat",
+  "milk, whole": "milk, whole, 3.25% milkfat",
+  "leche descremada": "milk, nonfat, fluid",
+  "leche desnatada": "milk, nonfat, fluid",
+  "milk, nonfat, skim": "milk, nonfat, fluid",
+};
+
+function normalizar(texto) {
+  return (texto || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+function esAlimentoLiquido(description) {
+  const texto = (description || "").toLowerCase();
+  const excluidos = ["powder", "dry", "cheese", "dessert", "cracker"];
+  if (excluidos.some((termino) => texto.includes(termino))) return false;
+  return (
+    texto.startsWith("milk,") ||
+    texto.includes(" fluid") ||
+    texto.includes("juice") ||
+    texto.includes("water") ||
+    texto.includes("coffee, brewed") ||
+    texto.includes("tea, brewed") ||
+    texto.includes("oil")
+  );
+}
+
 // Mapeo del nombre de nutriente tal como lo devuelve USDA FoodData Central
 // (campo "nutrientName" en foodNutrients[]) a los campos de
 // Alimento.CAMPOS_NUTRIENTES. Los que no aparecen acá simplemente no se
@@ -16,6 +48,8 @@ const MAPEO_NUTRIENTES = {
   "Fiber, total dietary": "fibra",
   "Sugars, total": "azucares",
   "Sugars, total including NLEA": "azucares",
+  "Total Sugars": "azucares",
+  "Sugars, Total": "azucares",
   "Sodium, Na": "sodio",
   "Potassium, K": "potasio",
   "Calcium, Ca": "calcio",
@@ -38,7 +72,10 @@ class BuscadorNutricionalUSDA {
       throw new ServicioExternoError("USDA_FDC_API_KEY no está configurada");
     }
 
-    const nombreIngles = await this._traducir(nombreAlimento);
+    const nombreNormalizado = normalizar(nombreAlimento);
+    const nombreIngles =
+      BUSQUEDAS_ESPECIFICAS[nombreNormalizado] ||
+      (await this._traducir(nombreAlimento));
 
     const url = new URL(USDA_SEARCH_URL);
     url.searchParams.set("api_key", process.env.USDA_FDC_API_KEY);
@@ -102,6 +139,9 @@ class BuscadorNutricionalUSDA {
   _mapearAInfoNutricional(food) {
     const resultado = { refUnidad: "g", refCantidad: 100 };
     if (food.description) resultado.nombreEncontrado = food.description;
+    resultado.tipoMedicion = esAlimentoLiquido(food.description)
+      ? "volumen"
+      : "peso";
 
     for (const nutriente of food.foodNutrients || []) {
       const campo = MAPEO_NUTRIENTES[nutriente.nutrientName];

@@ -42,7 +42,13 @@ function EfectividadMenu({ idPaciente, idMenu }) {
     cargar();
   }, [idMenu]);
 
-  if (cargando || !efectividad) return null;
+  if (
+    cargando ||
+    !efectividad ||
+    efectividad.indicador === "informacion_insuficiente"
+  ) {
+    return null;
+  }
 
   const estilo = ESTILOS_INDICADOR[efectividad.indicador] || ESTILOS_INDICADOR.informacion_insuficiente;
 

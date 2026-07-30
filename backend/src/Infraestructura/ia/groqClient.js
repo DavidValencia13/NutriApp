@@ -1,6 +1,11 @@
 class GroqTimeoutError extends Error {}
 class GroqRequestError extends Error {}
-class GroqRateLimitError extends Error {}
+class GroqRateLimitError extends Error {
+  constructor(message, retryAfterSeconds) {
+    super(message);
+    this.retryAfterSeconds = retryAfterSeconds;
+  }
+}
 
 const GROQ_API_URL = process.env.GROQ_API_URL || "https://api.groq.com/openai/v1/chat/completions";
 const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
@@ -30,7 +35,15 @@ async function pedirCompletion(messages) {
     });
 
     if (response.status === 429) {
-      throw new GroqRateLimitError("Groq respondió con estado 429 (límite de solicitudes alcanzado)");
+      const retryAfter = Number(response.headers.get("retry-after"));
+      const retryAfterSeconds =
+        Number.isFinite(retryAfter) && retryAfter > 0
+          ? Math.ceil(retryAfter)
+          : undefined;
+      throw new GroqRateLimitError(
+        "Groq respondió con estado 429 (límite de solicitudes alcanzado)",
+        retryAfterSeconds,
+      );
     }
     if (!response.ok) {
       throw new GroqRequestError(`Groq respondió con estado ${response.status}`);

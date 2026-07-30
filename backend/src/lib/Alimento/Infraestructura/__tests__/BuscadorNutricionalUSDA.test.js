@@ -38,6 +38,7 @@ test("mapea los nutrientes conocidos y descarta los desconocidos", async () => {
             foodNutrients: [
               { nutrientName: "Energy", value: 165, unitName: "KCAL" },
               { nutrientName: "Protein", value: 31, unitName: "G" },
+              { nutrientName: "Total Sugars", value: 0, unitName: "G" },
               { nutrientName: "Nutriente Desconocido X", value: 999 },
             ],
           },
@@ -51,7 +52,64 @@ test("mapea los nutrientes conocidos y descarta los desconocidos", async () => {
   assert.equal(resultado.refCantidad, 100);
   assert.equal(resultado.calorias, 165);
   assert.equal(resultado.proteinas, 31);
+  assert.equal(resultado.azucares, 0);
+  assert.equal(resultado.tipoMedicion, "peso");
   assert.equal("Nutriente Desconocido X" in resultado, false);
+});
+
+test("busca leche con un término preciso y la identifica como líquido", async () => {
+  let consultaUsda;
+  const buscador = new BuscadorNutricionalUSDA(
+    async () => {
+      throw new Error("no debe traducir una búsqueda conocida");
+    },
+    async (url) => {
+      consultaUsda = new URL(url).searchParams.get("query");
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          foods: [
+            {
+              description:
+                "Milk, whole, 3.25% milkfat, with added vitamin D",
+              foodNutrients: [
+                { nutrientName: "Energy", value: 61, unitName: "KCAL" },
+                { nutrientName: "Calcium, Ca", value: 113, unitName: "MG" },
+              ],
+            },
+          ],
+        }),
+      };
+    },
+  );
+
+  const resultado = await buscador.buscar("Leche");
+
+  assert.equal(consultaUsda, "milk, whole, 3.25% milkfat");
+  assert.equal(
+    resultado.nombreEncontrado,
+    "Milk, whole, 3.25% milkfat, with added vitamin D",
+  );
+  assert.equal(resultado.tipoMedicion, "volumen");
+  assert.equal(resultado.calorias, 61);
+  assert.equal(resultado.calcio, 113);
+});
+
+test("reconoce las variantes de nombre que USDA usa para azúcares", () => {
+  const buscador = new BuscadorNutricionalUSDA(pedirCompletionFalso("beans"));
+
+  for (const nutrientName of [
+    "Sugars, total",
+    "Sugars, total including NLEA",
+    "Total Sugars",
+    "Sugars, Total",
+  ]) {
+    const resultado = buscador._mapearAInfoNutricional({
+      foodNutrients: [{ nutrientName, value: 0.35, unitName: "G" }],
+    });
+    assert.equal(resultado.azucares, 0.35);
+  }
 });
 
 test("si la traducción falla, busca igual con el nombre original", async () => {

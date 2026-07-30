@@ -7,6 +7,10 @@ const { ValidationError } = require("../../Dominio/Errores");
 function crearRepoFalso() {
   return {
     guardados: [],
+    duplicado: null,
+    async findByNombreAndPaciente() {
+      return this.duplicado;
+    },
     async save(alimento) {
       this.guardados.push(alimento);
       return { ...alimento, id: "id-generado" };
@@ -44,6 +48,27 @@ test("no guarda si los datos son inválidos", async () => {
         unidadMedida: "g",
       }),
     ValidationError,
+  );
+  assert.equal(repo.guardados.length, 0);
+});
+
+test("rechaza un nombre duplicado para el mismo paciente", async () => {
+  const repo = crearRepoFalso();
+  repo.duplicado = { id: "existente", nombre: "Arroz", idPaciente: 1 };
+  const caso = new RegistrarAlimento(repo);
+
+  await assert.rejects(
+    () =>
+      caso.ejecutar({
+        idPaciente: 1,
+        nombre: " arroz ",
+        cantidad: 500,
+        unidadMedida: "g",
+        gruposAlimenticios: ["carbohidratos"],
+      }),
+    (error) =>
+      error.statusCode === 409 &&
+      error.message.includes("ya está registrado"),
   );
   assert.equal(repo.guardados.length, 0);
 });

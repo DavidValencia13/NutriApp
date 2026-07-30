@@ -7,19 +7,16 @@ const {
   ajusteObjetivo,
 } = require("../../../Alerta/Dominio/Servicios/EvaluadorAlertas");
 
-// Grupos que una dieta balanceada necesita tener representados en el catálogo
-// del paciente ANTES de generar el menú. `minimo` no es un capricho: el menú
-// es de 7 días, así que con una sola fuente de proteína el generador no tiene
-// más opción que repetirla todos los días. `alternativas` son grupos que
-// cubren la misma función nutricional (legumbres también aporta proteína,
-// frutos secos también aportan grasas saludables).
+// Grupos que deben estar representados en el catálogo antes de generar el
+// menú. Una sola opción cubre el paso guiado; `alternativas` permite que un
+// grupo nutricionalmente equivalente también lo resuelva.
 const GRUPOS_ESENCIALES = [
-  { grupo: "proteinas", label: "Proteínas", minimo: 3, alternativas: ["legumbres"], nivel: "critica" },
-  { grupo: "verduras_hortalizas", label: "Verduras y hortalizas", minimo: 3, alternativas: [], nivel: "critica" },
-  { grupo: "granos_cereales", label: "Granos y cereales", minimo: 2, alternativas: ["carbohidratos"], nivel: "critica" },
-  { grupo: "frutas", label: "Frutas", minimo: 2, alternativas: [], nivel: "advertencia" },
-  { grupo: "grasas_saludables", label: "Grasas saludables", minimo: 1, alternativas: ["frutos_secos_semillas"], nivel: "advertencia" },
-  { grupo: "lacteos", label: "Lácteos", minimo: 1, alternativas: [], nivel: "advertencia" },
+  { grupo: "proteinas", label: "Proteínas", alternativas: ["legumbres"], nivel: "critica" },
+  { grupo: "verduras_hortalizas", label: "Verduras y hortalizas", alternativas: [], nivel: "critica" },
+  { grupo: "granos_cereales", label: "Granos y cereales", alternativas: ["carbohidratos"], nivel: "critica" },
+  { grupo: "frutas", label: "Frutas", alternativas: [], nivel: "advertencia" },
+  { grupo: "grasas_saludables", label: "Grasas saludables", alternativas: ["frutos_secos_semillas"], nivel: "advertencia" },
+  { grupo: "lacteos", label: "Lácteos", alternativas: [], nivel: "advertencia" },
 ];
 
 // Nutrientes que se revisan a nivel de catálogo: si NINGÚN alimento
@@ -27,13 +24,13 @@ const GRUPOS_ESENCIALES = [
 // cubrirlo por más que se combinen los alimentos. Es el chequeo que responde
 // al "que no solo se enfoque en calorías".
 const NUTRIENTES_CLAVE = [
-  { campo: "proteinas", label: "proteína", gruposSugeridos: ["proteinas", "legumbres", "lacteos"] },
-  { campo: "fibra", label: "fibra", gruposSugeridos: ["legumbres", "verduras_hortalizas", "granos_cereales"] },
-  { campo: "calcio", label: "calcio", gruposSugeridos: ["lacteos", "frutos_secos_semillas"] },
-  { campo: "hierro", label: "hierro", gruposSugeridos: ["proteinas", "legumbres"] },
-  { campo: "vitaminaC", label: "vitamina C", gruposSugeridos: ["frutas", "verduras_hortalizas"] },
-  { campo: "vitaminaA", label: "vitamina A", gruposSugeridos: ["verduras_hortalizas", "frutas"] },
-  { campo: "potasio", label: "potasio", gruposSugeridos: ["frutas", "verduras_hortalizas"] },
+  { campo: "proteinas", label: "proteína", grupoSugerido: "proteinas" },
+  { campo: "fibra", label: "fibra", grupoSugerido: "verduras_hortalizas" },
+  { campo: "calcio", label: "calcio", grupoSugerido: "lacteos" },
+  { campo: "hierro", label: "hierro", grupoSugerido: "legumbres" },
+  { campo: "vitaminaC", label: "vitamina C", grupoSugerido: "frutas" },
+  { campo: "vitaminaA", label: "vitamina A", grupoSugerido: "verduras_hortalizas" },
+  { campo: "potasio", label: "potasio", grupoSugerido: "frutas" },
 ];
 
 // Un alimento cuenta como "fuente" de un nutriente si aporta al menos este %
@@ -112,7 +109,71 @@ function contarEnGrupo(alimentos, grupo, alternativas) {
   ).length;
 }
 
-const NIVEL_INFERIOR = { critica: "advertencia", advertencia: "informativa", informativa: "informativa" };
+function esPreferenciaVegetal(preferencias) {
+  const valor = normalizar(preferencias);
+  return valor.includes("vegetarian") || valor.includes("vegan");
+}
+
+function grupoAccionable(grupo, paciente) {
+  if (grupo === "proteinas" && esPreferenciaVegetal(paciente?.preferencias)) {
+    return "legumbres";
+  }
+  return grupo;
+}
+
+function motivoGrupoPorObjetivo(grupo, objetivo) {
+  const direccion = ajusteObjetivo(objetivo);
+
+  if (direccion < 0) {
+    const motivos = {
+      verduras_hortalizas:
+        "Para el objetivo de perder peso, una mayor variedad de verduras ayuda a construir comidas con fibra, volumen y saciedad.",
+      frutas:
+        "Para el objetivo de perder peso, disponer de distintas frutas aporta alternativas con fibra para colaciones y preparaciones.",
+      proteinas:
+        "Para el objetivo de perder peso, contar con varias fuentes de proteína facilita menús completos y variados.",
+      legumbres:
+        "Para el objetivo de perder peso, las legumbres aportan proteína vegetal y fibra para preparar comidas con mayor saciedad.",
+      granos_cereales:
+        "Para el objetivo de perder peso, tener distintos granos permite variar las porciones y preparaciones del menú.",
+    };
+    return motivos[grupo];
+  }
+
+  if (direccion > 0) {
+    const motivos = {
+      proteinas:
+        "Para el objetivo de aumentar peso o masa muscular, conviene disponer de distintas fuentes de proteína para distribuirlas durante la semana.",
+      legumbres:
+        "Para el objetivo de aumentar peso o masa muscular, las legumbres amplían las fuentes de proteína y energía del menú.",
+      grasas_saludables:
+        "Para el objetivo de aumentar peso, las grasas saludables permiten elevar la energía del menú sin aumentar demasiado el volumen.",
+      lacteos:
+        "Para el objetivo de aumentar peso, los lácteos o sus alternativas compatibles pueden aportar energía y proteína.",
+      granos_cereales:
+        "Para el objetivo de aumentar peso, una mayor variedad de granos facilita completar la energía de las comidas.",
+    };
+    return motivos[grupo];
+  }
+
+  return undefined;
+}
+
+function crearAlertaGrupo({ grupo, label, nivel, paciente }) {
+  const grupoSugerido = grupoAccionable(grupo, paciente);
+  const motivoObjetivo = motivoGrupoPorObjetivo(grupoSugerido, paciente?.objetivo);
+
+  return {
+    tipo: `grupo_ausente_${grupo}`,
+    nivel,
+    grupoSugerido,
+    faltantes: 1,
+    mensaje: `Falta agregar un alimento del grupo "${label}".${motivoObjetivo ? ` ${motivoObjetivo}` : ""}`,
+    // Compatibilidad temporal con consumidores existentes. Siempre contiene
+    // un único grupo: las alternativas solo sirven para calcular cobertura.
+    gruposSugeridos: [grupoSugerido],
+  };
+}
 
 // Evalúa si el catálogo de alimentos de un paciente alcanza para construirle
 // una dieta balanceada, y devuelve qué le falta. Función pura: no persiste
@@ -129,41 +190,19 @@ function evaluar({ paciente, alimentos }) {
     for (const grupo of alimento.gruposAlimenticios || []) gruposPresentes.add(grupo);
   }
 
-  if (catalogo.length === 0) {
-    alertas.push({
-      tipo: "catalogo_vacio",
-      nivel: "critica",
-      mensaje:
-        "Este paciente no tiene alimentos registrados. Agrega al menos una fuente de proteína, verduras y granos para poder generar un menú balanceado.",
-      gruposSugeridos: ["proteinas", "verduras_hortalizas", "granos_cereales"],
-    });
-  }
-
-  // 1) Grupos esenciales: ausentes primero (lo que impide balancear), luego
-  // los que están pero con tan pocas opciones que el menú se repetiría.
+  // 1) Cada recomendación representa un grupo todavía ausente. En cuanto se
+  // registra el primer alimento compatible, el grupo queda cubierto y su
+  // recomendación desaparece en el siguiente recálculo.
   let esencialesCubiertos = 0;
-  if (catalogo.length > 0) {
-    for (const { grupo, label, minimo, alternativas, nivel } of GRUPOS_ESENCIALES) {
-      const cantidad = contarEnGrupo(catalogo, grupo, alternativas);
-      if (cantidad === 0) {
-        alertas.push({
-          tipo: `grupo_ausente_${grupo}`,
-          nivel,
-          mensaje: `Falta agregar alimentos del grupo "${label}". Sin esta fuente la dieta no puede quedar balanceada.`,
-          gruposSugeridos: [grupo, ...alternativas],
-        });
-        continue;
-      }
-      esencialesCubiertos++;
-      if (cantidad < minimo) {
-        alertas.push({
-          tipo: `grupo_poca_variedad_${grupo}`,
-          nivel: NIVEL_INFERIOR[nivel],
-          mensaje: `Solo hay ${cantidad} ${cantidad === 1 ? "opción" : "opciones"} de "${label}". En un menú de 7 días se repetiría casi a diario — agrega al menos ${minimo - cantidad} más.`,
-          gruposSugeridos: [grupo, ...alternativas],
-        });
-      }
+  for (const { grupo, label, alternativas, nivel } of GRUPOS_ESENCIALES) {
+    const cantidad = contarEnGrupo(catalogo, grupo, alternativas);
+    if (cantidad === 0) {
+      alertas.push(
+        crearAlertaGrupo({ grupo, label, nivel, paciente }),
+      );
+      continue;
     }
+    esencialesCubiertos++;
   }
 
   // 2) Alimentos sin información nutricional. Va antes que el chequeo de
@@ -185,14 +224,15 @@ function evaluar({ paciente, alimentos }) {
   // preguntarlo si al menos un alimento tiene datos cargados; si no, la
   // alerta real es la anterior.
   if (conInfoNutricional.length > 0) {
-    for (const { campo, label, gruposSugeridos } of NUTRIENTES_CLAVE) {
+    for (const { campo, label, grupoSugerido } of NUTRIENTES_CLAVE) {
       const hayFuente = conInfoNutricional.some((a) => esFuenteDe(a, campo));
       if (!hayFuente) {
         alertas.push({
           tipo: `sin_fuente_${campo}`,
           nivel: "advertencia",
           mensaje: `Ningún alimento del catálogo es una fuente relevante de ${label}. El menú no podrá cubrir este nutriente con los alimentos actuales.`,
-          gruposSugeridos,
+          grupoSugerido,
+          gruposSugeridos: [grupoSugerido],
         });
       }
     }
@@ -246,39 +286,11 @@ function evaluar({ paciente, alimentos }) {
         tipo: "exceso_procesados",
         nivel: "advertencia",
         mensaje: `${procesados} de ${catalogo.length} alimentos son procesados. Agrega opciones frescas para que el menú pueda equilibrarse.`,
-        gruposSugeridos: ["verduras_hortalizas", "frutas", "proteinas"],
+        grupoSugerido: "verduras_hortalizas",
+        gruposSugeridos: ["verduras_hortalizas"],
       });
     }
 
-    const direccion = ajusteObjetivo(paciente?.objetivo);
-    if (direccion < 0) {
-      // Bajar peso: la saciedad la dan fibra y proteína, no el recorte de
-      // calorías por sí solo.
-      const fuentesFibra = contarEnGrupo(catalogo, "verduras_hortalizas", ["legumbres", "frutas"]);
-      if (fuentesFibra < 3) {
-        alertas.push({
-          tipo: "objetivo_bajar_peso_pocas_fuentes_saciedad",
-          nivel: "advertencia",
-          mensaje: `El objetivo es "${paciente.objetivo}", pero hay pocas fuentes de fibra (${fuentesFibra}). Verduras, frutas y legumbres ayudan a la saciedad con pocas calorías.`,
-          gruposSugeridos: ["verduras_hortalizas", "legumbres", "frutas"],
-        });
-      }
-    } else if (direccion > 0) {
-      // Subir peso: hacen falta alimentos densos en energía, si no el menú
-      // tiene que llegar a las calorías objetivo a base de volumen.
-      const fuentesDensas = contarEnGrupo(catalogo, "grasas_saludables", [
-        "frutos_secos_semillas",
-        "lacteos",
-      ]);
-      if (fuentesDensas < 2) {
-        alertas.push({
-          tipo: "objetivo_subir_peso_pocas_fuentes_densas",
-          nivel: "advertencia",
-          mensaje: `El objetivo es "${paciente.objetivo}", pero hay pocas fuentes densas en energía (${fuentesDensas}). Grasas saludables, frutos secos y lácteos ayudan a subir calorías sin aumentar el volumen de las comidas.`,
-          gruposSugeridos: ["grasas_saludables", "frutos_secos_semillas", "lacteos"],
-        });
-      }
-    }
   }
 
   return {

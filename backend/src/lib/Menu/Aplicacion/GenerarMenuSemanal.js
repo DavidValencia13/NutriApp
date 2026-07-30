@@ -11,13 +11,11 @@ class GenerarMenuSemanal {
     listarAlimentosPorPaciente,
     generadorMenuIA,
     menuRepository,
-    registrarRecomendacion,
   }) {
     this.pacienteRepository = pacienteRepository;
     this.listarAlimentosPorPaciente = listarAlimentosPorPaciente;
     this.generadorMenuIA = generadorMenuIA;
     this.menuRepository = menuRepository;
-    this.registrarRecomendacion = registrarRecomendacion;
   }
 
   async ejecutar(idPaciente, idNutriologo) {
@@ -28,6 +26,7 @@ class GenerarMenuSemanal {
     const alimentosDisponibles = await this.listarAlimentosPorPaciente.ejecutar(idPaciente);
     if (alimentosDisponibles.length === 0)
       throw new ValidationError("El paciente no tiene alimentos registrados");
+    this._validarCostoCatalogo(alimentosDisponibles, paciente);
 
     const perfilParaIA = {
       peso: paciente.peso,
@@ -41,16 +40,16 @@ class GenerarMenuSemanal {
       preferencias: paciente.preferencias,
     };
 
-    const { resultado, diasPersistibles } = await this._generarConReintentos(perfilParaIA, alimentosDisponibles, paciente);
+    const { diasPersistibles } = await this._generarConReintentos(
+      perfilParaIA,
+      alimentosDisponibles,
+      paciente,
+    );
 
     const menu = await this.menuRepository.ejecutarEnTransaccion(async (contextoPersistencia) => {
       const menuCreado = await this.menuRepository.crear(
         { idPaciente, estado: "generado" },
         diasPersistibles,
-        { contextoPersistencia },
-      );
-      await this.registrarRecomendacion.ejecutar(
-        { idPaciente, texto: resultado.recomendacion, fechaGeneracion: new Date() },
         { contextoPersistencia },
       );
       return menuCreado;
@@ -66,20 +65,24 @@ class GenerarMenuSemanal {
   // el servicio ya está limitado o lento, y reintentar de inmediato no
   // ayuda (o empeora el rate limit).
   async _generarConReintentos(perfilParaIA, alimentosDisponibles, paciente) {
-    const MAX_INTENTOS = 2;
+    const MAX_INTENTOS = 3;
+    let correccionAnterior;
     for (let intento = 1; intento <= MAX_INTENTOS; intento++) {
       try {
         const resultado = await this.generadorMenuIA.generar({
           perfilPaciente: perfilParaIA,
           alimentosDisponibles,
+          correccionAnterior,
         });
         const diasPersistibles = this._construirDiasPersistibles(resultado, alimentosDisponibles);
+        this._validarDisponibilidad(diasPersistibles, alimentosDisponibles);
         this._validarPresupuesto(diasPersistibles, paciente);
         return { resultado, diasPersistibles };
       } catch (error) {
         const esUltimoIntento = intento === MAX_INTENTOS;
         const noReintentable = error.statusCode === 429 || error.statusCode === 504;
         if (esUltimoIntento || noReintentable) throw error;
+        correccionAnterior = error.message;
         console.error(`Intento ${intento} de generación de menú falló, reintentando:`, error.message);
       }
     }
@@ -137,6 +140,56 @@ class GenerarMenuSemanal {
         comidas,
       };
     });
+  }
+
+  _validarCostoCatalogo(alimentosDisponibles, paciente) {
+    if (!(paciente.presupuesto > 0)) return;
+    const costoCatalogo = alimentosDisponibles.reduce(
+      (total, alimento) =>
+        total + Number(alimento.cantidad || 0) * Number(alimento.precio || 0),
+      0,
+    );
+    if (costoCatalogo > paciente.presupuesto) {
+      throw new ValidationError(
+        `El costo de los alimentos registrados ($${costoCatalogo.toFixed(2)}) supera el presupuesto semanal ($${paciente.presupuesto.toFixed(2)}). Ajusta cantidades o precios antes de generar el menú.`,
+      );
+    }
+  }
+
+  _validarDisponibilidad(diasPersistibles, alimentosDisponibles) {
+    const disponiblePorId = new Map(
+      alimentosDisponibles.map((alimento) => [
+        alimento.id.toString(),
+        {
+          nombre: alimento.nombre,
+          cantidad: Number(alimento.cantidad),
+          unidadMedida: alimento.unidadMedida,
+        },
+      ]),
+    );
+    const usadoPorId = new Map();
+
+    for (const dia of diasPersistibles) {
+      for (const comida of dia.comidas) {
+        for (const detalle of comida.alimentos) {
+          usadoPorId.set(
+            detalle.idAlimento,
+            (usadoPorId.get(detalle.idAlimento) || 0) +
+              Number(detalle.cantidadUtilizada),
+          );
+        }
+      }
+    }
+
+    for (const [idAlimento, cantidadUsada] of usadoPorId) {
+      const disponible = disponiblePorId.get(idAlimento);
+      if (disponible && cantidadUsada > disponible.cantidad + 1e-9) {
+        const cantidadFaltante = cantidadUsada - disponible.cantidad;
+        throw new ServicioExternoError(
+          `El menú requiere ${cantidadUsada.toFixed(2)} ${disponible.unidadMedida} de "${disponible.nombre}", pero solo hay ${disponible.cantidad} ${disponible.unidadMedida} registradas. Faltan ${cantidadFaltante.toFixed(2)} ${disponible.unidadMedida}. Edita la cantidad disponible o vuelve a generar para que la IA reduzca sus porciones.`,
+        );
+      }
+    }
   }
 
   // Red de seguridad de presupuesto: el prompt ya le pide a la IA no

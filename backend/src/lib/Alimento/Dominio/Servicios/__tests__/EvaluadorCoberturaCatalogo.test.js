@@ -63,7 +63,9 @@ test("catálogo vacío: crítico y no listo para menú", () => {
   const resultado = evaluar({ paciente: pacienteBase, alimentos: [] });
 
   assert.equal(resultado.listoParaMenu, false);
-  assert.ok(tipos(resultado).includes("catalogo_vacio"));
+  assert.ok(tipos(resultado).includes("grupo_ausente_proteinas"));
+  assert.ok(tipos(resultado).includes("grupo_ausente_verduras_hortalizas"));
+  assert.ok(resultado.alertas.every((a) => (a.gruposSugeridos || []).length <= 1));
   assert.equal(resultado.resumen.totalAlimentos, 0);
 });
 
@@ -84,7 +86,7 @@ test("avisa cuando falta un grupo esencial completo", () => {
   assert.equal(resultado.listoParaMenu, true);
 });
 
-test("la ausencia de proteínas es crítica y sugiere legumbres como alternativa", () => {
+test("la ausencia de proteínas es crítica y propone un único grupo", () => {
   const sinProteinas = catalogoCompleto().filter(
     (a) => !a.gruposAlimenticios.includes("proteinas"),
   );
@@ -92,8 +94,21 @@ test("la ausencia de proteínas es crítica y sugiere legumbres como alternativa
 
   const alerta = resultado.alertas.find((a) => a.tipo === "grupo_ausente_proteinas");
   assert.equal(alerta.nivel, "critica");
-  assert.ok(alerta.gruposSugeridos.includes("legumbres"));
+  assert.equal(alerta.grupoSugerido, "proteinas");
+  assert.deepEqual(alerta.gruposSugeridos, ["proteinas"]);
   assert.equal(resultado.listoParaMenu, false);
+});
+
+test("preferencia vegetariana: la proteína faltante propone legumbres", () => {
+  const paciente = { ...pacienteBase, preferencias: "Vegetariano" };
+  const sinProteinas = catalogoCompleto().filter(
+    (a) => !a.gruposAlimenticios.includes("proteinas"),
+  );
+  const resultado = evaluar({ paciente, alimentos: sinProteinas });
+
+  const alerta = resultado.alertas.find((a) => a.tipo === "grupo_ausente_proteinas");
+  assert.equal(alerta.grupoSugerido, "legumbres");
+  assert.deepEqual(alerta.gruposSugeridos, ["legumbres"]);
 });
 
 test("legumbres cuentan como fuente alternativa de proteína", () => {
@@ -109,17 +124,16 @@ test("legumbres cuentan como fuente alternativa de proteína", () => {
   assert.equal(tipos(resultado).includes("grupo_ausente_proteinas"), false);
 });
 
-test("avisa por poca variedad aunque el grupo esté presente", () => {
+test("una opción cubre el grupo y elimina su recomendación", () => {
   const unaProteina = catalogoCompleto().filter(
     (a) => !["Huevo", "Atun"].includes(a.nombre),
   );
   const resultado = evaluar({ paciente: pacienteBase, alimentos: unaProteina });
 
-  const alerta = resultado.alertas.find((a) => a.tipo === "grupo_poca_variedad_proteinas");
-  // Un escalón bajo el nivel del grupo: hay fuente, el problema es que se
-  // repetiría los 7 días, no que falte.
-  assert.equal(alerta.nivel, "advertencia");
-  assert.ok(alerta.mensaje.includes("1 opción"));
+  assert.equal(
+    tipos(resultado).includes("grupo_ausente_proteinas"),
+    false,
+  );
   assert.equal(resultado.listoParaMenu, true);
 });
 
@@ -197,12 +211,16 @@ test("ignora restricciones vacías como 'Ninguna'", () => {
 
 test("objetivo bajar peso: pide fuentes de fibra/saciedad", () => {
   const paciente = { ...pacienteBase, objetivo: "Bajar Peso" };
-  const pocasVerduras = catalogoCompleto().filter(
-    (a) => !["Espinaca", "Zanahoria", "Manzana", "Naranja"].includes(a.nombre),
+  const sinVerduras = catalogoCompleto().filter(
+    (a) => !a.gruposAlimenticios.includes("verduras_hortalizas"),
   );
-  const resultado = evaluar({ paciente, alimentos: pocasVerduras });
+  const resultado = evaluar({ paciente, alimentos: sinVerduras });
 
-  assert.ok(tipos(resultado).includes("objetivo_bajar_peso_pocas_fuentes_saciedad"));
+  const alerta = resultado.alertas.find(
+    (a) => a.tipo === "grupo_ausente_verduras_hortalizas",
+  );
+  assert.equal(alerta.grupoSugerido, "verduras_hortalizas");
+  assert.ok(alerta.mensaje.includes("saciedad"));
 });
 
 test("objetivo subir peso: pide fuentes densas en energía", () => {
@@ -212,7 +230,33 @@ test("objetivo subir peso: pide fuentes densas en energía", () => {
   );
   const resultado = evaluar({ paciente, alimentos: sinDensos });
 
-  assert.ok(tipos(resultado).includes("objetivo_subir_peso_pocas_fuentes_densas"));
+  const alerta = resultado.alertas.find(
+    (a) => a.tipo === "grupo_ausente_grasas_saludables",
+  );
+  assert.equal(alerta.grupoSugerido, "grasas_saludables");
+  assert.ok(alerta.mensaje.includes("energía"));
+});
+
+test("la recomendación desaparece al registrar el primer alimento del grupo", () => {
+  const paciente = { ...pacienteBase, objetivo: "Perder peso" };
+  const sinVerduras = catalogoCompleto().filter(
+    (a) => !a.gruposAlimenticios.includes("verduras_hortalizas"),
+  );
+  const conUnaVerdura = sinVerduras.concat(
+    alimento("Brócoli", ["verduras_hortalizas"]),
+  );
+
+  assert.ok(
+    tipos(evaluar({ paciente, alimentos: sinVerduras })).includes(
+      "grupo_ausente_verduras_hortalizas",
+    ),
+  );
+  assert.equal(
+    tipos(evaluar({ paciente, alimentos: conUnaVerdura })).includes(
+      "grupo_ausente_verduras_hortalizas",
+    ),
+    false,
+  );
 });
 
 test("avisa cuando los procesados dominan el catálogo", () => {
