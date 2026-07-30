@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { labelGrupoAlimenticio } from "../constants/gruposAlimenticios";
+import { CATALOGO_ALIMENTOS_BORRADOR } from "../constants/catalogoAlimentosBorrador";
 import { IconChevronDown } from "./Icons";
 
 // Mismos tokens de nivel usados en toda la app, para que "crítica/advertencia/info"
@@ -9,6 +10,14 @@ const ESTILOS_NIVEL = {
   advertencia: { dot: "bg-nutri-orange", badge: "bg-nutri-orange/15 text-nutri-orange" },
   informativa: { dot: "bg-gray-400", badge: "bg-gray-200 text-gray-500" },
 };
+
+function ejemplosDelGrupo(grupo) {
+  if (!grupo) return [];
+  return CATALOGO_ALIMENTOS_BORRADOR
+    .filter((alimento) => alimento.grupoPrincipal === grupo)
+    .slice(0, 3)
+    .map((alimento) => alimento.nombre);
+}
 
 // Guía de lo que le falta al catálogo del paciente para poder armarle una
 // dieta balanceada. Solo lectura: no bloquea nada, la decisión es del
@@ -123,24 +132,28 @@ function CoberturaCatalogo({ cobertura, cargando, onAgregarGrupo }) {
           <div className="divide-y">
             {alertas.map((a) => {
               const estilo = ESTILOS_NIVEL[a.nivel] || ESTILOS_NIVEL.informativa;
+              const grupoSugerido = a.grupoSugerido || a.gruposSugeridos?.[0];
+              const ejemplos = ejemplosDelGrupo(grupoSugerido);
               return (
                 <div key={a.tipo} className="px-3 py-1.5">
                   <div className="flex items-start gap-2">
                     <span className={`w-1.5 h-1.5 rounded-full shrink-0 mt-1.5 ${estilo.dot}`} />
                     <p className="text-xs text-gray-700 flex-1 min-w-0">{a.mensaje}</p>
                   </div>
-                  {a.gruposSugeridos?.length > 0 && onAgregarGrupo && (
-                    <div className="flex flex-wrap gap-1 mt-1 pl-3.5">
-                      {a.gruposSugeridos.map((g) => (
-                        <button
-                          key={g}
-                          type="button"
-                          onClick={() => onAgregarGrupo(g)}
-                          className="text-[10px] px-1.5 py-0.5 rounded-full border border-nutri-teal text-nutri-teal hover:bg-nutri-teal/10"
-                        >
-                          + {labelGrupoAlimenticio(g)}
-                        </button>
-                      ))}
+                  {ejemplos.length > 0 && (
+                    <p className="mt-1 pl-3.5 text-[10px] text-gray-500">
+                      Opciones sugeridas: {ejemplos.join(", ")}.
+                    </p>
+                  )}
+                  {grupoSugerido && onAgregarGrupo && (
+                    <div className="mt-1.5 pl-3.5">
+                      <button
+                        type="button"
+                        onClick={() => onAgregarGrupo(grupoSugerido)}
+                        className="rounded-full border border-nutri-teal px-2 py-0.5 text-[10px] font-medium text-nutri-teal hover:bg-nutri-teal/10"
+                      >
+                        + Agregar {labelGrupoAlimenticio(grupoSugerido)}
+                      </button>
                     </div>
                   )}
                 </div>
