@@ -154,6 +154,8 @@ function ListaAlimentos({ idPaciente, paciente }) {
           idPaciente={idPaciente}
           alimentoEditar={alimentoEditar}
           gruposIniciales={gruposIniciales}
+          paciente={paciente}
+          cobertura={cobertura}
           onSuccess={handleSuccessFormulario}
           onCancel={handleCancelFormulario}
         />

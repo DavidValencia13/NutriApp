@@ -10,6 +10,47 @@ import {
 } from "../constants/gruposAlimenticios";
 import { CATALOGO_ALIMENTOS_BORRADOR } from "../constants/catalogoAlimentosBorrador";
 
+// Quita tildes/mayúsculas para comparar texto libre (preferencias) sin
+// depender de cómo lo haya escrito el nutriólogo.
+function normalizar(texto) {
+  return (texto || "")
+    .toString()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase();
+}
+
+// Grupos a sugerir en el primer paso, priorizados por lo que realmente le
+// falta al catálogo del paciente (mismo orden que ya calcula el backend:
+// críticas primero) y no por una lista plana de los 12 grupos. El backend ya
+// tiene en cuenta objetivo/alergias/restricciones al calcular esos huecos;
+// aquí se suma un ajuste liviano por preferencia vegetariana/vegana, que el
+// evaluador todavía no considera.
+function gruposSugeridos(cobertura, paciente) {
+  const todos = GRUPOS_ALIMENTICIOS.map((g) => g.value);
+  if (!cobertura?.alertas?.length) return todos;
+
+  const orden = [];
+  for (const nivel of ["critica", "advertencia", "informativa"]) {
+    for (const alerta of cobertura.alertas.filter((a) => a.nivel === nivel)) {
+      for (const g of alerta.gruposSugeridos || []) {
+        if (!orden.includes(g)) orden.push(g);
+      }
+    }
+  }
+
+  const pref = normalizar(paciente?.preferencias);
+  if (
+    (pref.includes("vegetarian") || pref.includes("vegan")) &&
+    orden.includes("proteinas") &&
+    !orden.includes("legumbres")
+  ) {
+    orden.splice(orden.indexOf("proteinas") + 1, 0, "legumbres");
+  }
+
+  return orden.length > 0 ? orden : todos;
+}
+
 // Unidades principales que un nutriólogo usa al registrar alimentos:
 // peso (g, kg, lb), volumen (ml, l) y conteo (unidad).
 const UNIDADES_MEDIDA = [
@@ -66,6 +107,8 @@ function FormularioAlimento({
   idPaciente,
   alimentoEditar,
   gruposIniciales,
+  paciente,
+  cobertura,
   onSuccess,
   onCancel,
 }) {
@@ -89,10 +132,9 @@ function FormularioAlimento({
   const [buscandoNutricion, setBuscandoNutricion] = useState(false);
   const [mensajeBusqueda, setMensajeBusqueda] = useState("");
 
-  // Selector previo por grupo (borrador, ver constants/catalogoAlimentosBorrador.js):
-  // al crear, primero se elige el grupo y luego un alimento sugerido de ese
-  // grupo, en vez de escribir el nombre a ciegas. Al editar se conserva el
-  // formulario de siempre, sin repetir este selector.
+  // Selector previo por grupo: al crear, primero se sugiere el grupo y luego
+  // un alimento de ese grupo, en vez de escribir el nombre a ciegas. Al
+  // editar se conserva el formulario de siempre, sin repetir este selector.
   const [paso, setPaso] = useState(() => {
     if (alimentoEditar) return "form";
     return gruposIniciales?.[0] ? "sugerencias" : "grupo";
@@ -100,7 +142,6 @@ function FormularioAlimento({
   const [grupoSeleccionado, setGrupoSeleccionado] = useState(
     gruposIniciales?.[0] || null,
   );
-  const [desdeCatalogoBorrador, setDesdeCatalogoBorrador] = useState(false);
 
   // Si viene un alimento a editar, precarga sus datos en el formulario.
   // El backend guarda precio por unidad (ej. $/g); aquí se muestra el
@@ -187,23 +228,21 @@ function FormularioAlimento({
     setPaso("sugerencias");
   }
 
-  // Selección desde el catálogo borrador: prellena nombre y grupos reales
-  // del alimento (no solo el grupo por el que se navegó), y dispara la
-  // búsqueda USDA de una vez — al nutriólogo solo le queda revisar y
+  // Selección desde el catálogo de sugerencias: prellena nombre y grupos
+  // reales del alimento (no solo el grupo por el que se navegó), y dispara
+  // la búsqueda USDA de una vez — al nutriólogo solo le queda revisar y
   // completar cantidad/unidad/precio.
   function elegirAlimentoSugerido(item) {
     setForm((prev) => ({ ...prev, nombre: item.nombre }));
     setGruposAlimenticios(item.gruposAlimenticios);
-    setDesdeCatalogoBorrador(true);
     setPaso("form");
     handleBuscarNutricion(item.nombre);
   }
 
-  // "Otro alimento": conserva el grupo ya elegido como punto de partida
+  // Registro manual: conserva el grupo ya elegido como punto de partida
   // (editable), pero el nombre queda libre para escribir a mano.
   function elegirOtroAlimento() {
     setGruposAlimenticios(grupoSeleccionado ? [grupoSeleccionado] : []);
-    setDesdeCatalogoBorrador(false);
     setPaso("form");
   }
 
@@ -267,21 +306,26 @@ function FormularioAlimento({
   const inputCompactClass =
     "w-24 text-center border border-gray-300 rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-nutri-teal";
 
-  // Paso 1: elegir el grupo alimenticio primero, en vez de escribir el
-  // nombre a ciegas y marcar el grupo por separado sin relación entre sí.
+  // Paso 1: sugerencias de grupo según lo que le falta al catálogo del
+  // paciente (objetivo, alergias y restricciones ya entran en ese cálculo) y
+  // su preferencia alimentaria, en vez de una lista plana de los 12 grupos.
   if (paso === "grupo") {
+    const sugeridos = gruposSugeridos(cobertura, paciente).slice(0, 6);
     return (
       <div>
-        <p className={labelClass}>¿De qué grupo es el alimento?</p>
+        <p className={labelClass}>Sugerencias</p>
+        <p className="text-xs text-gray-500 mb-3">
+          Según el objetivo y las preferencias de {paciente?.nombre || "el paciente"}, estos grupos suman más al plan.
+        </p>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
-          {GRUPOS_ALIMENTICIOS.map((g) => (
+          {sugeridos.map((valor) => (
             <button
-              key={g.value}
+              key={valor}
               type="button"
-              onClick={() => elegirGrupo(g.value)}
+              onClick={() => elegirGrupo(valor)}
               className="text-sm px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:border-nutri-teal hover:text-nutri-teal text-left"
             >
-              {g.label}
+              {labelGrupoAlimenticio(valor)}
             </button>
           ))}
         </div>
@@ -298,15 +342,15 @@ function FormularioAlimento({
             onClick={elegirOtroAlimento}
             className="text-sm text-nutri-teal hover:underline"
           >
-            No sé el grupo, escribir el alimento directamente →
+            Registrar un alimento distinto →
           </button>
         </div>
       </div>
     );
   }
 
-  // Paso 2: alimentos sugeridos del grupo elegido (catálogo borrador, sin
-  // validar) + salida siempre disponible a "Otro alimento".
+  // Paso 2: alimentos sugeridos del grupo elegido + salida siempre
+  // disponible a registrar uno distinto a mano.
   if (paso === "sugerencias") {
     const sugeridos = CATALOGO_ALIMENTOS_BORRADOR.filter(
       (a) => a.grupoPrincipal === grupoSeleccionado,
@@ -318,14 +362,10 @@ function FormularioAlimento({
           onClick={() => setPaso("grupo")}
           className="text-xs text-gray-400 hover:text-gray-600 mb-2"
         >
-          ← Cambiar grupo
+          ← Ver otras sugerencias
         </button>
         <p className={labelClass}>
           Alimentos comunes de "{labelGrupoAlimenticio(grupoSeleccionado)}"
-        </p>
-        <p className="text-xs text-nutri-orange bg-nutri-orange/10 rounded-lg px-3 py-2 mb-3">
-          Sugerencias de un catálogo borrador, sin validar por un
-          nutricionista. Revisa cada dato antes de guardar.
         </p>
         {sugeridos.length === 0 ? (
           <p className="text-sm text-gray-500 mb-4">
@@ -358,7 +398,7 @@ function FormularioAlimento({
             onClick={elegirOtroAlimento}
             className="text-sm text-nutri-teal hover:underline"
           >
-            Otro alimento (escribir manualmente) →
+            Registrar un alimento distinto →
           </button>
         </div>
       </div>
@@ -367,13 +407,6 @@ function FormularioAlimento({
 
   return (
     <form onSubmit={handleSubmit}>
-      {desdeCatalogoBorrador && (
-        <p className="text-xs text-nutri-orange bg-nutri-orange/10 rounded-lg px-3 py-2 mb-4">
-          Prellenado desde el catálogo borrador (sin validar por un
-          nutricionista) — revisa nombre, grupos y nutrientes antes de
-          guardar.
-        </p>
-      )}
       {error && (
         <p className="bg-red-100 text-red-700 text-sm p-2 rounded-lg mb-4">
           {error}

@@ -159,7 +159,7 @@ function evaluar({ paciente, alimentos }) {
         alertas.push({
           tipo: `grupo_poca_variedad_${grupo}`,
           nivel: NIVEL_INFERIOR[nivel],
-          mensaje: `Solo hay ${cantidad} ${cantidad === 1 ? "opción" : "opciones"} de "${label}". En un menú de 7 días se repetiría casi a diario — agrega al menos ${minimo - cantidad} más.`,
+          mensaje: `Solo hay ${cantidad} ${cantidad === 1 ? "opción" : "opciones"} de "${label}". Con el objetivo de "${paciente?.objetivo || "el paciente"}" conviene tener más variedad en este grupo — agrega al menos ${minimo - cantidad} más.`,
           gruposSugeridos: [grupo, ...alternativas],
         });
       }
