@@ -439,6 +439,51 @@ function FormularioAlimento({
         )}
       </div>
 
+      <div className="mb-4">
+        <label className={labelClass}>Grupo alimenticio</label>
+        {origenCatalogo ? (
+          // Viene de una sugerencia del catálogo: la clasificación ya es
+          // correcta (ej. lenteja = legumbres + proteínas) y se muestra fija,
+          // no editable — evita combinaciones sin sentido al tocarla a mano.
+          <div className="flex flex-wrap gap-2">
+            {gruposAlimenticios.map((g) => (
+              <span
+                key={g}
+                className="text-xs px-2 py-1 rounded-full bg-nutri-teal text-white"
+              >
+                {labelGrupoAlimenticio(g)}
+              </span>
+            ))}
+          </div>
+        ) : (
+          // Registro manual o edición: un solo grupo principal, no una
+          // combinación libre de los 12 — un alimento no es a la vez
+          // "proteína" y "bebida" y "fruta".
+          <select
+            value={gruposAlimenticios[0] || ""}
+            onChange={(e) =>
+              setGruposAlimenticios(e.target.value ? [e.target.value] : [])
+            }
+            required
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-nutri-teal"
+          >
+            <option value="" disabled>
+              Selecciona...
+            </option>
+            {GRUPOS_ALIMENTICIOS.map((g) => (
+              <option key={g.value} value={g.value}>
+                {g.label}
+              </option>
+            ))}
+          </select>
+        )}
+        {gruposAlimenticios.length === 0 && (
+          <p className="text-xs text-red-500 mt-1">
+            Selecciona un grupo alimenticio.
+          </p>
+        )}
+      </div>
+
       <div className="flex gap-2 mb-4">
         <div>
           <label className={labelClass}>Cantidad</label>
@@ -509,51 +554,6 @@ function FormularioAlimento({
       </div>
 
       <div className="mb-4">
-        <label className={labelClass}>Grupo alimenticio</label>
-        {origenCatalogo ? (
-          // Viene de una sugerencia del catálogo: la clasificación ya es
-          // correcta (ej. lenteja = legumbres + proteínas) y se muestra fija,
-          // no editable — evita combinaciones sin sentido al tocarla a mano.
-          <div className="flex flex-wrap gap-2">
-            {gruposAlimenticios.map((g) => (
-              <span
-                key={g}
-                className="text-xs px-2 py-1 rounded-full bg-nutri-teal text-white"
-              >
-                {labelGrupoAlimenticio(g)}
-              </span>
-            ))}
-          </div>
-        ) : (
-          // Registro manual o edición: un solo grupo principal, no una
-          // combinación libre de los 12 — un alimento no es a la vez
-          // "proteína" y "bebida" y "fruta".
-          <select
-            value={gruposAlimenticios[0] || ""}
-            onChange={(e) =>
-              setGruposAlimenticios(e.target.value ? [e.target.value] : [])
-            }
-            required
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-nutri-teal"
-          >
-            <option value="" disabled>
-              Selecciona...
-            </option>
-            {GRUPOS_ALIMENTICIOS.map((g) => (
-              <option key={g.value} value={g.value}>
-                {g.label}
-              </option>
-            ))}
-          </select>
-        )}
-        {gruposAlimenticios.length === 0 && (
-          <p className="text-xs text-red-500 mt-1">
-            Selecciona un grupo alimenticio.
-          </p>
-        )}
-      </div>
-
-      <div className="mb-4">
         <button
           type="button"
           onClick={() => setMostrarNutricional((v) => !v)}
@@ -565,7 +565,7 @@ function FormularioAlimento({
 
         {mostrarNutricional && (
           <div className="mt-3 border border-gray-200 rounded-lg p-3">
-            <div className="flex items-center gap-3 mb-3">
+            <div className="flex items-center gap-3 mb-1">
               <label className={labelClass}>Valores por</label>
               <select
                 value={refUnidad}
@@ -588,6 +588,13 @@ function FormularioAlimento({
                 />
               )}
             </div>
+            {/* Es la referencia estándar de una etiqueta nutricional (por
+                100 g o por porción) — no tiene relación con la Cantidad ni
+                la Unidad de medida de arriba, que es cuánto se compró. */}
+            <p className="text-xs text-gray-400 mb-3">
+              Independiente de la cantidad comprada: así se leen las
+              etiquetas nutricionales.
+            </p>
 
             {GRUPOS_NUTRIENTES.map((grupo) => (
               <div key={grupo.titulo} className="mb-3">
@@ -596,21 +603,25 @@ function FormularioAlimento({
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {grupo.campos.map((c) => (
-                    <div key={c.key} className="flex items-center gap-1">
-                      <input
-                        type="number"
-                        step="any"
-                        min="0"
-                        value={nutrientes[c.key]}
-                        onChange={(e) =>
-                          handleNutrienteChange(c.key, e.target.value)
-                        }
-                        placeholder={c.label}
-                        className="w-full border border-gray-300 rounded-lg px-2 py-1 text-sm"
-                      />
-                      <span className="text-xs text-gray-400 shrink-0">
-                        {c.unidad}
-                      </span>
+                    <div key={c.key}>
+                      <label className="text-[11px] text-gray-500 leading-tight block truncate">
+                        {c.label}
+                      </label>
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="number"
+                          step="any"
+                          min="0"
+                          value={nutrientes[c.key]}
+                          onChange={(e) =>
+                            handleNutrienteChange(c.key, e.target.value)
+                          }
+                          className="w-full border border-gray-300 rounded-lg px-2 py-1 text-sm"
+                        />
+                        <span className="text-xs text-gray-400 shrink-0">
+                          {c.unidad}
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </div>
