@@ -307,7 +307,13 @@ function Pacientes({ busqueda = "" }) {
         isOpen={modal.tipo !== null}
         onClose={cerrarModal}
         title={tituloModal}
-        ancho={modal.tipo === "menu" ? "max-w-5xl" : modal.tipo === "seguimiento" ? "max-w-2xl" : "max-w-lg"}
+        ancho={
+          modal.tipo === "menu" || modal.tipo === "alimentos"
+            ? "max-w-5xl"
+            : modal.tipo === "seguimiento"
+              ? "max-w-2xl"
+              : "max-w-lg"
+        }
       >
         {modal.tipo === "paciente" && (
           <FormularioPaciente

@@ -138,6 +138,14 @@ export function IconCalendarCheck(props) {
   );
 }
 
+export function IconChevronDown(props) {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" {...base} {...props}>
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  );
+}
+
 export function IconLogout(props) {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" {...base} {...props}>
