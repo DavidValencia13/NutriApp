@@ -142,6 +142,10 @@ function FormularioAlimento({
   const [grupoSeleccionado, setGrupoSeleccionado] = useState(
     gruposIniciales?.[0] || null,
   );
+  // true solo si los grupos vienen tal cual del catálogo curado: en ese caso
+  // se muestran fijos (no editables) más abajo, para no permitir
+  // combinaciones sin sentido (ej. "tomate" marcado como proteína y bebida).
+  const [origenCatalogo, setOrigenCatalogo] = useState(false);
 
   // Si viene un alimento a editar, precarga sus datos en el formulario.
   // El backend guarda precio por unidad (ej. $/g); aquí se muestra el
@@ -176,12 +180,6 @@ function FormularioAlimento({
   function handleChange(e) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
-  }
-
-  function toggleGrupo(value) {
-    setGruposAlimenticios((prev) =>
-      prev.includes(value) ? prev.filter((g) => g !== value) : [...prev, value],
-    );
   }
 
   function handleNutrienteChange(key, value) {
@@ -229,20 +227,23 @@ function FormularioAlimento({
   }
 
   // Selección desde el catálogo de sugerencias: prellena nombre y grupos
-  // reales del alimento (no solo el grupo por el que se navegó), y dispara
-  // la búsqueda USDA de una vez — al nutriólogo solo le queda revisar y
-  // completar cantidad/unidad/precio.
+  // reales del alimento (no solo el grupo por el que se navegó, ya
+  // clasificados de antemano — no editables, ver sección de grupos más
+  // abajo), y busca en USDA con el término en inglés ya preparado para cada
+  // alimento — así funciona aunque la traducción por IA no esté disponible.
   function elegirAlimentoSugerido(item) {
     setForm((prev) => ({ ...prev, nombre: item.nombre }));
     setGruposAlimenticios(item.gruposAlimenticios);
+    setOrigenCatalogo(true);
     setPaso("form");
-    handleBuscarNutricion(item.nombre);
+    handleBuscarNutricion(item.terminosBusquedaUsda?.[0] || item.nombre);
   }
 
-  // Registro manual: conserva el grupo ya elegido como punto de partida
-  // (editable), pero el nombre queda libre para escribir a mano.
+  // Registro manual: un solo grupo principal, editable (ver más abajo);
+  // parte del grupo ya elegido en el paso anterior si venía de ahí.
   function elegirOtroAlimento() {
     setGruposAlimenticios(grupoSeleccionado ? [grupoSeleccionado] : []);
+    setOrigenCatalogo(false);
     setPaso("form");
   }
 
@@ -508,30 +509,46 @@ function FormularioAlimento({
       </div>
 
       <div className="mb-4">
-        <label className={labelClass}>Grupo(s) alimenticio(s)</label>
-        <div className="flex flex-wrap gap-2">
-          {GRUPOS_ALIMENTICIOS.map((g) => (
-            <label
-              key={g.value}
-              className={`text-xs px-2 py-1 rounded-full border cursor-pointer select-none ${
-                gruposAlimenticios.includes(g.value)
-                  ? "bg-nutri-teal text-white border-nutri-teal"
-                  : "border-gray-300 text-gray-600"
-              }`}
-            >
-              <input
-                type="checkbox"
-                className="hidden"
-                checked={gruposAlimenticios.includes(g.value)}
-                onChange={() => toggleGrupo(g.value)}
-              />
-              {g.label}
-            </label>
-          ))}
-        </div>
+        <label className={labelClass}>Grupo alimenticio</label>
+        {origenCatalogo ? (
+          // Viene de una sugerencia del catálogo: la clasificación ya es
+          // correcta (ej. lenteja = legumbres + proteínas) y se muestra fija,
+          // no editable — evita combinaciones sin sentido al tocarla a mano.
+          <div className="flex flex-wrap gap-2">
+            {gruposAlimenticios.map((g) => (
+              <span
+                key={g}
+                className="text-xs px-2 py-1 rounded-full bg-nutri-teal text-white"
+              >
+                {labelGrupoAlimenticio(g)}
+              </span>
+            ))}
+          </div>
+        ) : (
+          // Registro manual o edición: un solo grupo principal, no una
+          // combinación libre de los 12 — un alimento no es a la vez
+          // "proteína" y "bebida" y "fruta".
+          <select
+            value={gruposAlimenticios[0] || ""}
+            onChange={(e) =>
+              setGruposAlimenticios(e.target.value ? [e.target.value] : [])
+            }
+            required
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-nutri-teal"
+          >
+            <option value="" disabled>
+              Selecciona...
+            </option>
+            {GRUPOS_ALIMENTICIOS.map((g) => (
+              <option key={g.value} value={g.value}>
+                {g.label}
+              </option>
+            ))}
+          </select>
+        )}
         {gruposAlimenticios.length === 0 && (
           <p className="text-xs text-red-500 mt-1">
-            Selecciona al menos un grupo alimenticio.
+            Selecciona un grupo alimenticio.
           </p>
         )}
       </div>
