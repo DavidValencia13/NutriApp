@@ -5,6 +5,7 @@ import FormularioPaciente from "../components/FormularioPaciente";
 import ListaAlimentos from "../components/ListaAlimentos";
 import MenuPaciente from "../components/MenuPaciente";
 import SeguimientoPaciente from "../components/SeguimientoPaciente";
+import AsistenteChat from "../components/AsistenteChat";
 import {
   IconUsers,
   IconPlus,
@@ -12,52 +13,68 @@ import {
   IconList,
   IconPencil,
   IconTrash,
-  IconScale,
-  IconRuler,
   IconActivity,
   IconAlertTriangle,
   IconLeaf,
   IconCalendarCheck,
   IconSearch,
+  IconMessageSquare,
 } from "../components/Icons";
 
-function sinRestricciones(texto) {
+/* ── Helpers ──────────────────────────────────────────────────────────────── */
+function sinRestricciones(texto = "") {
   return /^(ninguna?|no aplica|n\/a|-)$/i.test(texto.trim());
 }
 
 function iniciales(nombre = "") {
   const partes = nombre.trim().split(/\s+/);
-  const a = partes[0]?.charAt(0) || "";
-  const b = partes[1]?.charAt(0) || "";
-  return (a + b).toUpperCase() || "?";
+  return ((partes[0]?.[0] || "") + (partes[1]?.[0] || "")).toUpperCase() || "?";
 }
 
-const coloresAvatar = [
-  "bg-nutri-teal",
-  "bg-nutri-blue",
-  "bg-nutri-orange",
-  "bg-nutri-green",
-  "bg-nutri-pink",
-  "bg-nutri-navy",
+function bmi(peso, altura) {
+  if (!peso || !altura || altura === 0) return null;
+  return (peso / (altura * altura)).toFixed(1);
+}
+
+function bmiLabel(val) {
+  if (!val) return null;
+  const v = parseFloat(val);
+  if (v < 18.5) return { label: "Bajo peso", color: "#38BDF8" };
+  if (v < 25)   return { label: "Normal",    color: "#10B981" };
+  if (v < 30)   return { label: "Sobrepeso", color: "#F59E0B" };
+  return              { label: "Obesidad",   color: "#F43F5E" };
+}
+
+function objColor(objetivo = "") {
+  const o = objetivo.toLowerCase();
+  if (o.includes("baj") || o.includes("perd")) return { bg: "rgba(14,207,199,0.1)", fg: "#0ECFC7" };
+  if (o.includes("gan") || o.includes("mas")  || o.includes("músculo")) return { bg: "rgba(245,158,11,0.12)", fg: "#F59E0B" };
+  return { bg: "rgba(129,140,248,0.12)", fg: "#818CF8" };
+}
+
+const AVATAR_GRADIENTS = [
+  ["#0ECFC7","#0BA89F"],
+  ["#818CF8","#6D5CE7"],
+  ["#F59E0B","#D97706"],
+  ["#10B981","#059669"],
+  ["#F43F5E","#E11D48"],
+  ["#38BDF8","#0EA5E9"],
 ];
 
-function colorAvatar(id) {
-  return coloresAvatar[id % coloresAvatar.length];
+function avatarGradient(id) {
+  const [a, b] = AVATAR_GRADIENTS[id % AVATAR_GRADIENTS.length];
+  return `linear-gradient(135deg, ${a} 0%, ${b} 100%)`;
 }
 
+/* ── Main component ───────────────────────────────────────────────────────── */
 function Pacientes() {
-  const [pacientes, setPacientes] = useState([]);
-  const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState("");
-  const [busqueda, setBusqueda] = useState("");
+  const [pacientes, setPacientes]   = useState([]);
+  const [cargando, setCargando]     = useState(true);
+  const [error, setError]           = useState("");
+  const [busqueda, setBusqueda]     = useState("");
+  const [modal, setModal]           = useState({ tipo: null, paciente: null });
 
-  // Un solo estado controla qué modal está abierto (nunca dos a la vez):
-  // tipo: null | "paciente" | "alimentos"
-  const [modal, setModal] = useState({ tipo: null, paciente: null });
-
-  useEffect(() => {
-    cargarPacientes();
-  }, []);
+  useEffect(() => { cargarPacientes(); }, []);
 
   async function cargarPacientes() {
     setCargando(true);
@@ -73,7 +90,7 @@ function Pacientes() {
   }
 
   async function handleEliminar(id) {
-    if (!confirm("¿Seguro que deseas eliminar este paciente?")) return;
+    if (!confirm("¿Eliminar este paciente?")) return;
     try {
       await eliminarPaciente(id);
       cargarPacientes();
@@ -82,270 +99,156 @@ function Pacientes() {
     }
   }
 
-  function abrirModalCrear() {
-    setModal({ tipo: "paciente", paciente: null }); // asegura que el form empiece vacío
-  }
-
-  function abrirModalEditar(paciente) {
-    setModal({ tipo: "paciente", paciente });
-  }
-
-  function abrirModalAlimentos(paciente) {
-    setModal({ tipo: "alimentos", paciente });
-  }
-
-  function abrirModalMenu(paciente) {
-    setModal({ tipo: "menu", paciente });
-  }
-
-  function abrirModalSeguimiento(paciente) {
-    setModal({ tipo: "seguimiento", paciente });
-  }
-
-  function cerrarModal() {
-    setModal({ tipo: null, paciente: null });
-  }
-
-  function handleSuccessFormularioPaciente() {
-    cerrarModal();
-    cargarPacientes();
-  }
-
-  if (cargando) {
-    return (
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="h-8 w-48 animate-pulse rounded-lg bg-slate-200" />
-        <div className="mt-3 h-4 w-72 animate-pulse rounded bg-slate-200" />
-        <div className="mt-8 h-28 animate-pulse rounded-2xl bg-white shadow-sm" />
-      </div>
-    );
-  }
-
-  const tituloModal =
-    modal.tipo === "paciente"
-      ? modal.paciente
-        ? "Editar paciente"
-        : "Nuevo paciente"
-      : modal.tipo === "alimentos"
-        ? `Alimentos de ${modal.paciente?.nombre}`
-        : modal.tipo === "menu"
-          ? `Menú de ${modal.paciente?.nombre}`
-          : modal.tipo === "seguimiento"
-            ? `Seguimiento de ${modal.paciente?.nombre}`
-            : "";
+  const cerrarModal  = ()  => setModal({ tipo: null, paciente: null });
+  const handleSuccessFormularioPaciente = () => { cerrarModal(); cargarPacientes(); };
 
   const pacientesFiltrados = pacientes.filter((p) =>
     p.nombre.toLowerCase().includes(busqueda.trim().toLowerCase()),
   );
 
-  return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-nutri-teal">
-            Panel principal
-          </p>
-          <h1 className="text-3xl font-bold tracking-tight text-nutri-navy sm:text-4xl">
-            Pacientes
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm text-slate-500 sm:text-base">
-            Consulta perfiles, gestiona alimentos y acompaña el progreso de cada paciente.
-          </p>
+  const tituloModal =
+    modal.tipo === "paciente"
+      ? modal.paciente ? "Editar paciente" : "Nuevo paciente"
+      : modal.tipo === "alimentos"
+        ? `Alimentos — ${modal.paciente?.nombre}`
+        : modal.tipo === "menu"
+          ? `Menú — ${modal.paciente?.nombre}`
+          : modal.tipo === "seguimiento"
+            ? `Seguimiento — ${modal.paciente?.nombre}`
+            : modal.tipo === "asistente"
+              ? `Asistente — ${modal.paciente?.nombre}`
+              : "";
+
+  if (cargando) {
+    return (
+      <div className="px-8 py-8">
+        <PageHeader />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-8">
+          {[1,2,3,4].map(i => (
+            <div
+              key={i}
+              className="rounded-2xl bg-white"
+              style={{
+                height: 200,
+                border: "1px solid #E8EEF5",
+                background: "linear-gradient(90deg, #F0F4F8 25%, #E8EEF5 50%, #F0F4F8 75%)",
+                backgroundSize: "200% 100%",
+                animation: "shimmer 1.5s infinite",
+              }}
+            />
+          ))}
         </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="px-8 py-8 min-h-screen" style={{ background: "#F0F4F8" }}>
+      {/* Header */}
+      <PageHeader />
+
+      {/* Search + CTA row */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-7 mb-7">
+        <div className="relative w-full sm:max-w-xs">
+          <IconSearch
+            className="absolute left-3.5 top-1/2 -translate-y-1/2"
+            style={{ color: "#94A3B8", width: 16, height: 16 }}
+          />
+          <input
+            id="buscar-pacientes"
+            type="search"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            placeholder="Buscar paciente…"
+            className="w-full text-sm outline-none transition-all duration-200"
+            style={{
+              background: "#fff",
+              border: "1px solid #E2E8F0",
+              borderRadius: 12,
+              padding: "10px 14px 10px 38px",
+              color: "#0D1829",
+              fontFamily: "'DM Sans', system-ui, sans-serif",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+            }}
+            onFocus={e => { e.target.style.borderColor = "rgba(14,207,199,0.5)"; e.target.style.boxShadow = "0 0 0 3px rgba(14,207,199,0.1)"; }}
+            onBlur={e  => { e.target.style.borderColor = "#E2E8F0"; e.target.style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)"; }}
+          />
+        </div>
+
         <button
-          onClick={abrirModalCrear}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-nutri-teal px-5 py-3 font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-nutri-navy hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nutri-teal/40 sm:w-auto"
+          onClick={() => setModal({ tipo: "paciente", paciente: null })}
+          className="btn-glow flex items-center gap-2 font-display font-semibold text-sm text-white px-5 py-2.5 shrink-0"
+          style={{
+            background: "linear-gradient(135deg, #0ECFC7 0%, #0BA89F 100%)",
+            borderRadius: 12,
+            border: "none",
+            cursor: "pointer",
+            letterSpacing: "-0.1px",
+            fontFamily: "'Space Grotesk', system-ui, sans-serif",
+          }}
         >
           <IconPlus />
           Nuevo paciente
         </button>
       </div>
 
-      <section className="mt-8 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm sm:p-5">
-        <label
-          htmlFor="buscar-pacientes"
-          className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500"
-        >
-          Buscar paciente
-        </label>
-        <div className="relative max-w-2xl">
-          <IconSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            id="buscar-pacientes"
-            type="search"
-            value={busqueda}
-            onChange={(event) => setBusqueda(event.target.value)}
-            placeholder="Buscar por nombre..."
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm text-nutri-navy outline-none transition focus:border-nutri-teal focus:bg-white focus:ring-4 focus:ring-nutri-teal/10"
-          />
-        </div>
-      </section>
-
-      {error && (
-        <p className="mt-5 rounded-xl bg-red-100 p-3 text-sm text-red-700">
-          {error}
-        </p>
-      )}
-
-      <div className="my-6 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-nutri-teal/10 text-nutri-teal">
-            <IconUsers />
-        </div>
-        <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-              {busqueda.trim() ? "Resultados" : "Total pacientes"}
-            </p>
-            <p className="text-xl font-bold text-nutri-navy">
-              {busqueda.trim() ? pacientesFiltrados.length : pacientes.length}
-            </p>
-        </div>
+      {/* Stats pill */}
+      <div
+        className="inline-flex items-center gap-2 px-4 py-2 mb-6 rounded-full text-sm font-medium"
+        style={{
+          background: "rgba(14,207,199,0.08)",
+          border: "1px solid rgba(14,207,199,0.15)",
+          color: "#0BA89F",
+        }}
+      >
+        <IconUsers style={{ width: 15, height: 15 }} />
+        <span>
+          {busqueda.trim() ? `${pacientesFiltrados.length} resultado${pacientesFiltrados.length !== 1 ? "s" : ""}` : `${pacientes.length} paciente${pacientes.length !== 1 ? "s" : ""} registrado${pacientes.length !== 1 ? "s" : ""}`}
+        </span>
       </div>
 
+      {error && (
+        <div
+          className="mb-5 flex items-center gap-2.5 text-sm px-4 py-3 rounded-xl animate-fade-in"
+          style={{ background: "rgba(244,63,94,0.08)", border: "1px solid rgba(244,63,94,0.2)", color: "#F43F5E" }}
+        >
+          <IconAlertTriangle style={{ width: 15, height: 15, flexShrink: 0 }} />
+          {error}
+        </div>
+      )}
+
+      {/* Grid */}
       {pacientes.length === 0 ? (
-        <p className="text-gray-500">
-          Todavía no tienes pacientes registrados.
-        </p>
+        <EmptyState onCreate={() => setModal({ tipo: "paciente", paciente: null })} />
       ) : pacientesFiltrados.length === 0 ? (
-        <p className="text-gray-500">
-          Ningún paciente coincide con "{busqueda}".
-        </p>
+        <p className="text-slate-500 text-sm mt-4">Ningún paciente coincide con "{busqueda}".</p>
       ) : (
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 card-grid">
           {pacientesFiltrados.map((p) => (
-            <div
+            <PacienteCard
               key={p.id}
-              className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md sm:p-6"
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <div
-                  className={`w-12 h-12 rounded-full ${colorAvatar(p.id)} text-white flex items-center justify-center font-semibold shrink-0`}
-                >
-                  {iniciales(p.nombre)}
-                </div>
-                <div className="min-w-0">
-                  <p className="font-semibold text-nutri-navy truncate">
-                    {p.nombre}
-                  </p>
-                  <p className="text-sm text-gray-500 truncate">
-                    Objetivo: {p.objetivo} · {p.numeroComidas} comidas/día
-                  </p>
-                </div>
-              </div>
-
-              <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
-                <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-2.5 py-2">
-                  <IconScale className="text-gray-400 shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-[10px] text-gray-400 leading-none mb-0.5">
-                      Peso
-                    </p>
-                    <p className="text-sm font-medium text-nutri-navy truncate">
-                      {p.peso} kg
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-2.5 py-2">
-                  <IconRuler className="text-gray-400 shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-[10px] text-gray-400 leading-none mb-0.5">
-                      Altura
-                    </p>
-                    <p className="text-sm font-medium text-nutri-navy truncate">
-                      {p.altura} m
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-2.5 py-2">
-                  <IconActivity className="text-gray-400 shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-[10px] text-gray-400 leading-none mb-0.5">
-                      Actividad
-                    </p>
-                    <p className="text-sm font-medium text-nutri-navy truncate">
-                      {p.nivelActividad}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {p.restricciones && (
-                <div
-                  className={`flex items-start gap-2 rounded-lg px-3 py-2 text-xs mb-2 ${
-                    sinRestricciones(p.restricciones)
-                      ? "bg-gray-50 text-gray-500"
-                      : "bg-nutri-orange/10 text-nutri-orange"
-                  }`}
-                >
-                  <IconAlertTriangle className="shrink-0 mt-0.5" />
-                  <span>
-                    <span className="font-semibold">Restricciones: </span>
-                    {p.restricciones}
-                  </span>
-                </div>
-              )}
-
-              {p.preferencias && (
-                <div className="flex items-start gap-2 bg-nutri-teal/10 text-nutri-teal rounded-lg px-3 py-2 text-xs mb-3">
-                  <IconLeaf className="shrink-0 mt-0.5" />
-                  <span>
-                    <span className="font-semibold">Preferencias: </span>
-                    {p.preferencias}
-                  </span>
-                </div>
-              )}
-
-              <div className="grid grid-cols-3 gap-1 border-t border-gray-100 pt-3 sm:grid-cols-5">
-                <button
-                  onClick={() => abrirModalAlimentos(p)}
-                  className="flex flex-col items-center gap-1 py-2 rounded-lg text-nutri-navy hover:bg-gray-50 text-xs"
-                >
-                  <IconFork />
-                  Alimentos
-                </button>
-                <button
-                  onClick={() => abrirModalMenu(p)}
-                  className="flex flex-col items-center gap-1 py-2 rounded-lg text-nutri-navy hover:bg-gray-50 text-xs"
-                >
-                  <IconList />
-                  Menú
-                </button>
-                <button
-                  onClick={() => abrirModalSeguimiento(p)}
-                  className="flex flex-col items-center gap-1 py-2 rounded-lg text-nutri-navy hover:bg-gray-50 text-xs"
-                >
-                  <IconCalendarCheck />
-                  Seguimiento
-                </button>
-                <button
-                  onClick={() => abrirModalEditar(p)}
-                  className="flex flex-col items-center gap-1 py-2 rounded-lg text-nutri-teal hover:bg-gray-50 text-xs"
-                >
-                  <IconPencil />
-                  Editar
-                </button>
-                <button
-                  onClick={() => handleEliminar(p.id)}
-                  className="flex flex-col items-center gap-1 py-2 rounded-lg text-nutri-pink hover:bg-gray-50 text-xs"
-                >
-                  <IconTrash />
-                  Eliminar
-                </button>
-              </div>
-            </div>
+              p={p}
+              onAlimentos={() => setModal({ tipo: "alimentos",   paciente: p })}
+              onMenu       ={() => setModal({ tipo: "menu",        paciente: p })}
+              onSeguimiento={() => setModal({ tipo: "seguimiento", paciente: p })}
+              onAsistente  ={() => setModal({ tipo: "asistente",   paciente: p })}
+              onEditar     ={() => setModal({ tipo: "paciente",   paciente: p })}
+              onEliminar   ={() => handleEliminar(p.id)}
+            />
           ))}
         </div>
       )}
 
+      {/* Modal */}
       <Modal
         isOpen={modal.tipo !== null}
         onClose={cerrarModal}
         title={tituloModal}
         ancho={
-          modal.tipo === "menu" || modal.tipo === "alimentos"
-            ? "max-w-5xl"
-            : modal.tipo === "seguimiento"
-              ? "max-w-2xl"
-              : "max-w-lg"
+          modal.tipo === "menu" || modal.tipo === "alimentos" ? "max-w-5xl"
+          : modal.tipo === "seguimiento" ? "max-w-2xl"
+          : modal.tipo === "asistente"   ? "max-w-xl"
+          : "max-w-lg"
         }
       >
         {modal.tipo === "paciente" && (
@@ -356,22 +259,310 @@ function Pacientes() {
           />
         )}
         {modal.tipo === "alimentos" && modal.paciente && (
-          <ListaAlimentos
-            idPaciente={modal.paciente.id}
-            paciente={modal.paciente}
-          />
+          <ListaAlimentos idPaciente={modal.paciente.id} paciente={modal.paciente} />
         )}
         {modal.tipo === "menu" && modal.paciente && (
-          <MenuPaciente
-            idPaciente={modal.paciente.id}
-            presupuesto={modal.paciente.presupuesto}
-          />
+          <MenuPaciente idPaciente={modal.paciente.id} presupuesto={modal.paciente.presupuesto} />
         )}
         {modal.tipo === "seguimiento" && modal.paciente && (
           <SeguimientoPaciente idPaciente={modal.paciente.id} />
         )}
+        {modal.tipo === "asistente" && modal.paciente && (
+          <AsistenteChat paciente={modal.paciente} />
+        )}
       </Modal>
     </div>
+  );
+}
+
+/* ── Page header ──────────────────────────────────────────────────────────── */
+function PageHeader() {
+  return (
+    <div className="animate-fade-in-up">
+      <p
+        className="text-[11px] font-bold uppercase tracking-[0.2em] mb-1"
+        style={{ color: "#0ECFC7" }}
+      >
+        Panel principal
+      </p>
+      <h1
+        className="font-display font-bold"
+        style={{ fontSize: 30, color: "#0D1829", letterSpacing: "-0.6px", textWrap: "balance" }}
+      >
+        Mis Pacientes
+      </h1>
+      <p className="mt-1.5 text-sm" style={{ color: "#64748B", maxWidth: 480 }}>
+        Gestiona perfiles, planes alimentarios y el progreso de cada paciente desde aquí.
+      </p>
+    </div>
+  );
+}
+
+/* ── Empty state ──────────────────────────────────────────────────────────── */
+function EmptyState({ onCreate }) {
+  return (
+    <div
+      className="flex flex-col items-center justify-center py-20 rounded-2xl text-center animate-fade-in"
+      style={{ border: "2px dashed rgba(14,207,199,0.2)", background: "rgba(14,207,199,0.03)" }}
+    >
+      <div
+        className="flex items-center justify-center mb-4"
+        style={{
+          width: 64, height: 64,
+          borderRadius: 18,
+          background: "rgba(14,207,199,0.1)",
+          color: "#0ECFC7",
+        }}
+      >
+        <IconUsers style={{ width: 28, height: 28 }} />
+      </div>
+      <h3 className="font-display font-bold text-lg" style={{ color: "#0D1829" }}>
+        Sin pacientes aún
+      </h3>
+      <p className="text-sm mt-1 mb-5" style={{ color: "#94A3B8", maxWidth: 280 }}>
+        Agrega tu primer paciente para comenzar a gestionar sus planes nutricionales.
+      </p>
+      <button
+        onClick={onCreate}
+        className="btn-glow flex items-center gap-2 font-display font-semibold text-sm text-white px-5 py-2.5"
+        style={{
+          background: "linear-gradient(135deg, #0ECFC7 0%, #0BA89F 100%)",
+          borderRadius: 12,
+          border: "none",
+          cursor: "pointer",
+          fontFamily: "'Space Grotesk', system-ui, sans-serif",
+        }}
+      >
+        <IconPlus />
+        Agregar primer paciente
+      </button>
+    </div>
+  );
+}
+
+/* ── Patient card ─────────────────────────────────────────────────────────── */
+function PacienteCard({ p, onAlimentos, onMenu, onSeguimiento, onAsistente, onEditar, onEliminar }) {
+  const imc     = bmi(p.peso, p.altura);
+  const imcInfo = bmiLabel(imc);
+  const obj     = objColor(p.objetivo);
+  const tienRestr = p.restricciones && !sinRestricciones(p.restricciones);
+
+  return (
+    <article
+      className="patient-card bg-white rounded-2xl p-5"
+      style={{ border: "1px solid #E8EEF5", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}
+    >
+      {/* Top row: avatar + info + badges */}
+      <div className="flex items-start gap-4 mb-4">
+        <div
+          className="flex items-center justify-center font-display font-bold text-white flex-shrink-0 relative"
+          style={{
+            width: 52, height: 52,
+            borderRadius: 15,
+            background: avatarGradient(p.id),
+            fontSize: 18,
+            boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
+          }}
+        >
+          {iniciales(p.nombre)}
+          {/* Status dot */}
+          <span
+            style={{
+              position: "absolute",
+              right: -3, bottom: -3,
+              width: 12, height: 12,
+              borderRadius: "50%",
+              background: "#10B981",
+              border: "2px solid #fff",
+            }}
+          />
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <h3
+            className="font-display font-bold truncate"
+            style={{ fontSize: 16, color: "#0D1829", letterSpacing: "-0.3px" }}
+          >
+            {p.nombre}
+          </h3>
+          <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+            <span
+              className="inline-flex items-center font-semibold"
+              style={{
+                fontSize: 11,
+                padding: "2px 9px",
+                borderRadius: 20,
+                background: obj.bg,
+                color: obj.fg,
+                letterSpacing: "0.03em",
+              }}
+            >
+              {p.objetivo}
+            </span>
+            {imcInfo && (
+              <span
+                className="inline-flex items-center font-semibold"
+                style={{
+                  fontSize: 11,
+                  padding: "2px 9px",
+                  borderRadius: 20,
+                  background: `${imcInfo.color}18`,
+                  color: imcInfo.color,
+                  letterSpacing: "0.03em",
+                }}
+              >
+                IMC {imc} · {imcInfo.label}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Meals badge */}
+        <div
+          className="flex flex-col items-center justify-center text-center shrink-0"
+          style={{
+            background: "#F8FAFC",
+            border: "1px solid #E8EEF5",
+            borderRadius: 12,
+            padding: "8px 12px",
+            minWidth: 52,
+          }}
+        >
+          <span
+            className="tabular font-display font-bold leading-none"
+            style={{ fontSize: 22, color: "#0D1829" }}
+          >
+            {p.numeroComidas}
+          </span>
+          <span style={{ fontSize: 9, color: "#94A3B8", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 3 }}>
+            Comidas
+          </span>
+        </div>
+      </div>
+
+      {/* Metrics row */}
+      <div className="grid grid-cols-3 gap-2.5 mb-4">
+        <Metric label="Peso"    value={p.peso}   unit="kg" />
+        <Metric label="Altura"  value={p.altura ? `${p.altura}m` : "—"} />
+        <Metric label="Actividad" value={p.nivelActividad} small />
+      </div>
+
+      {/* Tags: restricciones + preferencias */}
+      {(tienRestr || p.preferencias) && (
+        <div className="flex flex-wrap gap-2 mb-4">
+          {tienRestr && (
+            <div
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl"
+              style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.18)", color: "#B45309" }}
+            >
+              <IconAlertTriangle style={{ width: 12, height: 12, flexShrink: 0 }} />
+              <span className="font-medium truncate max-w-[160px]">{p.restricciones}</span>
+            </div>
+          )}
+          {p.preferencias && (
+            <div
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl"
+              style={{ background: "rgba(16,185,129,0.07)", border: "1px solid rgba(16,185,129,0.18)", color: "#047857" }}
+            >
+              <IconLeaf style={{ width: 12, height: 12, flexShrink: 0 }} />
+              <span className="font-medium truncate max-w-[160px]">{p.preferencias}</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Action buttons */}
+      <div
+        className="grid grid-cols-6 gap-1 pt-3.5"
+        style={{ borderTop: "1px solid #F0F4F8" }}
+      >
+        <ActionBtn onClick={onAlimentos}   icon={<IconFork />}          label="Alimentos"   />
+        <ActionBtn onClick={onMenu}        icon={<IconList />}          label="Menú"        />
+        <ActionBtn onClick={onSeguimiento} icon={<IconCalendarCheck />} label="Seguimiento" />
+        <ActionBtn onClick={onAsistente}   icon={<IconMessageSquare />} label="Asistente"   accent />
+        <ActionBtn onClick={onEditar}      icon={<IconPencil />}        label="Editar"      />
+        <ActionBtn onClick={onEliminar}    icon={<IconTrash />}         label="Eliminar"    danger />
+      </div>
+    </article>
+  );
+}
+
+/* ── Metric chip ──────────────────────────────────────────────────────────── */
+function Metric({ label, value, unit, small }) {
+  return (
+    <div
+      className="flex flex-col"
+      style={{
+        background: "#F8FAFC",
+        border: "1px solid #E8EEF5",
+        borderRadius: 10,
+        padding: "9px 10px",
+      }}
+    >
+      <span
+        className="tabular font-display font-bold leading-none truncate"
+        style={{ fontSize: small ? 12 : 16, color: "#0D1829" }}
+      >
+        {value}{unit && <span style={{ fontSize: 10, fontWeight: 500, color: "#94A3B8", marginLeft: 1 }}>{unit}</span>}
+      </span>
+      <span
+        className="mt-1 uppercase tracking-wider"
+        style={{ fontSize: 9, color: "#94A3B8", fontWeight: 600 }}
+      >
+        {label}
+      </span>
+    </div>
+  );
+}
+
+/* ── Action button ────────────────────────────────────────────────────────── */
+function ActionBtn({ onClick, icon, label, accent, danger }) {
+  const base = {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 4,
+    padding: "8px 4px",
+    border: "none",
+    background: "none",
+    cursor: "pointer",
+    borderRadius: 10,
+    transition: "all 0.15s ease",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+  };
+
+  function getStyle(hovered) {
+    if (danger) return {
+      ...base,
+      color: hovered ? "#F43F5E" : "#94A3B8",
+      background: hovered ? "rgba(244,63,94,0.06)" : "none",
+    };
+    if (accent) return {
+      ...base,
+      color: hovered ? "#0ECFC7" : "#94A3B8",
+      background: hovered ? "rgba(14,207,199,0.08)" : "none",
+    };
+    return {
+      ...base,
+      color: hovered ? "#0D1829" : "#94A3B8",
+      background: hovered ? "rgba(13,24,41,0.04)" : "none",
+    };
+  }
+
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <button
+      style={getStyle(hovered)}
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <span style={{ display: "flex", width: 18, height: 18 }}>{icon}</span>
+      <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+        {label}
+      </span>
+    </button>
   );
 }
 

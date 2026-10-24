@@ -1,26 +1,206 @@
 @import "tailwindcss";
 
-/* Paleta de colores de NutriApp,*/
+/* ── NutriApp Design System ─────────────────────────────────────────────── */
 @theme {
-  --color-nutri-orange: #f5a623;
-  --color-nutri-pink: #ef4b6a;
-  --color-nutri-teal: #1ba9a0;
-  --color-nutri-blue: #2e86c1;
-  --color-nutri-green: #4caf7d;
-  --color-nutri-navy: #1b2a4a;
+  /* Brand palette — evolved for premium SaaS */
+  --color-nutri-teal:    #0ECFC7;
+  --color-nutri-teal-dim:#0BA89F;
+  --color-nutri-navy:    #0D1829;
+  --color-nutri-indigo:  #818CF8;
+  --color-nutri-green:   #10B981;
+  --color-nutri-orange:  #F59E0B;
+  --color-nutri-pink:    #F43F5E;
+  --color-nutri-blue:    #38BDF8;
+
+  /* Sidebar shell tokens */
+  --color-shell-bg:      #080F1C;
+  --color-shell-surface: #0D1829;
+  --color-shell-border:  rgba(56,189,248,0.07);
+
+  /* Fonts */
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-body:    'DM Sans', system-ui, sans-serif;
 }
 
+/* ── Base ─────────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, .font-display {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+}
+
+/* ── Keyframes ────────────────────────────────────────────────────────────── */
 @keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.animate-fade-in-up {
-  animation: fade-in-up 0.45s ease-out both;
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes drift {
+  0%,100% { transform: translate(0,0) scale(1); }
+  33%     { transform: translate(30px,-20px) scale(1.05); }
+  66%     { transform: translate(-20px,30px) scale(0.95); }
+}
+
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(14, 207, 199, 0.35); }
+  70%  { box-shadow: 0 0 0 10px rgba(14, 207, 199, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(14, 207, 199, 0); }
+}
+
+@keyframes bounce-dot {
+  0%,60%,100% { transform: translateY(0);  opacity: 0.5; }
+  30%         { transform: translateY(-6px); opacity: 1; }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Animation utilities ──────────────────────────────────────────────────── */
+.animate-fade-in-up   { animation: fade-in-up  0.5s cubic-bezier(.4,0,.2,1) both; }
+.animate-fade-in      { animation: fade-in     0.4s ease both; }
+.animate-scale-in     { animation: scale-in    0.4s cubic-bezier(.4,0,.2,1) both; }
+.animate-slide-right  { animation: slide-in-right 0.4s cubic-bezier(.4,0,.2,1) both; }
+
+.delay-100 { animation-delay: 0.1s; }
+.delay-150 { animation-delay: 0.15s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-250 { animation-delay: 0.25s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-350 { animation-delay: 0.35s; }
+.delay-400 { animation-delay: 0.4s; }
+
+/* ── Stagger card grid ────────────────────────────────────────────────────── */
+.card-grid > *:nth-child(1)  { animation: fade-in-up 0.5s 0.05s both; }
+.card-grid > *:nth-child(2)  { animation: fade-in-up 0.5s 0.12s both; }
+.card-grid > *:nth-child(3)  { animation: fade-in-up 0.5s 0.19s both; }
+.card-grid > *:nth-child(4)  { animation: fade-in-up 0.5s 0.26s both; }
+.card-grid > *:nth-child(5)  { animation: fade-in-up 0.5s 0.33s both; }
+.card-grid > *:nth-child(6)  { animation: fade-in-up 0.5s 0.40s both; }
+.card-grid > *:nth-child(n+7){ animation: fade-in-up 0.5s 0.47s both; }
+
+/* ── Sidebar shell (dark) ─────────────────────────────────────────────────── */
+.sidebar-shell {
+  background: linear-gradient(180deg, #080F1C 0%, #0A1220 100%);
+  border-right: 1px solid rgba(56,189,248,0.07);
+  position: relative;
+}
+
+.sidebar-shell::after {
+  content: '';
+  position: absolute;
+  right: 0; top: 15%; bottom: 15%;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(14,207,199,0.5), transparent);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* ── Nav item active pill ─────────────────────────────────────────────────── */
+.nav-item-active {
+  background: rgba(14,207,199,0.1);
+  color: #0ECFC7;
+}
+
+.nav-item-active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 20%; bottom: 20%;
+  width: 3px;
+  background: #0ECFC7;
+  border-radius: 0 3px 3px 0;
+}
+
+/* ── Patient card hover spotlight ────────────────────────────────────────── */
+.patient-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.patient-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.1), 0 0 0 1px rgba(14,207,199,0.12);
+  border-color: rgba(14,207,199,0.25) !important;
+}
+
+/* ── Button glow ─────────────────────────────────────────────────────────── */
+.btn-glow {
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(14,207,199,0.25);
+}
+.btn-glow:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(14,207,199,0.4);
+}
+
+/* ── Typing indicator dots ────────────────────────────────────────────────── */
+.typing-dot {
+  width: 6px; height: 6px;
+  background: #94a3b8;
+  border-radius: 50%;
+  animation: bounce-dot 1.4s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* ── Glassmorphism ────────────────────────────────────────────────────────── */
+.glass {
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* ── Ambient orb ─────────────────────────────────────────────────────────── */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+/* ── Progress bar animated fill ──────────────────────────────────────────── */
+.progress-fill {
+  transition: width 1.2s cubic-bezier(.4,0,.2,1);
+  background: linear-gradient(90deg, #0BA89F, #0ECFC7);
+}
+
+/* ── Custom scrollbar ────────────────────────────────────────────────────── */
+::-webkit-scrollbar          { width: 5px; height: 5px; }
+::-webkit-scrollbar-track    { background: transparent; }
+::-webkit-scrollbar-thumb    { background: rgba(14,207,199,0.2); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(14,207,199,0.35); }
+
+/* ── Modal backdrop ──────────────────────────────────────────────────────── */
+.modal-backdrop {
+  animation: fade-in 0.2s ease both;
+}
+
+.modal-card {
+  animation: scale-in 0.3s cubic-bezier(.4,0,.2,1) both;
+}
+
+/* ── Number tabular ──────────────────────────────────────────────────────── */
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* ── Focus ring ──────────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid rgba(14,207,199,0.6);
+  outline-offset: 2px;
+  border-radius: 6px;
 }
