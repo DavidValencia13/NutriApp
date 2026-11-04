@@ -55,7 +55,7 @@ function EfectividadMenu({ idPaciente, idMenu }) {
   return (
     <div className="mb-4 rounded-lg border border-gray-200 p-3 bg-white">
       <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
-        <span className="text-xs font-semibold text-nutri-navy">Efectividad de la dieta</span>
+        <span className="text-xs font-semibold text-nutri-ink">Efectividad de la dieta</span>
         <span className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1.5 ${estilo.clase}`}>
           <span className={`w-1.5 h-1.5 rounded-full ${estilo.dot}`} />
           {estilo.label}

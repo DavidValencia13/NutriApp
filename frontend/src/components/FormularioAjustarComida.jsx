@@ -112,7 +112,7 @@ function FormularioAjustarComida({ idPaciente, idMenu, comida, onSuccess, onCanc
   }
 
   const inputClass =
-    "w-full border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-nutri-teal";
+    "w-full border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-nutri-brand";
 
   if (cargando) return <p>Cargando alimentos...</p>;
 
@@ -193,7 +193,7 @@ function FormularioAjustarComida({ idPaciente, idMenu, comida, onSuccess, onCanc
       <button
         type="button"
         onClick={agregarFila}
-        className="text-nutri-teal text-sm underline mb-4"
+        className="text-nutri-brand text-sm underline mb-4"
       >
         + Agregar alimento
       </button>
@@ -215,7 +215,7 @@ function FormularioAjustarComida({ idPaciente, idMenu, comida, onSuccess, onCanc
         <button
           type="submit"
           disabled={guardando}
-          className="px-4 py-2 rounded bg-nutri-teal text-white hover:bg-nutri-navy disabled:opacity-50"
+          className="px-4 py-2 rounded bg-nutri-brand text-white hover:bg-nutri-ink disabled:opacity-50"
         >
           {guardando ? "Guardando..." : "Guardar"}
         </button>

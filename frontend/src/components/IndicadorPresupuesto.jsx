@@ -18,7 +18,7 @@ function IndicadorPresupuesto({ costo, presupuesto, titulo = "Presupuesto del ca
     ? "bg-nutri-pink"
     : cercano
       ? "bg-nutri-orange"
-      : "bg-nutri-teal";
+      : "bg-nutri-brand";
   const texto = excedido
     ? `Excede el presupuesto por ${moneda(actual - limite)}.`
     : cercano
@@ -36,8 +36,8 @@ function IndicadorPresupuesto({ costo, presupuesto, titulo = "Presupuesto del ca
       }`}
     >
       <div className="flex items-center justify-between gap-3 text-xs">
-        <span className="font-semibold text-nutri-navy">{titulo}</span>
-        <span className="font-semibold tabular-nums text-nutri-navy">
+        <span className="font-semibold text-nutri-ink">{titulo}</span>
+        <span className="font-semibold tabular-nums text-nutri-ink">
           {moneda(actual)} / {moneda(limite)}
         </span>
       </div>

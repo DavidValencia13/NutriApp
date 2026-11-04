@@ -85,14 +85,14 @@ function SeguimientoPaciente({ idPaciente }) {
           <GraficaLineas
             titulo="Peso"
             unidad="kg"
-            color="#1ba9a0"
+            color="#1F7A52"
             valores={valoresPeso}
             mensajeVacio="Todavía no hay registros con peso."
           />
           <GraficaLineas
             titulo="Cumplimiento"
             unidad="%"
-            color="#2e86c1"
+            color="#2F6E9E"
             valores={valoresCumplimiento}
           />
         </div>
@@ -101,7 +101,7 @@ function SeguimientoPaciente({ idPaciente }) {
       <div className="mb-4">
         <button
           onClick={() => setMostrarFormulario((v) => !v)}
-          className="text-sm text-nutri-teal hover:underline"
+          className="text-sm text-nutri-brand hover:underline"
         >
           {mostrarFormulario ? "− Cancelar" : "+ Registrar seguimiento"}
         </button>
@@ -115,7 +115,7 @@ function SeguimientoPaciente({ idPaciente }) {
       </div>
 
       <div>
-        <p className="font-semibold text-nutri-navy mb-2 text-sm">
+        <p className="font-semibold text-nutri-ink mb-2 text-sm">
           Registros ({registros.length})
         </p>
         {registros.length === 0 ? (
@@ -130,7 +130,7 @@ function SeguimientoPaciente({ idPaciente }) {
                   className="flex items-start justify-between gap-2 bg-gray-50 rounded-lg px-3 py-2 text-xs"
                 >
                   <div className="min-w-0">
-                    <p className="font-medium text-nutri-navy flex items-center gap-2 flex-wrap">
+                    <p className="font-medium text-nutri-ink flex items-center gap-2 flex-wrap">
                       {new Date(r.fecha).toLocaleDateString()}
                       {r.peso !== undefined && <span>· {r.peso} kg</span>}
                       <span className={`px-2 py-0.5 rounded-full font-medium ${estilo.clase}`}>
@@ -228,7 +228,7 @@ function FormularioSeguimiento({ idPaciente, onSuccess, onCancel }) {
         <button type="button" onClick={onCancel} className="px-3 py-1.5 rounded border border-gray-300 text-sm">
           Cancelar
         </button>
-        <button type="submit" disabled={guardando} className="px-3 py-1.5 rounded bg-nutri-teal text-white text-sm disabled:opacity-50">
+        <button type="submit" disabled={guardando} className="px-3 py-1.5 rounded bg-nutri-brand text-white text-sm disabled:opacity-50">
           {guardando ? "Guardando..." : "Guardar"}
         </button>
       </div>
@@ -245,7 +245,7 @@ function GraficaLineas({ titulo, unidad, color, valores, mensajeVacio }) {
   if (valores.length === 0) {
     return (
       <div className="bg-white border border-gray-200 rounded-lg p-3">
-        <p className="text-xs font-semibold text-nutri-navy mb-1">{titulo}</p>
+        <p className="text-xs font-semibold text-nutri-ink mb-1">{titulo}</p>
         <p className="text-xs text-gray-400">{mensajeVacio || "Todavía no hay datos suficientes."}</p>
       </div>
     );
@@ -270,9 +270,9 @@ function GraficaLineas({ titulo, unidad, color, valores, mensajeVacio }) {
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-3">
       <div className="flex justify-between items-baseline mb-1">
-        <p className="text-xs font-semibold text-nutri-navy">{titulo}</p>
+        <p className="text-xs font-semibold text-nutri-ink">{titulo}</p>
         {delta !== undefined && (
-          <span className={`text-[11px] font-medium ${Math.abs(delta) < 0.05 ? "text-gray-400" : "text-nutri-navy"}`}>
+          <span className={`text-[11px] font-medium ${Math.abs(delta) < 0.05 ? "text-gray-400" : "text-nutri-ink"}`}>
             {delta > 0 ? "+" : ""}
             {delta.toFixed(1)} {unidad}
           </span>
@@ -284,9 +284,9 @@ function GraficaLineas({ titulo, unidad, color, valores, mensajeVacio }) {
         role="img"
         aria-label={`Evolución de ${titulo}: ${valores.map((v) => v.valor.toFixed(1)).join(", ")}`}
       >
-        <line x1={padX} y1={y(min)} x2={w - padX} y2={y(min)} stroke="#e5e7eb" strokeWidth="1" />
+        <line x1={padX} y1={y(min)} x2={w - padX} y2={y(min)} stroke="#E1E6E0" strokeWidth="1" />
         {max !== min && (
-          <line x1={padX} y1={y(max)} x2={w - padX} y2={y(max)} stroke="#e5e7eb" strokeWidth="1" />
+          <line x1={padX} y1={y(max)} x2={w - padX} y2={y(max)} stroke="#E1E6E0" strokeWidth="1" />
         )}
         {valores.length > 1 && (
           <polyline

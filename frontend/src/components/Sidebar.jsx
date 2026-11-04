@@ -1,5 +1,6 @@
 import { useAuth } from "../context/AuthContext";
 import { IconUsers, IconLogout } from "./Icons";
+import { Logo } from "./Logo";
 
 function iniciales(nombre = "", apellido = "") {
   return ((nombre[0] || "") + (apellido[0] || "")).toUpperCase() || "?";
@@ -10,113 +11,41 @@ function Sidebar() {
 
   return (
     <aside
-      className="sidebar-shell w-64 shrink-0 flex flex-col"
+      className="w-60 shrink-0 flex flex-col bg-nutri-ink text-white"
       style={{ height: "100vh", position: "sticky", top: 0 }}
     >
-      {/* Brand */}
-      <div
-        className="flex items-center gap-3 px-5 py-5"
-        style={{ borderBottom: "1px solid rgba(56,189,248,0.07)" }}
-      >
-        <div
-          className="font-display font-bold text-white flex items-center justify-center flex-shrink-0"
-          style={{
-            width: 38, height: 38,
-            background: "linear-gradient(135deg, #0ECFC7 0%, #0BA89F 100%)",
-            borderRadius: 11,
-            fontSize: 17,
-            boxShadow: "0 4px 16px rgba(14,207,199,0.35)",
-          }}
-        >
-          N
-        </div>
-        <div>
-          <p
-            className="font-display font-bold leading-none"
-            style={{ color: "#E2E8F0", fontSize: 15, letterSpacing: "-0.3px" }}
-          >
-            NutriApp
-          </p>
-          <p
-            className="mt-1 uppercase tracking-[0.12em]"
-            style={{ fontSize: 9, color: "rgba(100,116,139,0.8)" }}
-          >
-            Plataforma nutricional
-          </p>
-        </div>
+      {/* Marca */}
+      <div className="px-5 h-16 flex items-center border-b border-white/10">
+        <Logo size={30} light />
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 px-3 py-4">
-        <p
-          className="px-3 mb-2 uppercase tracking-widest font-semibold"
-          style={{ fontSize: 10, color: "rgba(100,116,139,0.6)" }}
-        >
-          Módulos
-        </p>
+      {/* Navegación */}
+      <nav className="flex-1 px-3 py-5">
+        <NavItem icon={<IconUsers />} label="Pacientes" active />
 
-        <NavItem icon={<IconUsers />} label="Pacientes" badge="12" active />
-
-        <div className="mt-6">
-          <p
-            className="px-3 mb-2 uppercase tracking-widest font-semibold"
-            style={{ fontSize: 10, color: "rgba(100,116,139,0.6)" }}
-          >
-            Próximamente
-          </p>
-
-          <NavItem icon={<IconChart />}     label="Reportes"    disabled />
-          <NavItem icon={<IconCalendar />}  label="Consultas"   disabled />
-          <NavItem icon={<IconBrain />}     label="Inteligencia IA" disabled accent="indigo" />
-        </div>
+        <p className="px-3 mt-7 mb-2 text-xs text-white/40">Próximamente</p>
+        <NavItem icon={<IconChart />}    label="Reportes"        disabled />
+        <NavItem icon={<IconCalendar />} label="Consultas"       disabled />
+        <NavItem icon={<IconBrain />}    label="Inteligencia IA" disabled />
       </nav>
 
-      {/* User */}
-      <div
-        className="px-3 py-4"
-        style={{ borderTop: "1px solid rgba(56,189,248,0.07)" }}
-      >
-        <div
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl group transition-all duration-200"
-          style={{ cursor: "default" }}
-        >
-          <div
-            className="flex items-center justify-center text-white font-semibold flex-shrink-0"
-            style={{
-              width: 34, height: 34,
-              borderRadius: "50%",
-              background: "linear-gradient(135deg, #0ECFC7, #818CF8)",
-              fontSize: 12,
-            }}
-          >
+      {/* Usuario */}
+      <div className="px-3 py-4 border-t border-white/10">
+        <div className="flex items-center gap-3 px-2">
+          <div className="flex items-center justify-center rounded-full bg-nutri-mint text-nutri-ink text-xs font-bold shrink-0 w-9 h-9">
             {iniciales(nutriologo?.nombre, nutriologo?.apellido)}
           </div>
-          <div className="min-w-0 flex-1">
-            <p
-              className="font-semibold truncate leading-none"
-              style={{ fontSize: 13, color: "#E2E8F0" }}
-            >
+          <div className="min-w-0 flex-1 leading-tight">
+            <p className="text-sm font-semibold truncate">
               {nutriologo?.nombre} {nutriologo?.apellido}
             </p>
-            <p className="mt-0.5" style={{ fontSize: 11, color: "#475569" }}>
-              Nutriólogo/a
-            </p>
+            <p className="text-xs text-white/50">Nutriólogo/a</p>
           </div>
           <button
             onClick={logout}
             title="Cerrar sesión"
             aria-label="Cerrar sesión"
-            className="flex items-center justify-center rounded-lg transition-all duration-200"
-            style={{
-              width: 30, height: 30,
-              color: "#475569",
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
-              flexShrink: 0,
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(244,63,94,0.12)"; e.currentTarget.style.color = "#F43F5E"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#475569"; }}
+            className="flex items-center justify-center w-8 h-8 rounded-md text-white/50 hover:text-white hover:bg-white/10 transition-colors shrink-0 cursor-pointer"
           >
             <IconLogout />
           </button>
@@ -126,59 +55,19 @@ function Sidebar() {
   );
 }
 
-function NavItem({ icon, label, badge, active, disabled, accent }) {
-  const accentColor = accent === "indigo" ? "#818CF8" : "#0ECFC7";
-
+function NavItem({ icon, label, active, disabled }) {
   return (
     <div
-      className={`nav-item relative flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 transition-all duration-200 ${active ? "nav-item-active" : ""}`}
-      style={{
-        cursor: disabled ? "default" : "pointer",
-        opacity: disabled ? 0.4 : 1,
-        color: active ? accentColor : "rgba(148,163,184,0.8)",
-        fontSize: 14,
-        fontWeight: active ? 600 : 500,
-      }}
+      className={`flex items-center gap-3 px-3 py-2 rounded-md mb-0.5 text-sm transition-colors ${
+        active
+          ? "bg-white/10 text-white font-semibold"
+          : disabled
+            ? "text-white/35 cursor-default"
+            : "text-white/70 hover:bg-white/5 hover:text-white cursor-pointer"
+      }`}
     >
-      <span
-        style={{
-          color: active ? accentColor : "rgba(100,116,139,0.9)",
-          display: "flex",
-        }}
-      >
-        {icon}
-      </span>
+      <span className={`flex ${active ? "text-nutri-mint" : ""}`}>{icon}</span>
       <span className="flex-1">{label}</span>
-      {badge && (
-        <span
-          className="font-bold"
-          style={{
-            fontSize: 11,
-            background: "rgba(14,207,199,0.12)",
-            color: "#0ECFC7",
-            padding: "2px 8px",
-            borderRadius: 20,
-          }}
-        >
-          {badge}
-        </span>
-      )}
-      {disabled && (
-        <span
-          style={{
-            fontSize: 9,
-            fontWeight: 600,
-            letterSpacing: "0.06em",
-            textTransform: "uppercase",
-            background: "rgba(148,163,184,0.1)",
-            color: "rgba(148,163,184,0.5)",
-            padding: "2px 6px",
-            borderRadius: 20,
-          }}
-        >
-          Pronto
-        </span>
-      )}
     </div>
   );
 }

@@ -123,7 +123,7 @@ function ListaAlimentos({ idPaciente, paciente }) {
   const perfilPaciente = paciente && (
     <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
       <span>
-        <span className="font-semibold text-nutri-navy">Objetivo:</span>{" "}
+        <span className="font-semibold text-nutri-ink">Objetivo:</span>{" "}
         {paciente.objetivo}
       </span>
       {paciente.restricciones && !sinRestricciones(paciente.restricciones) && (
@@ -133,7 +133,7 @@ function ListaAlimentos({ idPaciente, paciente }) {
         </span>
       )}
       {paciente.preferencias && (
-        <span className="inline-flex items-center gap-1 text-nutri-teal">
+        <span className="inline-flex items-center gap-1 text-nutri-brand">
           <IconLeaf className="shrink-0" />
           {paciente.preferencias}
         </span>
@@ -163,7 +163,7 @@ function ListaAlimentos({ idPaciente, paciente }) {
       // sea ancha (max-w-5xl a nivel de Modal): ensanchar cada campo hasta
       // ocupar todo el ancho disponible empeoraría la lectura, no la mejora.
       <div className="max-w-xl mx-auto">
-        <p className="font-semibold text-nutri-navy mb-1">{contextoFormulario()}</p>
+        <p className="font-semibold text-nutri-ink mb-1">{contextoFormulario()}</p>
         {perfilPaciente}
         <FormularioAlimento
           idPaciente={idPaciente}
@@ -212,7 +212,7 @@ function ListaAlimentos({ idPaciente, paciente }) {
           <h2 className="font-semibold">Alimentos</h2>
           <button
             onClick={abrirFormularioCrear}
-            className="bg-nutri-teal text-white px-3 py-1 rounded text-sm hover:bg-nutri-navy"
+            className="bg-nutri-brand text-white px-3 py-1 rounded text-sm hover:bg-nutri-ink"
           >
             + Nuevo alimento
           </button>
@@ -245,13 +245,13 @@ function ListaAlimentos({ idPaciente, paciente }) {
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
                 placeholder="Buscar por nombre..."
-                className="w-full border border-gray-300 rounded-lg pl-8 pr-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-nutri-teal"
+                className="w-full border border-gray-300 rounded-lg pl-8 pr-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-nutri-brand"
               />
             </div>
             <select
               value={filtroGrupo}
               onChange={(e) => setFiltroGrupo(e.target.value)}
-              className="border border-gray-300 rounded-lg px-2 py-1.5 text-sm sm:w-48 focus:outline-none focus:ring-2 focus:ring-nutri-teal"
+              className="border border-gray-300 rounded-lg px-2 py-1.5 text-sm sm:w-48 focus:outline-none focus:ring-2 focus:ring-nutri-brand"
             >
               <option value="">Todos los grupos</option>
               {GRUPOS_ALIMENTICIOS.map((g) => (
@@ -298,7 +298,7 @@ function ListaAlimentos({ idPaciente, paciente }) {
                       {a.gruposAlimenticios.map((g) => (
                         <span
                           key={g}
-                          className="text-[10px] px-1.5 py-0.5 rounded-full bg-nutri-teal/10 text-nutri-teal"
+                          className="text-[10px] px-1.5 py-0.5 rounded-full bg-nutri-brand/10 text-nutri-brand"
                         >
                           {labelGrupoAlimenticio(g)}
                         </span>
@@ -309,7 +309,7 @@ function ListaAlimentos({ idPaciente, paciente }) {
                 <div className="flex gap-3">
                   <button
                     onClick={() => abrirFormularioEditar(a)}
-                    className="text-nutri-teal hover:opacity-70 text-sm"
+                    className="text-nutri-brand hover:opacity-70 text-sm"
                   >
                     Editar
                   </button>

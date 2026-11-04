@@ -33,7 +33,7 @@ function SugerenciasMenu({ idPaciente, idMenu }) {
     <div className="mb-4 text-sm">
       <details className="border rounded-lg overflow-hidden">
         <summary className="cursor-pointer select-none px-3 py-1.5 flex items-center justify-between bg-gray-50">
-          <span className="text-xs font-semibold text-nutri-navy">
+          <span className="text-xs font-semibold text-nutri-ink">
             Sugerencias para completar el menú ({sugerencias.length})
           </span>
           <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-nutri-blue/15 text-nutri-blue">

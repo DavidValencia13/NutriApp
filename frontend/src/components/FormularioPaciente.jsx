@@ -88,9 +88,9 @@ function FormularioPaciente({ pacienteEditar, onSuccess, onCancel }) {
 
   const labelClass = "block mb-1 text-sm font-medium text-gray-700";
   const inputClass =
-    "w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-nutri-teal";
+    "w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-nutri-brand";
   const inputCompactClass =
-    "w-24 text-center border border-gray-300 rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-nutri-teal";
+    "w-24 text-center border border-gray-300 rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-nutri-brand";
 
   return (
     <form onSubmit={handleSubmit}>
@@ -129,6 +129,9 @@ function FormularioPaciente({ pacienteEditar, onSuccess, onCancel }) {
           <input
             type="number"
             step="0.01"
+            min="0.5"
+            max="2.5"
+            placeholder="Ej. 1.70"
             name="altura"
             value={form.altura}
             onChange={handleChange}
@@ -156,7 +159,7 @@ function FormularioPaciente({ pacienteEditar, onSuccess, onCancel }) {
             name="sexo"
             value={form.sexo}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-nutri-teal"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-nutri-brand"
           >
             <option value="">Prefiero no decir</option>
             <option value="masculino">Masculino</option>
@@ -289,7 +292,7 @@ function FormularioPaciente({ pacienteEditar, onSuccess, onCancel }) {
         <button
           type="submit"
           disabled={guardando}
-          className="px-4 py-2 rounded bg-nutri-teal text-white hover:bg-nutri-navy disabled:opacity-50"
+          className="px-4 py-2 rounded bg-nutri-brand text-white hover:bg-nutri-ink disabled:opacity-50"
         >
           {guardando ? "Guardando..." : "Guardar"}
         </button>

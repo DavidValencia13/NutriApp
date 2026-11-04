@@ -73,7 +73,7 @@ function CoberturaCatalogo({ cobertura, cargando, onAgregarGrupo }) {
         className="w-full cursor-pointer select-none px-3 py-2 flex items-center justify-between gap-2 bg-gray-50 text-left"
       >
         <span className="text-xs text-gray-600 min-w-0 flex-1">
-          <span className="font-semibold text-nutri-navy">
+          <span className="font-semibold text-nutri-ink">
             {resumen.esencialesCubiertos}/{resumen.esencialesTotal} grupos esenciales
           </span>
           {" · "}
@@ -105,7 +105,7 @@ function CoberturaCatalogo({ cobertura, cargando, onAgregarGrupo }) {
 
       {abierto && (
         <>
-          <p className="px-3 pt-2 text-[11px] font-semibold text-nutri-navy">
+          <p className="px-3 pt-2 text-[11px] font-semibold text-nutri-ink">
             {listoParaMenu
               ? "Cómo mejorar el catálogo"
               : "Sugerencias para mejorar el menú antes de generarlo"}
@@ -151,7 +151,7 @@ function CoberturaCatalogo({ cobertura, cargando, onAgregarGrupo }) {
                       <button
                         type="button"
                         onClick={() => onAgregarGrupo(grupoSugerido)}
-                        className="rounded-full border border-nutri-teal px-2 py-0.5 text-[10px] font-medium text-nutri-teal hover:bg-nutri-teal/10"
+                        className="rounded-full border border-nutri-brand px-2 py-0.5 text-[10px] font-medium text-nutri-brand hover:bg-nutri-brand/10"
                       >
                         + Agregar {labelGrupoAlimenticio(grupoSugerido)}
                       </button>

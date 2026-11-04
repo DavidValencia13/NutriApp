@@ -91,7 +91,7 @@ function MenuPaciente({ idPaciente, presupuesto }) {
       <button
         onClick={handleGenerar}
         disabled={generando}
-        className="bg-nutri-teal text-white px-4 py-2 rounded hover:bg-nutri-navy mb-4 disabled:cursor-not-allowed disabled:opacity-60"
+        className="bg-nutri-brand text-white px-4 py-2 rounded hover:bg-nutri-ink mb-4 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {generando ? "Generando menú..." : "Generar menú semanal"}
       </button>
@@ -120,7 +120,7 @@ function MenuPaciente({ idPaciente, presupuesto }) {
             {menu.estado === "generado" && (
               <button
                 onClick={handleAprobar}
-                className="bg-nutri-teal text-white px-3.5 py-1.5 rounded-lg text-sm font-medium hover:bg-nutri-navy transition-colors"
+                className="bg-nutri-brand text-white px-3.5 py-1.5 rounded-lg text-sm font-medium hover:bg-nutri-ink transition-colors"
               >
                 Aprobar menú
               </button>
@@ -144,7 +144,7 @@ function MenuPaciente({ idPaciente, presupuesto }) {
                 className="border rounded-lg shadow-sm overflow-hidden animate-fade-in-up"
                 style={{ animationDelay: `${indiceDia * 60}ms` }}
               >
-                <div className="bg-nutri-teal text-white px-4 py-2 flex justify-between items-center">
+                <div className="bg-nutri-brand text-white px-4 py-2 flex justify-between items-center">
                   <span className="font-semibold">Día {dia.numeroDia}</span>
                   <span className="text-sm text-right">
                     {dia.caloriasTotales} kcal
@@ -206,7 +206,7 @@ function MenuPaciente({ idPaciente, presupuesto }) {
                         {menu.estado === "generado" && (
                           <button
                             onClick={() => setComidaEditar(comida)}
-                            className="text-nutri-teal text-xs underline mt-1"
+                            className="text-nutri-brand text-xs underline mt-1"
                           >
                             Ajustar
                           </button>
@@ -265,21 +265,21 @@ function ResumenPresupuesto({ dias, presupuesto }) {
       className={`rounded-lg p-3 mb-4 border ${
         excedido
           ? "bg-nutri-pink/10 border-nutri-pink/30"
-          : "bg-nutri-teal/10 border-nutri-teal/30"
+          : "bg-nutri-brand/10 border-nutri-brand/30"
       }`}
     >
       <div className="flex justify-between items-baseline text-sm mb-1.5">
-        <span className="font-medium text-nutri-navy">
+        <span className="font-medium text-nutri-ink">
           Costo del menú semanal
         </span>
-        <span className={excedido ? "text-nutri-pink font-semibold" : "text-nutri-teal font-semibold"}>
+        <span className={excedido ? "text-nutri-pink font-semibold" : "text-nutri-brand font-semibold"}>
           {costoTotal.toFixed(2)}$ / {Number(presupuesto).toFixed(2)}$
         </span>
       </div>
       <div className="w-full h-1.5 bg-white rounded-full overflow-hidden">
         <div
           className={`h-full transition-all duration-700 ease-out ${
-            excedido ? "bg-nutri-pink" : "bg-nutri-teal"
+            excedido ? "bg-nutri-pink" : "bg-nutri-brand"
           }`}
           style={{ width: `${anchoAnimado}%` }}
         />
@@ -317,9 +317,9 @@ function ResumenNutricional({ resumen }) {
   if (items.every((i) => i.valor === undefined)) return null;
 
   return (
-    <div className="rounded-lg p-3 mb-4 border bg-nutri-teal/10 border-nutri-teal/30">
+    <div className="rounded-lg p-3 mb-4 border bg-nutri-brand/10 border-nutri-brand/30">
       <div className="flex justify-between items-baseline text-sm mb-2">
-        <span className="font-medium text-nutri-navy">
+        <span className="font-medium text-nutri-ink">
           Resumen nutricional semanal
         </span>
         {!resumen.completo && (
@@ -332,7 +332,7 @@ function ResumenNutricional({ resumen }) {
         {items.map((i) => (
           <div key={i.label} className="bg-white rounded-lg py-2 px-1">
             <p className="text-[11px] text-gray-500 leading-tight">{i.label}</p>
-            <p className="text-sm font-semibold text-nutri-navy">
+            <p className="text-sm font-semibold text-nutri-ink">
               {i.valor !== undefined ? `${Math.round(i.valor)} ${i.unidad}` : "—"}
             </p>
           </div>
