@@ -78,3 +78,14 @@ test("rechaza edad fuera de rango o no entera", () => {
 test("rechaza sexo fuera del enum", () => {
   assert.throws(() => new Paciente({ ...datosValidos, sexo: "x" }));
 });
+
+test("validarAltura rechaza alturas fuera de 0.5–2.5 m (ej. capturadas en cm)", () => {
+  assert.throws(() => Paciente.validarAltura(175), /altura debe estar en metros/);
+  assert.throws(() => Paciente.validarAltura(0.3), /altura debe estar en metros/);
+  assert.doesNotThrow(() => Paciente.validarAltura(1.75));
+});
+
+test("el constructor acepta alturas fuera de rango ya guardadas (rehidratación)", () => {
+  const paciente = new Paciente({ ...datosValidos, altura: 175 });
+  assert.equal(paciente.altura, 175);
+});

@@ -1,4 +1,5 @@
 const Paciente = require("../Dominio/Entidades/Paciente");
+const { validarAltura } = Paciente;
 
 // Caso de uso: editar un paciente existente
 class EditarPaciente {
@@ -26,6 +27,9 @@ class EditarPaciente {
       idNutriologo: paciente.idNutriologo,
       pesoInicial: paciente.pesoInicial, // inmutable: nunca se toma de data
     });
+    // También aplica a pacientes antiguos con altura en cm: al editarlos hay
+    // que corregirla
+    validarAltura(actualizado.altura);
 
     // Solo campos de negocio pasan al repositorio; nunca id/idNutriologo/pesoInicial
     const cambios = {

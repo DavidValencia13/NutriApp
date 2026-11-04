@@ -1,5 +1,6 @@
 // Para generar la clave o token que el servidor le entrega al usuario después de hacer login exitosamente
 const jwt = require("jsonwebtoken");
+const { obtenerJwtSecret } = require("../../../../Infraestructura/jwtSecret");
 
 // Middleware (función que se ejecuta ANTES del controller, para revisar/preparar la petición)
 // Valida el token JWT (el "pase de acceso" que se genera en el login)
@@ -17,10 +18,7 @@ function authMiddleware(req, res, next) {
 
   try {
     // jwt.verify revisa que el token sea válido y no haya expirado (recuerda: dura 6h)
-    const payload = jwt.verify(
-      token,
-      process.env.JWT_SECRET || "nutriapp_secret_key",
-    );
+    const payload = jwt.verify(token, obtenerJwtSecret());
     // Guardamos los datos del nutriólogo logueado en req.nutriologo
     // (así el controller que sigue puede usarlos, ej: saber de quién son los pacientes)
     req.nutriologo = payload;
