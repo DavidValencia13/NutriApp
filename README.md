@@ -21,7 +21,7 @@ Plataforma de gestión nutricional clínica con asistente IA integrado. Conecta 
 - **Frontend:** React 19 + Vite + Tailwind CSS v4
 - **Backend:** Node.js + Express (arquitectura hexagonal)
 - **Bases de datos:** PostgreSQL 17 + MongoDB
-- **IA:** Groq (LLaMA 3.3 70b) · compatible con Claude (Anthropic)
+- **IA:** Groq (GPT-OSS 120b) · compatible con Claude (Anthropic)
 
 ---
 

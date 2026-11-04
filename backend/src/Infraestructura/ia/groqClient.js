@@ -8,8 +8,13 @@ class GroqRateLimitError extends Error {
 }
 
 const GROQ_API_URL = process.env.GROQ_API_URL || "https://api.groq.com/openai/v1/chat/completions";
-const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
+const GROQ_MODEL = process.env.GROQ_MODEL || "openai/gpt-oss-120b";
 const GROQ_TIMEOUT_MS = Number(process.env.GROQ_TIMEOUT_MS) || 20000;
+const GROQ_REASONING_EFFORT = process.env.GROQ_REASONING_EFFORT || "low";
+// Sin un tope explícito Groq corta la respuesta (~3000 tokens) y el menú de
+// 7 días llega incompleto. Prompt + este valor debe caber en el límite de
+// tokens por minuto de la cuenta (8000 en el plan gratuito).
+const GROQ_MAX_COMPLETION_TOKENS = Number(process.env.GROQ_MAX_COMPLETION_TOKENS) || 5500;
 
 async function pedirCompletion(messages) {
   if (!process.env.GROQ_API_KEY) {
@@ -30,6 +35,13 @@ async function pedirCompletion(messages) {
         model: GROQ_MODEL,
         messages,
         response_format: { type: "json_object" },
+        max_completion_tokens: GROQ_MAX_COMPLETION_TOKENS,
+        // Los modelos gpt-oss razonan antes de responder; con razonamiento
+        // alto en modo JSON gastan el tope de tokens y no devuelven nada
+        // (json_validate_failed)
+        ...(GROQ_MODEL.startsWith("openai/gpt-oss") && {
+          reasoning_effort: GROQ_REASONING_EFFORT,
+        }),
       }),
       signal: controller.signal,
     });
@@ -46,7 +58,11 @@ async function pedirCompletion(messages) {
       );
     }
     if (!response.ok) {
-      throw new GroqRequestError(`Groq respondió con estado ${response.status}`);
+      // El cuerpo trae el motivo real (modelo inexistente, JSON inválido, etc.)
+      const detalle = await response.text().catch(() => "");
+      throw new GroqRequestError(
+        `Groq respondió con estado ${response.status}: ${detalle.slice(0, 300)}`,
+      );
     }
 
     const data = await response.json();
