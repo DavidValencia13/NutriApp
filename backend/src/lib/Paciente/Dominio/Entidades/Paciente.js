@@ -1,4 +1,6 @@
 const SEXOS_VALIDOS = ["masculino", "femenino", "otro"];
+const ALTURA_MIN_M = 0.5;
+const ALTURA_MAX_M = 2.5;
 
 // Entidad principal del dominio Paciente
 // (entidad = clase que representa un objeto real del negocio, con sus reglas de validación)
@@ -31,6 +33,9 @@ class Paciente {
 
     if (!peso || peso <= 0) throw new Error("El peso debe ser mayor a 0");
 
+    // El rango en metros se valida en los casos de uso (validarAltura), no
+    // aquí: este constructor también rehidrata pacientes desde la base, y un
+    // registro antiguo fuera de rango rompería el listado completo
     if (!altura || altura <= 0) throw new Error("La altura debe ser mayor a 0");
 
     if (!objetivo || objetivo.trim().length === 0)
@@ -95,3 +100,12 @@ class Paciente {
 
 module.exports = Paciente;
 module.exports.SEXOS_VALIDOS = SEXOS_VALIDOS;
+
+// En metros. El límite atrapa alturas capturadas en centímetros (ej. 175),
+// que darían un IMC cercano a 0. Se aplica al registrar y al editar.
+module.exports.validarAltura = function validarAltura(altura) {
+  if (!(altura >= ALTURA_MIN_M && altura <= ALTURA_MAX_M))
+    throw new Error(
+      `La altura debe estar en metros, entre ${ALTURA_MIN_M} y ${ALTURA_MAX_M}`,
+    );
+};

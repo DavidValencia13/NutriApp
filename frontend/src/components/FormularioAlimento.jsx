@@ -456,9 +456,9 @@ function FormularioAlimento({
 
   const labelClass = "block mb-1 text-sm font-medium text-gray-700";
   const inputClass =
-    "w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-nutri-teal";
+    "w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-nutri-brand";
   const inputCompactClass =
-    "w-24 text-center border border-gray-300 rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-nutri-teal";
+    "w-24 text-center border border-gray-300 rounded-lg px-2 py-2 focus:outline-none focus:ring-2 focus:ring-nutri-brand";
 
   // Paso 1: sugerencias de grupo según lo que le falta al catálogo del
   // paciente (objetivo, alergias y restricciones ya entran en ese cálculo) y
@@ -477,7 +477,7 @@ function FormularioAlimento({
               key={valor}
               type="button"
               onClick={() => elegirGrupo(valor)}
-              className="text-sm px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:border-nutri-teal hover:text-nutri-teal text-left"
+              className="text-sm px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:border-nutri-brand hover:text-nutri-brand text-left"
             >
               {labelGrupoAlimenticio(valor)}
             </button>
@@ -494,7 +494,7 @@ function FormularioAlimento({
           <button
             type="button"
             onClick={elegirOtroAlimento}
-            className="text-sm text-nutri-teal hover:underline"
+            className="text-sm text-nutri-brand hover:underline"
           >
             Registrar un alimento distinto →
           </button>
@@ -532,7 +532,7 @@ function FormularioAlimento({
                 key={a.id}
                 type="button"
                 onClick={() => elegirAlimentoSugerido(a)}
-                className="text-sm px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:border-nutri-teal hover:text-nutri-teal text-left"
+                className="text-sm px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:border-nutri-brand hover:text-nutri-brand text-left"
               >
                 {a.nombre}
               </button>
@@ -550,7 +550,7 @@ function FormularioAlimento({
           <button
             type="button"
             onClick={elegirOtroAlimento}
-            className="text-sm text-nutri-teal hover:underline"
+            className="text-sm text-nutri-brand hover:underline"
           >
             Registrar un alimento distinto →
           </button>
@@ -582,7 +582,7 @@ function FormularioAlimento({
             type="button"
             onClick={handleBuscarNutricion}
             disabled={buscandoNutricion || !form.nombre?.trim()}
-            className="shrink-0 whitespace-nowrap px-3 py-2 rounded-lg border border-nutri-teal text-nutri-teal text-sm hover:bg-nutri-teal/10 disabled:opacity-50"
+            className="shrink-0 whitespace-nowrap px-3 py-2 rounded-lg border border-nutri-brand text-nutri-brand text-sm hover:bg-nutri-brand/10 disabled:opacity-50"
           >
             {buscandoNutricion ? "Buscando..." : "Buscar en USDA"}
           </button>
@@ -592,7 +592,7 @@ function FormularioAlimento({
             role="status"
             className={`mt-2 rounded-lg border px-3 py-2 text-xs ${
               estadoBusqueda === "exito"
-                ? "border-nutri-teal/20 bg-nutri-teal/10 text-nutri-teal"
+                ? "border-nutri-brand/20 bg-nutri-brand/10 text-nutri-brand"
                 : "border-amber-200 bg-amber-50 text-amber-700"
             }`}
           >
@@ -628,7 +628,7 @@ function FormularioAlimento({
             {gruposAlimenticios.map((g) => (
               <span
                 key={g}
-                className="text-xs px-2 py-1 rounded-full bg-nutri-teal text-white"
+                className="text-xs px-2 py-1 rounded-full bg-nutri-brand text-white"
               >
                 {labelGrupoAlimenticio(g)}
               </span>
@@ -644,7 +644,7 @@ function FormularioAlimento({
               setGruposAlimenticios(e.target.value ? [e.target.value] : [])
             }
             required
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-nutri-teal"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-nutri-brand"
           >
             <option value="" disabled>
               Selecciona...
@@ -683,7 +683,7 @@ function FormularioAlimento({
             value={form.unidadMedida}
             onChange={handleChange}
             required
-            className="w-40 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-nutri-teal"
+            className="w-40 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-nutri-brand"
           >
             <option value="" disabled>
               Selecciona...
@@ -702,7 +702,7 @@ function FormularioAlimento({
               )}
           </select>
           {tipoMedida === "volumen" && (
-            <p className="mt-1 text-xs text-nutri-teal">
+            <p className="mt-1 text-xs text-nutri-brand">
               Alimento líquido: registra la cantidad en ml o l.
             </p>
           )}
@@ -756,7 +756,7 @@ function FormularioAlimento({
         <button
           type="button"
           onClick={() => setMostrarNutricional((v) => !v)}
-          className="text-sm text-nutri-teal hover:underline"
+          className="text-sm text-nutri-brand hover:underline"
         >
           {mostrarNutricional
             ? "− Ocultar detalles nutricionales"
@@ -767,7 +767,7 @@ function FormularioAlimento({
 
         {mostrarNutricional && (
           <div className="mt-3 border border-gray-200 rounded-lg p-3">
-            <h3 className="mb-3 text-sm font-semibold text-nutri-navy">
+            <h3 className="mb-3 text-sm font-semibold text-nutri-ink">
               Composición nutricional
             </h3>
             <label htmlFor="base-nutricional" className={labelClass}>
@@ -777,7 +777,7 @@ function FormularioAlimento({
               id="base-nutricional"
               value={mostrandoTotal ? "total" : "referencia"}
               onChange={(e) => setVerTotal(e.target.value === "total")}
-              className="mb-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-nutri-teal sm:w-auto"
+              className="mb-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-nutri-brand sm:w-auto"
             >
               {puedeCalcularTotal && (
                 <option value="total">
@@ -851,7 +851,7 @@ function FormularioAlimento({
         <button
           type="submit"
           disabled={guardando}
-          className="px-4 py-2 rounded bg-nutri-teal text-white hover:bg-nutri-navy disabled:opacity-50"
+          className="px-4 py-2 rounded bg-nutri-brand text-white hover:bg-nutri-ink disabled:opacity-50"
         >
           {guardando ? "Guardando..." : "Guardar"}
         </button>

@@ -18,44 +18,22 @@ function Modal({ isOpen, onClose, title, children, ancho = "max-w-lg" }) {
   return (
     <div
       className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: "rgba(7,14,26,0.75)", backdropFilter: "blur(6px)" }}
+      style={{ background: "rgba(15,42,32,0.55)" }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className={`modal-card bg-white w-full ${ancho} max-h-[90vh] flex flex-col overflow-hidden`}
-        style={{
-          borderRadius: 18,
-          boxShadow: "0 32px 80px rgba(0,0,0,0.35), 0 0 0 1px rgba(14,207,199,0.1)",
-        }}
+        className={`modal-card bg-white w-full ${ancho} max-h-[90vh] flex flex-col overflow-hidden rounded-xl shadow-2xl`}
       >
-        {/* Header */}
-        <div
-          className="flex items-center justify-between px-6 py-4 shrink-0"
-          style={{ borderBottom: "1px solid #E8EEF5" }}
-        >
-          <h2
-            className="font-display font-bold"
-            style={{ color: "#0D1829", fontSize: 16, letterSpacing: "-0.3px" }}
-          >
-            {title}
-          </h2>
+        <div className="flex items-center justify-between px-6 py-4 shrink-0 border-b border-line">
+          <h2 className="font-semibold text-lg">{title}</h2>
           <button
             ref={closeButtonRef}
             onClick={onClose}
             aria-label="Cerrar"
-            className="flex items-center justify-center rounded-lg transition-all duration-200"
-            style={{
-              width: 32, height: 32,
-              background: "rgba(13,24,41,0.05)",
-              border: "none",
-              cursor: "pointer",
-              color: "#64748B",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(244,63,94,0.08)"; e.currentTarget.style.color = "#F43F5E"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "rgba(13,24,41,0.05)"; e.currentTarget.style.color = "#64748B"; }}
+            className="flex items-center justify-center w-8 h-8 rounded-md text-gray-500 hover:text-nutri-ink hover:bg-surface transition-colors cursor-pointer"
           >
             <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <line x1="2" y1="2" x2="14" y2="14"/>
@@ -64,8 +42,7 @@ function Modal({ isOpen, onClose, title, children, ancho = "max-w-lg" }) {
           </button>
         </div>
 
-        {/* Body */}
-        <div className="p-5 flex-1 overflow-y-auto">{children}</div>
+        <div className="p-6 flex-1 overflow-y-auto">{children}</div>
       </div>
     </div>
   );

@@ -1,5 +1,10 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { obtenerJwtSecret } = require("../../../Infraestructura/jwtSecret");
+
+// Mismo mensaje para email inexistente y contraseña errónea: así no se
+// revela qué correos están registrados
+const CREDENCIALES_INVALIDAS = "Correo o contraseña incorrectos";
 
 // Caso de uso: iniciar sesión
 class LoginNutriologo {
@@ -9,18 +14,22 @@ class LoginNutriologo {
 
   async ejecutar({ email, password }) {
     // Busca el nutriólogo por email
-    const nutriologo = await this.nutriologoRepository.findByEmail(email);
-    if (!nutriologo) throw new Error("Email invalido");
+    if (!email || !password) throw new Error(CREDENCIALES_INVALIDAS);
+
+    const nutriologo = await this.nutriologoRepository.findByEmail(
+      String(email).toLowerCase().trim(),
+    );
+    if (!nutriologo) throw new Error(CREDENCIALES_INVALIDAS);
 
     // Verifica la contraseña
     const passwordValida = await bcrypt.compare(password, nutriologo.password);
-    if (!passwordValida) throw new Error("Contraseña incorrecta");
+    if (!passwordValida) throw new Error(CREDENCIALES_INVALIDAS);
 
     // Genera el token JWT. Pase de acceso temporal para el nutriólogo
     // Dura 6 horas y contiene su id y email
     const token = jwt.sign(
       { id: nutriologo.id, email: nutriologo.email },
-      process.env.JWT_SECRET || "nutriapp_secret_key",
+      obtenerJwtSecret(),
       { expiresIn: "6h" },
     );
 

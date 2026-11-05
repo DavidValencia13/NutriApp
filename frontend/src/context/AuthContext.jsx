@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { login as loginService } from "../services/authService";
 
 // Context (mecanismo de React para compartir datos entre componentes
@@ -21,11 +21,17 @@ export function AuthProvider({ children }) {
     setNutriologo(data.nutriologo);
   }
 
-  function logout() {
+  const logout = useCallback(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("nutriologo");
     setNutriologo(null);
-  }
+  }, []);
+
+  // api.js emite "sesion-expirada" cuando el backend rechaza el token
+  useEffect(() => {
+    window.addEventListener("sesion-expirada", logout);
+    return () => window.removeEventListener("sesion-expirada", logout);
+  }, [logout]);
 
   return (
     <AuthContext.Provider value={{ nutriologo, login, logout }}>

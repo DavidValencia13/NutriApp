@@ -8,15 +8,19 @@ class RegistrarNutriologo {
   }
 
   async ejecutar(data) {
-    // Verifica que el email no esté registrado
-    const existe = await this.nutriologoRepository.findByEmail(data.email);
+    // Valida con la contraseña en texto plano: después de encriptarla el hash
+    // siempre mide 60 caracteres y la regla de longitud mínima no tendría efecto
+    const validado = new Nutriologo(data);
+
+    // Verifica que el email no esté registrado (la entidad ya lo normalizó a minúsculas)
+    const existe = await this.nutriologoRepository.findByEmail(validado.email);
     if (existe) throw new Error("El email ya está registrado");
 
     // Encripta la contraseña antes de guardar
-    const passwordHash = await bcrypt.hash(data.password, 10);
+    const passwordHash = await bcrypt.hash(validado.password, 10);
 
     const nutriologo = new Nutriologo({
-      ...data,
+      ...validado,
       password: passwordHash,
     });
 
