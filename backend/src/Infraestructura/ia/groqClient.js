@@ -1,11 +1,8 @@
-class GroqTimeoutError extends Error {}
-class GroqRequestError extends Error {}
-class GroqRateLimitError extends Error {
-  constructor(message, retryAfterSeconds) {
-    super(message);
-    this.retryAfterSeconds = retryAfterSeconds;
-  }
-}
+const { IATimeoutError, IARequestError, IARateLimitError } = require("./errores");
+
+class GroqTimeoutError extends IATimeoutError {}
+class GroqRequestError extends IARequestError {}
+class GroqRateLimitError extends IARateLimitError {}
 
 const GROQ_API_URL = process.env.GROQ_API_URL || "https://api.groq.com/openai/v1/chat/completions";
 const GROQ_MODEL = process.env.GROQ_MODEL || "openai/gpt-oss-120b";
@@ -16,7 +13,8 @@ const GROQ_REASONING_EFFORT = process.env.GROQ_REASONING_EFFORT || "low";
 // tokens por minuto de la cuenta (8000 en el plan gratuito).
 const GROQ_MAX_COMPLETION_TOKENS = Number(process.env.GROQ_MAX_COMPLETION_TOKENS) || 5500;
 
-async function pedirCompletion(messages) {
+// opciones.temperature: 0 para respuestas deterministas (ej. traducciones)
+async function pedirCompletion(messages, opciones = {}) {
   if (!process.env.GROQ_API_KEY) {
     throw new GroqRequestError("GROQ_API_KEY no está configurada");
   }
@@ -34,6 +32,7 @@ async function pedirCompletion(messages) {
       body: JSON.stringify({
         model: GROQ_MODEL,
         messages,
+        ...(opciones.temperature !== undefined && { temperature: opciones.temperature }),
         response_format: { type: "json_object" },
         max_completion_tokens: GROQ_MAX_COMPLETION_TOKENS,
         // Los modelos gpt-oss razonan antes de responder; con razonamiento

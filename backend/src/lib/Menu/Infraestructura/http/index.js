@@ -1,8 +1,8 @@
 const MenuRoutes = require("./MenuRoutes");
 const MenuController = require("./MenuController");
 const MenuRepositorySequelize = require("../MenuRepositorySequelize");
-const GeneradorMenuGroq = require("../GeneradorMenuGroq");
-const { pedirCompletion } = require("../../../../Infraestructura/ia/groqClient");
+const GeneradorMenuIA = require("../GeneradorMenuIA");
+const { pedirCompletion } = require("../../../../Infraestructura/ia/iaClient");
 
 const GenerarMenuSemanal = require("../../Aplicacion/GenerarMenuSemanal");
 const ObtenerMenuPorPaciente = require("../../Aplicacion/ObtenerMenuPorPaciente");
@@ -21,7 +21,7 @@ module.exports = function registerMenuModule(app) {
   const pacienteRepo = new PacienteRepositorySequelize();
   const alimentoRepo = new AlimentoRepositoryMongo();
   const listarAlimentosPorPaciente = new ListarAlimentosPorPaciente(alimentoRepo);
-  const generadorMenuIA = new GeneradorMenuGroq(pedirCompletion);
+  const generadorMenuIA = new GeneradorMenuIA(pedirCompletion);
 
   const controller = new MenuController({
     generarMenuSemanal: new GenerarMenuSemanal({

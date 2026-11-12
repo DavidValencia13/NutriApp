@@ -108,8 +108,9 @@ http://localhost:5173
 | `POSTGRES_PASSWORD` | Contraseña de PostgreSQL | ✅ |
 | `JWT_SECRET` | Clave para firmar tokens JWT | ✅ |
 | `GROQ_API_KEY` | API key de Groq (IA) | ✅ |
-| `IA_PROVIDER` | `groq` (default) o `anthropic` | — |
+| `IA_PROVIDER` | `groq` (default) o `anthropic`: proveedor del asistente, los menús y la traducción de alimentos | — |
 | `ANTHROPIC_API_KEY` | Solo si `IA_PROVIDER=anthropic` | Opcional |
+| `ANTHROPIC_MODEL` / `ANTHROPIC_MODEL_MENU` | Modelo de Claude (por defecto `claude-haiku-5-5`); el segundo, opcional, solo para menús | Opcional |
 | `USDA_FDC_API_KEY` | Base de datos nutricional USDA | Opcional |
 
 ---
