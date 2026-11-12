@@ -6,13 +6,23 @@ const EditarPaciente = require("../../Aplicacion/EditarPaciente");
 const EliminarPaciente = require("../../Aplicacion/EliminarPaciente");
 const ListarPacientes = require("../../Aplicacion/ListarPacientes");
 
+// Dependencias cruzadas de solo borrado: al eliminar un paciente se borran
+// también sus datos en otros módulos (ver EliminarPaciente)
+const AlimentoRepositoryMongo = require("../../../Alimento/Infraestructura/AlimentoRepositoryMongo");
+const SeguimientoRepositorySequelize = require("../../../Seguimiento/Infraestructura/SeguimientoRepositorySequelize");
+const RecomendacionRepositorySequelize = require("../../../Recomendacion/Infraestructura/RecomendacionRepositorySequelize");
+
 module.exports = function registerPacienteModule(app) {
   const repo = new PacienteRepositorySequelize();
 
   const controller = new PacienteController({
     registrarPaciente: new RegistrarPaciente(repo),
     editarPaciente: new EditarPaciente(repo),
-    eliminarPaciente: new EliminarPaciente(repo),
+    eliminarPaciente: new EliminarPaciente(repo, [
+      new AlimentoRepositoryMongo(),
+      new SeguimientoRepositorySequelize(),
+      new RecomendacionRepositorySequelize(),
+    ]),
     listarPacientes: new ListarPacientes(repo),
   });
 

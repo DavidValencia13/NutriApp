@@ -51,6 +51,12 @@ class AlimentoRepositoryMongo {
     return this._toEntity(doc);
   }
 
+  // Al eliminar un paciente: sus alimentos viven en Mongo y no se borran
+  // en cascada desde Postgres
+  async eliminarPorPaciente(idPaciente) {
+    await AlimentoModel.deleteMany({ idPaciente });
+  }
+
   async deleteByIdAndPaciente(id, idPaciente) {
     const doc = await AlimentoModel.findOneAndDelete({ _id: id, idPaciente });
     if (!doc) return null;

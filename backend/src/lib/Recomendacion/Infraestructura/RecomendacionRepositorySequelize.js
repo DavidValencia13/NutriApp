@@ -14,6 +14,10 @@ class RecomendacionRepositorySequelize {
     return this._toEntity(doc);
   }
 
+  async eliminarPorPaciente(idPaciente) {
+    await RecomendacionModel.destroy({ where: { idPaciente } });
+  }
+
   async listarPorPaciente(idPaciente) {
     const docs = await RecomendacionModel.findAll({
       where: { idPaciente },

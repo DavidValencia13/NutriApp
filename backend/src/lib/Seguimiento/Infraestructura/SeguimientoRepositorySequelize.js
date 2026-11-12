@@ -29,6 +29,10 @@ class SeguimientoRepositorySequelize {
     return this._toEntity(doc);
   }
 
+  async eliminarPorPaciente(idPaciente) {
+    await RegistroSeguimientoModel.destroy({ where: { idPaciente } });
+  }
+
   async eliminar(id, idPaciente) {
     const doc = await RegistroSeguimientoModel.findOne({ where: { id, idPaciente } });
     if (!doc) return null;
