@@ -2,6 +2,7 @@ import { useState } from "react";
 import { labelGrupoAlimenticio } from "../constants/gruposAlimenticios";
 import { CATALOGO_ALIMENTOS_BORRADOR } from "../constants/catalogoAlimentosBorrador";
 import { IconChevronDown } from "./Icons";
+import SuficienciaAlimentos from "./SuficienciaAlimentos";
 
 // Mismos tokens de nivel usados en toda la app, para que "crítica/advertencia/info"
 // se lean igual en cualquier pantalla.
@@ -50,21 +51,32 @@ function CoberturaCatalogo({ cobertura, cargando, onAgregarGrupo }) {
     ? resumen.esencialesCubiertos / resumen.esencialesTotal
     : 0;
 
+  // Cantidades: ¿alcanzan para la semana del paciente? Siempre visible
+  const bloqueSuficiencia = cobertura.suficiencia && (
+    <div className="mb-3">
+      <SuficienciaAlimentos suficiencia={cobertura.suficiencia} />
+    </div>
+  );
+
   if (alertas.length === 0) {
     return (
+      <>
+      {bloqueSuficiencia}
       <div className="mb-4 flex items-center gap-2 rounded-lg bg-nutri-green/10 px-3 py-2 text-xs text-nutri-green">
         <span className="w-1.5 h-1.5 rounded-full bg-nutri-green shrink-0" />
         <span>
           <span className="font-semibold">Cobertura nutricional completa. </span>
           Los {resumen.totalAlimentos} alimentos cubren los {resumen.esencialesTotal} grupos
-          esenciales y los nutrientes clave. Las cantidades disponibles se
-          comprobarán al generar el menú semanal.
+          esenciales y los nutrientes clave.
         </span>
       </div>
+      </>
     );
   }
 
   return (
+    <>
+    {bloqueSuficiencia}
     <div className="mb-4 border rounded-lg overflow-hidden text-sm">
       <button
         type="button"
@@ -164,6 +176,7 @@ function CoberturaCatalogo({ cobertura, cargando, onAgregarGrupo }) {
         </>
       )}
     </div>
+    </>
   );
 }
 

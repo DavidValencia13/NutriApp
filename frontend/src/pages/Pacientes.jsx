@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { listarPacientes, eliminarPaciente } from "../services/pacienteService";
+import { obtenerCoberturaCatalogo } from "../services/alimentoService";
+import { faltanAlimentos } from "../utils/suficiencia";
 import Modal from "../components/Modal";
 import FormularioPaciente from "../components/FormularioPaciente";
 import ListaAlimentos from "../components/ListaAlimentos";
@@ -77,7 +79,13 @@ function Pacientes() {
     }
   }
 
-  const cerrarModal  = ()  => setModal({ tipo: null, paciente: null });
+  // Al cerrar un modal (ej. después de registrar alimentos) las tarjetas
+  // vuelven a revisar si los alimentos alcanzan
+  const [versionCobertura, setVersionCobertura] = useState(0);
+  const cerrarModal  = ()  => {
+    setModal({ tipo: null, paciente: null });
+    setVersionCobertura((v) => v + 1);
+  };
   const handleSuccessFormularioPaciente = () => { cerrarModal(); cargarPacientes(); };
 
   const pacientesFiltrados = pacientes.filter((p) =>
@@ -165,6 +173,7 @@ function Pacientes() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {pacientesFiltrados.map((p) => (
               <PacienteCard
+                versionCobertura={versionCobertura}
                 key={p.id}
                 p={p}
                 onAlimentos={() => setModal({ tipo: "alimentos",   paciente: p })}
@@ -238,7 +247,21 @@ function EmptyState({ onCreate }) {
 }
 
 /* ── Patient card ─────────────────────────────────────────────────────────── */
-function PacienteCard({ p, onAlimentos, onMenu, onSeguimiento, onAsistente, onEditar, onEliminar }) {
+function PacienteCard({ p, versionCobertura, onAlimentos, onMenu, onSeguimiento, onAsistente, onEditar, onEliminar }) {
+  // ¿Alcanzan sus alimentos para la meta de calorías y proteínas?
+  const [suficiencia, setSuficiencia] = useState(null);
+  useEffect(() => {
+    let vigente = true;
+    obtenerCoberturaCatalogo(p.id)
+      .then((c) => vigente && setSuficiencia(c?.suficiencia || null))
+      .catch(() => {});
+    return () => {
+      vigente = false;
+    };
+  }, [p.id, versionCobertura]);
+  const faltan = faltanAlimentos(suficiencia);
+  const pctCalorias = suficiencia?.calorias?.porcentaje;
+  const pctProteinas = suficiencia?.proteinas?.porcentaje;
   const imc     = bmi(p.peso, p.altura);
   const imcInfo = bmiLabel(imc);
   const tienRestr = p.restricciones && !sinRestricciones(p.restricciones);
@@ -281,6 +304,23 @@ function PacienteCard({ p, onAlimentos, onMenu, onSeguimiento, onAsistente, onEd
           <Metric label="Altura" value={p.altura ? `${p.altura} m` : "—"} />
           <Metric label="Actividad" value={p.nivelActividad || "—"} />
         </dl>
+
+        {/* Aviso: los alimentos registrados no alcanzan para su menú */}
+        {faltan && (
+          <button
+            type="button"
+            onClick={onAlimentos}
+            className="mt-4 w-full flex items-start gap-2 rounded-lg border border-nutri-orange/30 bg-nutri-orange/5 px-3 py-2 text-left text-xs text-nutri-orange hover:bg-nutri-orange/10 transition-colors cursor-pointer"
+          >
+            <IconAlertTriangle style={{ width: 14, height: 14, flexShrink: 0, marginTop: 1 }} />
+            <span>
+              <span className="font-semibold">Faltan alimentos para su menú.</span>{" "}
+              Lo registrado cubre {pctCalorias}% de sus calorías
+              {pctProteinas !== null && pctProteinas !== undefined ? ` y ${pctProteinas}% de sus proteínas` : ""}.
+              Agregar alimentos
+            </span>
+          </button>
+        )}
 
         {/* Restricciones y preferencias */}
         {(tienRestr || p.preferencias) && (

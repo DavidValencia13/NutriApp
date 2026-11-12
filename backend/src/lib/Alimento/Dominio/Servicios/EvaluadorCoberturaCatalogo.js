@@ -1,6 +1,7 @@
 const {
   VALORES_DIARIOS_REFERENCIA,
 } = require("../../../Alerta/Dominio/Servicios/ValoresReferencia");
+const { evaluarSuficiencia, alertasDeSuficiencia } = require("./SuficienciaCatalogo");
 const {
   normalizar,
   slug,
@@ -94,10 +95,25 @@ function terminosADetectar(restriccion) {
   return [termino, ...(SINONIMOS_RESTRICCION[clave] || SINONIMOS_RESTRICCION[termino] || [])];
 }
 
+// Se mide por PORCIÓN típica, no por 100 g (criterio de "buena fuente" por
+// porción de referencia): un vaso de leche (250 ml) sí es fuente de calcio
+// aunque 100 ml no lleguen al 10% del valor diario. Porción: 1 pieza si se
+// compra por unidad (con su peso), 250 ml en líquidos y 150 g en el resto.
+function gramosDePorcion(alimento) {
+  const info = alimento.infoNutricional || {};
+  if (alimento.unidadMedida === "unidad" && info.gramosPorPorcion) return info.gramosPorPorcion;
+  if (["ml", "l"].includes(alimento.unidadMedida)) return 250;
+  return 150;
+}
+
 function esFuenteDe(alimento, campo) {
-  const valor = alimento.infoNutricional?.[campo];
+  const info = alimento.infoNutricional;
+  const valor = info?.[campo];
   const dv = VALORES_DIARIOS_REFERENCIA[campo];
-  return typeof valor === "number" && dv > 0 && valor >= dv * UMBRAL_ES_FUENTE;
+  if (typeof valor !== "number" || !(dv > 0)) return false;
+  const base = info.refUnidad === "porcion" ? info.gramosPorPorcion * (info.refCantidad || 1) : info.refCantidad || 100;
+  const porPorcion = (valor * gramosDePorcion(alimento)) / base;
+  return porPorcion >= dv * UMBRAL_ES_FUENTE;
 }
 
 // Cuenta cuántos alimentos del catálogo pertenecen al grupo o a cualquiera de
@@ -293,6 +309,22 @@ function evaluar({ paciente, alimentos }) {
 
   }
 
+  // 7) Cantidades: ¿alcanza lo registrado para una semana de calorías y
+  // proteínas del paciente? Va primero en la lista porque es lo que decide
+  // si el menú podrá cumplir su meta.
+  const suficiencia = evaluarSuficiencia({ paciente, alimentos: catalogo });
+  if (catalogo.length > 0) {
+    const deCantidad = alertasDeSuficiencia(suficiencia);
+    // "Ningún alimento es fuente de X" sobra si ya se avisa que falta X
+    const camposConAviso = new Set(deCantidad.map((a) => a.tipo.replace("cantidades_insuficientes_", "")));
+    for (let i = alertas.length - 1; i >= 0; i--) {
+      if (alertas[i].tipo.startsWith("sin_fuente_") && camposConAviso.has(alertas[i].tipo.replace("sin_fuente_", ""))) {
+        alertas.splice(i, 1);
+      }
+    }
+    alertas.unshift(...deCantidad);
+  }
+
   return {
     // Ojo: "listo" significa que no quedan huecos críticos, no que la dieta
     // vaya a ser óptima. Nunca bloquea la generación del menú.
@@ -304,6 +336,7 @@ function evaluar({ paciente, alimentos }) {
       esencialesCubiertos,
       esencialesTotal: GRUPOS_ESENCIALES.length,
     },
+    suficiencia,
     alertas,
   };
 }
