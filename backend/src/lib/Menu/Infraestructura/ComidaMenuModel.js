@@ -9,6 +9,8 @@ const ComidaMenuModel = sequelize.define(
     orden: { type: DataTypes.INTEGER, allowNull: false },
     tipoComida: { type: DataTypes.STRING, allowNull: false },
     nombrePlato: { type: DataTypes.STRING(150), allowNull: false },
+    // Cómo se prepara y sirve el plato, en una frase (lo genera la IA)
+    descripcion: { type: DataTypes.TEXT, allowNull: true },
     calorias: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
     costoTotal: {
       type: DataTypes.DECIMAL(10, 2),

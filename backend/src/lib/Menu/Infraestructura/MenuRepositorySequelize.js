@@ -44,6 +44,7 @@ class MenuRepositorySequelize {
             orden: comida.orden,
             tipoComida: comida.tipoComida,
             nombrePlato: comida.nombrePlato,
+            descripcion: comida.descripcion ?? null,
             calorias: comida.calorias,
             costoTotal: comida.costoTotal,
             nutrientes: comida.nutrientes,

@@ -19,20 +19,23 @@ const GRAMOS_POR_UNIDAD_MEDIDA = { g: 1, kg: 1000, ml: 1, l: 1000, lb: 453.592 }
 // (se dejan pasar, no hay forma de saber qué es razonable para ellas).
 const LIMITE_CANTIDAD_POR_UNIDAD = { g: 1000, ml: 1000, kg: 1.5, l: 1.5, lb: 3, unidad: 12 };
 
+// Datos indispensables para evaluar un menú. Si falta otro nutriente (ej. la
+// tabla USFQ no trae azúcares, magnesio ni vitamina D) se informa en
+// camposFaltantes, pero el cálculo no se marca como incompleto.
+const CAMPOS_CLAVE = ["calorias", "proteinas", "carbohidratos", "grasasTotales"];
+
 function cantidadEsPlausible(cantidad, unidadMedida) {
   if (!Number.isFinite(cantidad) || cantidad <= 0) return false;
   const limite = LIMITE_CANTIDAD_POR_UNIDAD[unidadMedida];
   return limite === undefined || cantidad <= limite;
 }
 
-// "unidad" (piezas) solo es convertible si el alimento definió su
-// información nutricional "por porción": se asume 1 unidad comprada ≈ 1
-// porción de referencia (ej. "1 unidad" de manzana ≈ "1 porción" de 180g).
-// Si la referencia es "por 100g", no hay forma de saber cuánto pesa una
-// pieza con los datos que existen hoy.
+// "unidad" (piezas) se convierte con gramosPorPorcion: el peso de una pieza
+// (ej. 1 manzana ≈ 180 g), sea la referencia "por porción" o "por 100 g".
+// Sin ese peso no hay forma de saber cuánto pesa una pieza.
 function gramosEquivalentes(cantidad, unidadMedida, infoNutricional) {
   if (unidadMedida === "unidad") {
-    if (infoNutricional?.refUnidad === "porcion" && infoNutricional.gramosPorPorcion) {
+    if (infoNutricional?.gramosPorPorcion) {
       return cantidad * infoNutricional.gramosPorPorcion;
     }
     return null;
@@ -78,7 +81,23 @@ function calcularNutrientesDetalle(alimento, cantidadUtilizada) {
     nutrientes[campo] = valor * factor;
   }
 
-  return { nutrientes, completo: camposFaltantes.length === 0, camposFaltantes };
+  return {
+    nutrientes,
+    completo: !camposFaltantes.some((campo) => CAMPOS_CLAVE.includes(campo)),
+    camposFaltantes,
+  };
+}
+
+// Calorías de una comida: las calculadas con las tablas nutricionales
+// (USDA/USFQ) si todos sus alimentos las tienen; si no, la estimación
+// recibida (de la IA o del nutriólogo) como respaldo.
+function caloriasDeComida(nutrientesSumados, estimacion) {
+  const calculadas = nutrientesSumados?.nutrientes?.calorias;
+  const faltan = nutrientesSumados?.camposFaltantes?.includes("calorias");
+  if (Number.isFinite(calculadas) && !faltan) {
+    return Math.round(calculadas);
+  }
+  return Number(estimacion) || 0;
 }
 
 // Agrega varios resultados de calcularNutrientesDetalle/sumarNutrientes
@@ -121,7 +140,28 @@ function alimentosUsadosEnMenu(menu, alimentosDisponibles) {
   return [...idsUsados].map((id) => alimentosPorId.get(id)).filter(Boolean);
 }
 
+// Nombre de cada comida según su lugar en el día y cuántas come el paciente.
+// Lo fija el sistema (no la IA): la merienda siempre va después del almuerzo.
+const MOMENTOS_POR_NUMERO_DE_COMIDAS = {
+  1: ["Almuerzo"],
+  2: ["Almuerzo", "Cena"],
+  3: ["Desayuno", "Almuerzo", "Cena"],
+  4: ["Desayuno", "Almuerzo", "Merienda", "Cena"],
+  5: ["Desayuno", "Media mañana", "Almuerzo", "Merienda", "Cena"],
+  6: ["Desayuno", "Media mañana", "Almuerzo", "Merienda", "Cena", "Antes de dormir"],
+};
+
+function momentosDelDia(numeroComidas) {
+  return (
+    MOMENTOS_POR_NUMERO_DE_COMIDAS[numeroComidas] ||
+    Array.from({ length: numeroComidas }, (_, i) => `Comida ${i + 1}`)
+  );
+}
+
 module.exports = {
+  caloriasDeComida,
+  momentosDelDia,
+  CAMPOS_CLAVE,
   gramosEquivalentes,
   calcularNutrientesDetalle,
   sumarNutrientes,

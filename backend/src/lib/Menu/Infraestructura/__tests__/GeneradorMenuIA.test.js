@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const GeneradorMenuGroq = require("../GeneradorMenuGroq");
+const GeneradorMenuIA = require("../GeneradorMenuIA");
 const { ServicioExternoError } = require("../../Dominio/Errores");
 
 const perfilPaciente = { numeroComidas: 2 };
@@ -31,7 +31,7 @@ function respuestaValida() {
 
 function crearGenerador(textoRespuesta) {
   const pedirCompletionFalso = async () => JSON.stringify(textoRespuesta);
-  return new GeneradorMenuGroq(pedirCompletionFalso);
+  return new GeneradorMenuIA(pedirCompletionFalso);
 }
 
 test("respuesta válida: devuelve los días del menú", async () => {
@@ -42,7 +42,7 @@ test("respuesta válida: devuelve los días del menú", async () => {
 
 test("incluye el diagnóstico anterior como corrección obligatoria", async () => {
   let promptEnviado;
-  const generador = new GeneradorMenuGroq(async (messages) => {
+  const generador = new GeneradorMenuIA(async (messages) => {
     promptEnviado = messages[0].content;
     return JSON.stringify(respuestaValida());
   });
@@ -58,7 +58,7 @@ test("incluye el diagnóstico anterior como corrección obligatoria", async () =
 });
 
 test("rechaza JSON no parseable", async () => {
-  const generador = new GeneradorMenuGroq(async () => "esto no es JSON");
+  const generador = new GeneradorMenuIA(async () => "esto no es JSON");
   await assert.rejects(
     () => generador.generar({ perfilPaciente, alimentosDisponibles }),
     ServicioExternoError,
@@ -181,7 +181,7 @@ test("propaga timeout como ServicioExternoError con statusCode 504", async () =>
   const pedirCompletionQueExpira = async () => {
     throw new GroqTimeoutError("timeout");
   };
-  const generador = new GeneradorMenuGroq(pedirCompletionQueExpira);
+  const generador = new GeneradorMenuIA(pedirCompletionQueExpira);
   await assert.rejects(
     () => generador.generar({ perfilPaciente, alimentosDisponibles }),
     (error) => error instanceof ServicioExternoError && error.statusCode === 504,
@@ -190,7 +190,7 @@ test("propaga timeout como ServicioExternoError con statusCode 504", async () =>
 
 test("informa cuánto esperar cuando Groq devuelve rate limit", async () => {
   const { GroqRateLimitError } = require("../../../../Infraestructura/ia/groqClient");
-  const generador = new GeneradorMenuGroq(async () => {
+  const generador = new GeneradorMenuIA(async () => {
     throw new GroqRateLimitError("rate limit", 12);
   });
 

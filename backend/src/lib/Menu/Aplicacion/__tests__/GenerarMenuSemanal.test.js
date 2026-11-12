@@ -119,25 +119,67 @@ test("un menú dentro del margen del 15% sobre presupuesto sí se persiste", asy
   assert.equal(deps.menuRepository.llamadasCrear.length, 1);
 });
 
-test("rechaza un menú que usa más cantidad que la registrada", async () => {
+test("si el menú se pasa del inventario, reduce las porciones en proporción sin pedir otro menú", async () => {
+  // 7 días × 100 g = 700 g usados, pero solo hay 600 g
   const deps = crearDependencias({
     alimentosDisponibles: [{ ...alimento, cantidad: 600 }],
   });
   const caso = new GenerarMenuSemanal(deps);
+  await caso.ejecutar(1, 10);
 
-  await assert.rejects(
-    () => caso.ejecutar(1, 10),
-    (error) =>
-      error instanceof ServicioExternoError &&
-      error.message.includes("solo hay 600 g registradas") &&
-      error.message.includes("Faltan 100.00 g"),
-  );
+  assert.equal(deps.generadorMenuIA.llamadas.length, 1);
+  const dias = deps.menuRepository.llamadasCrear[0].dias;
+  const porciones = dias.map((d) => d.comidas[0].alimentos[0].cantidadUtilizada);
+  assert.deepEqual(porciones, Array(7).fill(85)); // 100 × 600/700 = 85.7 -> 85 g (hacia abajo)
+  assert.ok(porciones.reduce((s, c) => s + c, 0) <= 600);
+});
+
+test("el ajuste reduce unidades fraccionarias en proporción; si una porción quedaría en 0 pide otro menú", () => {
+  const caso = new GenerarMenuSemanal(crearDependencias());
+  const yogur = { id: "y", nombre: "Yogur", cantidad: 3, unidadMedida: "unidad" };
+  const pan = { id: "p", nombre: "Pan", cantidad: 10, unidadMedida: "unidad" };
+  const menu = (cantidadYogur) => ({
+    dias: [1, 2, 3, 4].map((n) => ({
+      numeroDia: n,
+      comidas: [{ orden: 1, alimentos: [{ indiceAlimento: 1, cantidad: cantidadYogur }, { indiceAlimento: 2, cantidad: 1 }] }],
+    })),
+  });
+
+  // 4 × 1 = 4 yogures con 3 disponibles -> 0.75 cada uno (reducción del 25%)
+  const pequeno = menu(1);
+  assert.equal(caso._ajustarAlInventario(pequeno, [yogur, pan]).length, 1);
+  assert.deepEqual(pequeno.dias.map((d) => d.comidas[0].alimentos[0].cantidad), [0.75, 0.75, 0.75, 0.75]);
+
+  // 4 × 0.25 lechuga = 1 con 0.75 disponible -> 0.1875 -> 0.15 cada una
+  const lechuga = menu(0.25);
+  caso._ajustarAlInventario(lechuga, [{ ...yogur, cantidad: 0.75 }, pan]);
+  assert.deepEqual(lechuga.dias.map((d) => d.comidas[0].alimentos[0].cantidad.toFixed(2)), ["0.15", "0.15", "0.15", "0.15"]);
+
+  // 4 × 0.05 = 0.2 con 0.15 disponible -> 0.0375 se redondearía a 0: no se ajusta
+  assert.throws(() => caso._ajustarAlInventario(menu(0.05), [{ ...yogur, cantidad: 0.15 }, pan]), ServicioExternoError);
+});
+
+test("con piezas (huevos) quita unidades enteras a las porciones más grandes en vez de dejar fracciones", () => {
+  const caso = new GenerarMenuSemanal(crearDependencias());
+  const huevos = { id: "h", nombre: "Huevos", cantidad: 12, unidadMedida: "unidad" };
+  const porciones = [3, 3, 2, 2, 2, 2, 1]; // 15 huevos con 12 disponibles
+  const resultado = {
+    dias: porciones.map((c, i) => ({ numeroDia: i + 1, comidas: [{ orden: 1, alimentos: [{ indiceAlimento: 1, cantidad: c }] }] })),
+  };
+  caso._ajustarAlInventario(resultado, [huevos]);
+  const ajustadas = resultado.dias.map((d) => d.comidas[0].alimentos[0].cantidad);
+  assert.deepEqual(ajustadas, [1, 2, 2, 2, 2, 2, 1]);
+  assert.ok(ajustadas.every(Number.isInteger));
+  assert.equal(ajustadas.reduce((s, c) => s + c, 0), 12);
+});
+
+test("si el exceso es grande (más de 40%) pide otro menú con la corrección exacta", async () => {
+  // 7 × 100 g = 700 g con 300 g disponibles
+  const deps = crearDependencias({ alimentosDisponibles: [{ ...alimento, cantidad: 300 }] });
+  const caso = new GenerarMenuSemanal(deps);
+  await assert.rejects(() => caso.ejecutar(1, 10), ServicioExternoError);
   assert.equal(deps.generadorMenuIA.llamadas.length, 3);
-  assert.match(
-    deps.generadorMenuIA.llamadas[1].correccionAnterior,
-    /solo hay 600 g registradas/,
-  );
-  assert.equal(deps.menuRepository.llamadasCrear.length, 0);
+  assert.match(deps.generadorMenuIA.llamadas[1].correccionAnterior, /solo hay 300 g para toda la semana/);
 });
 
 test("el perfil enviado a la IA no incluye id/idNutriologo/nombre del paciente", async () => {
@@ -213,4 +255,83 @@ test("calcula nutrientes reales a partir de infoNutricional del alimento", async
   const detalle = deps.menuRepository.llamadasCrear[0].dias[0].comidas[0].alimentos[0];
   assert.equal(detalle.nutrientes.nutrientes.calorias, 130);
   assert.equal(detalle.nutrientes.nutrientes.proteinas, 2.7);
+});
+
+test("en cada reintento la IA recibe todas las correcciones anteriores, no solo la última", async () => {
+  let llamada = 0;
+  const deps = crearDependencias({ alimentosDisponibles: [{ ...alimento, cantidad: 300 }] });
+  const generar = deps.generadorMenuIA.generar.bind(deps.generadorMenuIA);
+  deps.generadorMenuIA.generar = async (args) => {
+    llamada++;
+    return generar(args);
+  };
+  const caso = new GenerarMenuSemanal(deps);
+  await assert.rejects(() => caso.ejecutar(1, 10));
+  const tercera = deps.generadorMenuIA.llamadas[2].correccionAnterior;
+  assert.equal((tercera.match(/solo hay 300 g/g) || []).length, 2);
+  assert.equal(llamada, 3);
+});
+
+// Arroz: 360 kcal por 100 g; huevo: 70 kcal por pieza de 50 g (140/100 g)
+const arroz = {
+  id: "a", nombre: "Arroz", cantidad: 2000, unidadMedida: "g",
+  infoNutricional: { refUnidad: "g", refCantidad: 100, calorias: 360, proteinas: 7, carbohidratos: 79, grasasTotales: 0.7 },
+};
+const huevo = {
+  id: "h", nombre: "Huevo", cantidad: 30, unidadMedida: "unidad",
+  infoNutricional: { refUnidad: "g", refCantidad: 100, gramosPorPorcion: 50, calorias: 140, proteinas: 12.6, carbohidratos: 0.7, grasasTotales: 9.5 },
+};
+const menuDe = (gramosArroz, huevos = 2, dias = 1) => ({
+  dias: Array.from({ length: dias }, (_, i) => ({
+    numeroDia: i + 1,
+    comidas: [{ orden: 1, alimentos: [{ indiceAlimento: 1, cantidad: gramosArroz }, { indiceAlimento: 2, cantidad: huevos }] }],
+  })),
+});
+
+test("ajusta las porciones por peso hasta acercarse a la meta de calorías; las piezas no cambian", () => {
+  const caso = new GenerarMenuSemanal(crearDependencias());
+  const resultado = menuDe(200); // 720 + 140 = 860 kcal, meta 1500
+  const informe = caso._ajustarCaloriasALaMeta(resultado, [arroz, huevo], 1500);
+  const [detArroz, detHuevo] = resultado.dias[0].comidas[0].alimentos;
+  assert.equal(detHuevo.cantidad, 2);
+  assert.equal(detArroz.cantidad % 5, 0); // de 5 en 5 g
+  const kcal = detArroz.cantidad * 3.6 + 140;
+  assert.ok(Math.abs(kcal - 1500) <= 1500 * 0.05, `quedó en ${kcal} kcal`);
+  assert.equal(informe[0].antes, 860);
+});
+
+test("también reduce si el día se pasa de la meta", () => {
+  const caso = new GenerarMenuSemanal(crearDependencias());
+  const resultado = menuDe(400); // 1440 + 140 = 1580, meta 1200
+  caso._ajustarCaloriasALaMeta(resultado, [arroz, huevo], 1200);
+  const kcal = resultado.dias[0].comidas[0].alimentos[0].cantidad * 3.6 + 140;
+  assert.ok(Math.abs(kcal - 1200) <= 60);
+});
+
+test("el ajuste de calorías nunca usa más de lo que queda en el inventario", () => {
+  const caso = new GenerarMenuSemanal(crearDependencias());
+  const poco = { ...arroz, cantidad: 500 }; // 2 días × 200 g = 400 g usados, sobran 100 g
+  const resultado = menuDe(200, 2, 2);
+  caso._ajustarCaloriasALaMeta(resultado, [poco, huevo], 1500);
+  const usado = resultado.dias.reduce((s, d) => s + d.comidas[0].alimentos[0].cantidad, 0);
+  assert.ok(usado <= 500, `usó ${usado} g de 500`);
+});
+
+test("sin meta de calorías no cambia nada", () => {
+  const caso = new GenerarMenuSemanal(crearDependencias());
+  const resultado = menuDe(200);
+  assert.deepEqual(caso._ajustarCaloriasALaMeta(resultado, [arroz, huevo], null), []);
+  assert.equal(resultado.dias[0].comidas[0].alimentos[0].cantidad, 200);
+});
+
+test("si escalar los alimentos por peso no alcanza, suma piezas enteras (un huevo más) con inventario disponible", () => {
+  const caso = new GenerarMenuSemanal(crearDependencias());
+  const pocoArroz = { ...arroz, cantidad: 210 }; // solo sobran 10 g de arroz
+  const resultado = menuDe(200, 2); // 720 + 140 = 860 kcal, meta 1100
+  caso._ajustarCaloriasALaMeta(resultado, [pocoArroz, huevo], 1100);
+  const [detArroz, detHuevo] = resultado.dias[0].comidas[0].alimentos;
+  assert.ok(Number.isInteger(detHuevo.cantidad) && detHuevo.cantidad > 2, `huevos: ${detHuevo.cantidad}`);
+  assert.ok(detArroz.cantidad <= 210);
+  const kcal = detArroz.cantidad * 3.6 + detHuevo.cantidad * 70;
+  assert.ok(kcal <= 1100 * 1.05);
 });

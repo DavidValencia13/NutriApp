@@ -7,6 +7,7 @@ const {
   calcularNutrientesDetalle,
   sumarNutrientes,
   cantidadEsPlausible,
+  caloriasDeComida,
 } = require("../Dominio/Servicios/CalculadoraNutricional");
 
 class AjustarComidaMenu {
@@ -67,7 +68,9 @@ class AjustarComidaMenu {
     );
 
     const resultado = await this.menuRepository.actualizarComida(idComidaMenu, {
-      calorias: cambios.calorias,
+      // Calculadas con las tablas si todos los alimentos tienen el dato; si
+      // no, las que escribió el nutriólogo
+      calorias: caloriasDeComida(nutrientes, cambios.calorias),
       nombrePlato: cambios.nombrePlato.trim(),
       costoTotal,
       nutrientes,
