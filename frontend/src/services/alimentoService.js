@@ -35,7 +35,8 @@ export async function obtenerCoberturaCatalogo(idPaciente) {
   return await apiFetch(`/paciente/${idPaciente}/alimento/cobertura`);
 }
 
-// Busca información nutricional sugerida en USDA FoodData Central (o null
+// Busca información nutricional sugerida en USDA FoodData Central, con la
+// tabla USFQ como respaldo y alternativa para alimentos locales (o null
 // si no se encontró nada / falló el servicio externo). Nunca guarda nada.
 export async function buscarInfoNutricional(idPaciente, nombre) {
   return await apiFetch(

@@ -23,6 +23,8 @@ const CAMPOS_NUTRIENTES = [
   "vitaminaB12",
 ];
 
+const FUENTES_NUTRICIONALES = ["USDA", "USFQ", "manual"];
+
 // Entidad principal del dominio Alimento
 // (entidad = clase que representa un objeto real del negocio, con sus reglas de validación)
 class Alimento {
@@ -80,6 +82,8 @@ class Alimento {
         refCantidad = 100,
         refUnidad = "g",
         gramosPorPorcion,
+        fuente,
+        nombreReferencia,
         ...nutrientes
       } = infoNutricional;
 
@@ -97,9 +101,29 @@ class Alimento {
           "gramosPorPorcion es requerido cuando refUnidad es 'porcion'",
         );
 
+      if (
+        gramosPorPorcion !== undefined &&
+        gramosPorPorcion !== null &&
+        (!Number.isFinite(gramosPorPorcion) || gramosPorPorcion <= 0)
+      )
+        throw new ValidationError("gramosPorPorcion debe ser mayor a 0");
+
       infoNutricionalValidada = { refCantidad, refUnidad };
-      if (gramosPorPorcion !== undefined)
+      // También sirve con refUnidad "g": es el peso de una pieza cuando el
+      // alimento se compra por "unidad" (ej. 1 manzana ≈ 180 g)
+      if (gramosPorPorcion !== undefined && gramosPorPorcion !== null)
         infoNutricionalValidada.gramosPorPorcion = gramosPorPorcion;
+
+      // De qué tabla salieron los datos y con qué nombre exacto (ej. "USFQ",
+      // "Plátano, verde, crudo"): el generador de menús lo usa para saber
+      // qué alimento es (plátano verde para bolón, no para un batido)
+      if (fuente !== undefined && fuente !== null) {
+        if (!FUENTES_NUTRICIONALES.includes(fuente))
+          throw new ValidationError(`La fuente debe ser una de: ${FUENTES_NUTRICIONALES.join(", ")}`);
+        infoNutricionalValidada.fuente = fuente;
+      }
+      if (typeof nombreReferencia === "string" && nombreReferencia.trim())
+        infoNutricionalValidada.nombreReferencia = nombreReferencia.trim().slice(0, 200);
 
       for (const campo of CAMPOS_NUTRIENTES) {
         const valor = nutrientes[campo];

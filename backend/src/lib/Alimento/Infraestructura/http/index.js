@@ -3,6 +3,9 @@ const AlimentoController = require("./AlimentoController");
 const verificarPropietarioPaciente = require("./verificarPropietarioPaciente");
 const AlimentoRepositoryMongo = require("../AlimentoRepositoryMongo");
 const BuscadorNutricionalUSDA = require("../BuscadorNutricionalUSDA");
+const BuscadorNutricionalUSFQ = require("../BuscadorNutricionalUSFQ");
+const BuscadorNutricionalCombinado = require("../BuscadorNutricionalCombinado");
+const ReferenciaUSFQModel = require("../ReferenciaUSFQModel");
 const RegistrarAlimento = require("../../Aplicacion/RegistrarAlimento");
 const EditarAlimento = require("../../Aplicacion/EditarAlimento");
 const EliminarAlimento = require("../../Aplicacion/EliminarAlimento");
@@ -10,7 +13,7 @@ const ListarAlimentosPorPaciente = require("../../Aplicacion/ListarAlimentosPorP
 const BuscarInfoNutricional = require("../../Aplicacion/BuscarInfoNutricional");
 const EvaluarCoberturaCatalogo = require("../../Aplicacion/EvaluarCoberturaCatalogo");
 
-const { pedirCompletion } = require("../../../../Infraestructura/ia/groqClient");
+const { pedirCompletion } = require("../../../../Infraestructura/ia/iaClient");
 
 // Dependencias cruzadas de solo lectura (mismo estilo que Paciente ya
 // importa authMiddleware de Nutriólogo): necesitamos verificar la
@@ -22,7 +25,12 @@ module.exports = function registerAlimentoModule(app) {
   const repo = new AlimentoRepositoryMongo();
   const pacienteRepo = new PacienteRepositorySequelize();
 
-  const buscadorNutricional = new BuscadorNutricionalUSDA(pedirCompletion);
+  // USDA FoodData Central es la fuente principal; la tabla USFQ cubre los
+  // alimentos de uso local que USDA no tiene
+  const buscadorNutricional = new BuscadorNutricionalCombinado({
+    principal: new BuscadorNutricionalUSDA(pedirCompletion),
+    secundario: new BuscadorNutricionalUSFQ(() => ReferenciaUSFQModel.find().lean()),
+  });
 
   const controller = new AlimentoController({
     registrarAlimento: new RegistrarAlimento(repo),

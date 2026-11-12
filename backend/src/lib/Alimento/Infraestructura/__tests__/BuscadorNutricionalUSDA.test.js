@@ -112,15 +112,43 @@ test("reconoce las variantes de nombre que USDA usa para azúcares", () => {
   }
 });
 
-test("si la traducción falla, busca igual con el nombre original", async () => {
-  const pedirCompletionQueFalla = async () => "esto no es JSON válido";
+test("si la traducción falla no busca en español: lanza ServicioExternoError", async () => {
+  let consultoUsda = false;
   const buscador = new BuscadorNutricionalUSDA(
-    pedirCompletionQueFalla,
-    fetchFalso({ body: { foods: [] } }),
+    async () => "esto no es JSON válido",
+    async () => { consultoUsda = true; return { ok: true, status: 200, json: async () => ({ foods: [] }) }; },
   );
-  // No debe lanzar por la traducción fallida, solo devolver null (sin resultados)
+  await assert.rejects(() => buscador.buscar("papa"), ServicioExternoError);
+  assert.equal(consultoUsda, false);
+});
+
+test("elige el alimento básico aunque USDA lo ponga más abajo en la lista", async () => {
+  const buscador = new BuscadorNutricionalUSDA(
+    pedirCompletionFalso("Apples, raw, with skin"),
+    fetchFalso({
+      body: {
+        foods: [
+          { description: "Croissants, apple", foodNutrients: [{ nutrientName: "Energy", value: 254, unitName: "KCAL" }] },
+          { description: "Apples, dried, sulfured, uncooked", foodNutrients: [{ nutrientName: "Energy", value: 243, unitName: "KCAL" }] },
+          { description: "Apples, fuji, with skin, raw", foodNutrients: [{ nutrientName: "Energy", value: 64.7, unitName: "KCAL" }] },
+        ],
+      },
+    }),
+  );
   const resultado = await buscador.buscar("manzana");
-  assert.equal(resultado, null);
+  assert.equal(resultado.nombreEncontrado, "Apples, fuji, with skin, raw");
+});
+
+test("respeta una búsqueda precisa (atún en agua, no en aceite)", async () => {
+  const { elegirMejorResultado } = BuscadorNutricionalUSDA;
+  const foods = [
+    { description: "Fish, tuna, light, canned in oil, drained solids", foodNutrients: [] },
+    { description: "Fish, tuna, light, canned in water, drained solids", foodNutrients: [] },
+  ];
+  assert.equal(
+    elegirMejorResultado("tuna, canned in water, drained", foods).description,
+    "Fish, tuna, light, canned in water, drained solids",
+  );
 });
 
 test("lanza ServicioExternoError si USDA responde con error", async () => {
@@ -149,4 +177,97 @@ test("lanza ServicioExternoError si falta la API key", async () => {
   } finally {
     process.env.USDA_FDC_API_KEY = original;
   }
+});
+
+test("toma la energía en kcal aunque USDA la mande primero en kJ", async () => {
+  const buscador = new BuscadorNutricionalUSDA(
+    pedirCompletionFalso("lupins"),
+    fetchFalso({
+      body: {
+        foods: [
+          {
+            description: "Lupins, mature seeds, raw",
+            foodNutrients: [
+              { nutrientName: "Energy", value: 1550, unitName: "kJ" },
+              { nutrientName: "Energy", value: 371, unitName: "KCAL" },
+            ],
+          },
+        ],
+      },
+    }),
+  );
+  const resultado = await buscador.buscar("chocho");
+  assert.equal(resultado.calorias, 371);
+  assert.equal(resultado.fuente, "USDA");
+});
+
+test("acepta la energía de los alimentos Foundation (Atwater)", async () => {
+  const buscador = new BuscadorNutricionalUSDA(
+    pedirCompletionFalso("rice, white"),
+    fetchFalso({
+      body: {
+        foods: [
+          {
+            description: "Rice, white, puffed",
+            foodNutrients: [
+              { nutrientName: "Energy (Atwater General Factors)", value: 371, unitName: "KCAL" },
+            ],
+          },
+        ],
+      },
+    }),
+  );
+  const resultado = await buscador.buscar("arroz blanco");
+  assert.equal(resultado.calorias, 371);
+});
+
+test("devuelve null si ningún resultado es el alimento buscado (no adivina)", () => {
+  const { elegirMejorResultado } = BuscadorNutricionalUSDA;
+  const foods = [
+    { description: "Tree fern, cooked, with salt", foodNutrients: [] },
+    { description: "Tomatoes, grape, raw", foodNutrients: [] },
+    { description: "Abiyuch, raw", foodNutrients: [] },
+  ];
+  assert.equal(elegirMejorResultado("Tree tomato, raw", foods), null);
+});
+
+test("prefiere las palabras del alimento al inicio (Oil, olive antes que la mezcla)", () => {
+  const { elegirMejorResultado } = BuscadorNutricionalUSDA;
+  const energia = [{ nutrientName: "Energy", value: 884, unitName: "KCAL" }];
+  const foods = [
+    { description: "Oil, corn, peanut, and olive", foodNutrients: energia },
+    { description: "Oil, olive, salad or cooking", foodNutrients: energia },
+  ];
+  assert.equal(elegirMejorResultado("Olive oil", foods).description, "Oil, olive, salad or cooking");
+});
+
+test("los descriptores no le ganan a la palabra del alimento (naranja no es camote)", () => {
+  const { elegirMejorResultado } = BuscadorNutricionalUSDA;
+  const energia = [{ nutrientName: "Energy", value: 50, unitName: "KCAL" }];
+  const foods = [
+    { description: "Sweet potatoes, orange flesh, without skin, raw", foodNutrients: energia },
+    { description: "Oranges, raw, Florida", foodNutrients: energia },
+  ];
+  assert.equal(elegirMejorResultado("Orange, sweet, raw", foods).description, "Oranges, raw, Florida");
+});
+
+test("devuelve el peso típico de una unidad que estimó la IA al traducir", async () => {
+  const buscador = new BuscadorNutricionalUSDA(
+    async () => JSON.stringify({ nombreIngles: "Apples, raw, with skin", gramosPorUnidad: 180 }),
+    fetchFalso({
+      body: { foods: [{ description: "Apples, fuji, with skin, raw", foodNutrients: [{ nutrientName: "Energy", value: 64.7, unitName: "KCAL" }] }] },
+    }),
+  );
+  const resultado = await buscador.buscar("manzana");
+  assert.equal(resultado.gramosPorUnidad, 180);
+});
+
+test("si la IA dice que no se vende por piezas (null), no inventa un peso", async () => {
+  const buscador = new BuscadorNutricionalUSDA(
+    async () => JSON.stringify({ nombreIngles: "Rice, white, long-grain, regular, raw", gramosPorUnidad: null }),
+    fetchFalso({
+      body: { foods: [{ description: "Rice, white, long-grain, regular, raw, enriched", foodNutrients: [{ nutrientName: "Energy", value: 365, unitName: "KCAL" }] }] },
+    }),
+  );
+  assert.equal((await buscador.buscar("arroz")).gramosPorUnidad, undefined);
 });

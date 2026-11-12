@@ -58,6 +58,8 @@ const AlimentoSchema = new mongoose.Schema(
         refCantidad: { type: Number, default: 100 },
         refUnidad: { type: String, enum: ["g", "porcion"], default: "g" },
         gramosPorPorcion: { type: Number },
+        fuente: { type: String, enum: ["USDA", "USFQ", "manual"] },
+        nombreReferencia: { type: String },
         ...nutrientesSchema,
       },
       required: false,
