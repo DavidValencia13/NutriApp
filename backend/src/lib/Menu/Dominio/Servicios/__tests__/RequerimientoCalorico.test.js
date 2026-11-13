@@ -50,3 +50,13 @@ test("las calorías de la comida son las calculadas; la estimación solo si falt
   assert.equal(caloriasDeComida({ nutrientes: { calorias: 412.6 }, completo: true, camposFaltantes: [] }, 999), 413);
   assert.equal(caloriasDeComida({ nutrientes: {}, completo: false, camposFaltantes: ["calorias"] }, 450), 450);
 });
+
+test("usos máximos en la semana de alimentos escasos (piezas, líquidos, aceites)", () => {
+  const { usosMaximosEnLaSemana } = require("../CalculadoraNutricional");
+  const info = (extra = {}) => ({ refUnidad: "g", refCantidad: 100, ...extra });
+  assert.equal(usosMaximosEnLaSemana({ nombre: "Yogur", cantidad: 2, unidadMedida: "unidad", infoNutricional: info({ gramosPorPorcion: 150 }) }), 2);
+  assert.equal(usosMaximosEnLaSemana({ nombre: "Lechuga", cantidad: 1, unidadMedida: "unidad", infoNutricional: info({ gramosPorPorcion: 400 }) }), 4);
+  assert.equal(usosMaximosEnLaSemana({ nombre: "Leche", cantidad: 3, unidadMedida: "l", infoNutricional: info() }), 12);
+  assert.equal(usosMaximosEnLaSemana({ nombre: "Aceite de oliva", cantidad: 0.5, unidadMedida: "l", infoNutricional: info() }), 50);
+  assert.equal(usosMaximosEnLaSemana({ nombre: "Arroz", cantidad: 2, unidadMedida: "kg", infoNutricional: info() }), null);
+});

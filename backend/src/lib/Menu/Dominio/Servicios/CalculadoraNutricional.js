@@ -158,7 +158,36 @@ function momentosDelDia(numeroComidas) {
   );
 }
 
+// Cuántas comidas de la semana alcanza un alimento escaso, para decírselo a
+// la IA (sin esto ponía yogur en todas las meriendas con solo 2 vasitos y
+// había que pedir el menú otra vez). Solo para piezas, líquidos y aceites:
+// los alimentos a granel (arroz, cebolla) se usan en porciones muy variables
+// y el ajuste al inventario los corrige. Porción típica: una pieza (o 100 g
+// de una pieza grande como lechuga o sandía), 250 ml de líquido, 10 ml de
+// aceite. Devuelve null si no aplica.
+function usosMaximosEnLaSemana(alimento) {
+  const cantidad = Number(alimento.cantidad);
+  if (!(cantidad > 0)) return null;
+  const unidad = alimento.unidadMedida;
+  const nombre = (alimento.nombre || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+  if (/aceite|manteca|mantequilla|margarina/.test(nombre)) {
+    const ml = gramosEquivalentes(cantidad, unidad, alimento.infoNutricional);
+    return ml ? Math.max(1, Math.floor(ml / 10)) : null;
+  }
+  if (unidad === "unidad") {
+    const pieza = alimento.infoNutricional?.gramosPorPorcion;
+    if (pieza > 250) return Math.max(1, Math.floor((cantidad * pieza) / 100));
+    return Math.max(1, Math.floor(cantidad));
+  }
+  if (unidad === "ml" || unidad === "l") {
+    return Math.max(1, Math.floor((cantidad * GRAMOS_POR_UNIDAD_MEDIDA[unidad]) / 250));
+  }
+  return null;
+}
+
 module.exports = {
+  usosMaximosEnLaSemana,
   caloriasDeComida,
   momentosDelDia,
   CAMPOS_CLAVE,

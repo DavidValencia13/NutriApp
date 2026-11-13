@@ -3,7 +3,7 @@ const {
   IATimeoutError,
   IARateLimitError,
 } = require("../../../Infraestructura/ia/errores");
-const { momentosDelDia } = require("../Dominio/Servicios/CalculadoraNutricional");
+const { momentosDelDia, usosMaximosEnLaSemana } = require("../Dominio/Servicios/CalculadoraNutricional");
 const { repartoPorComida } = require("../Dominio/Servicios/RequerimientoCalorico");
 
 // Genera el menú con el proveedor de IA configurado (Groq o Claude, ver
@@ -88,9 +88,19 @@ class GeneradorMenuIA {
       ...(a.unidadMedida === "unidad" && a.infoNutricional?.gramosPorPorcion && { gramosPorUnidad: a.infoNutricional.gramosPorPorcion }),
       cantidad: a.cantidad,
       unidadMedida: a.unidadMedida,
+      ...(usosMaximosEnLaSemana(a) && { usosMaximos: usosMaximosEnLaSemana(a) }),
       precioPorUnidad: a.precio || 0,
       costoTotalDisponible: (a.precio || 0) * a.cantidad,
     }));
+    // Alimentos que alcanzan para pocas comidas: se le resaltan a la IA
+    const escasos = listaAlimentos
+      .filter((a) => a.usosMaximos && a.usosMaximos < 7 * perfilPaciente.numeroComidas / 2)
+      .map((a) => `"${a.nombre}" (máximo ${a.usosMaximos} ${a.usosMaximos === 1 ? "comida" : "comidas"} en toda la semana)`);
+    const instruccionEscasos = escasos.length
+      ? `
+ALIMENTOS ESCASOS (regla estricta: si te pasas, el menú se rechaza): ${escasos.join(", ")}. No los pongas en más comidas que ese número; en las demás usa otros alimentos de la lista.
+`
+      : "";
     const momentos = momentosDelDia(perfilPaciente.numeroComidas);
     const listaMomentos = momentos.map((m, i) => `${i + 1} = ${m}`).join(", ");
     const meta = perfilPaciente.caloriasObjetivoDia;
@@ -117,8 +127,8 @@ CUIDADO CON LA UNIDAD DE MEDIDA (error común, evítalo): antes de elegir "canti
 
 REGLA ESTRICTA DE DIETA: el campo "preferencias" del perfil indica el tipo de dieta del paciente (ej. vegetariano, vegano, carnívoro, sin lácteos, etc.) y "restricciones" indica alergias o alimentos prohibidos. Usa tu conocimiento de qué alimentos son de origen animal, vegetal, contienen lácteos, gluten, etc. según su nombre, y EXCLUYE por completo cualquier alimento de la lista que viole esas preferencias o restricciones, aunque esté disponible. Por ejemplo: si "preferencias" dice "vegetariano", nunca uses carnes, pollo, pescado ni mariscos; si dice "carne" o similar, prioriza alimentos de origen animal disponibles. Si "restricciones" menciona una alergia (ej. "alérgico al maní"), no uses ese alimento ni derivados bajo ninguna circunstancia.
 
-CANTIDADES Y PRESUPUESTO: "cantidad" de cada alimento es el inventario TOTAL para los 7 días, en su "unidadMedida", y todo el inventario ya cabe en el presupuesto. Reparte cada alimento a lo largo de la semana sin pasarte de su inventario: si lo usas en N comidas, cada porción debe ser como máximo cantidad / N. No hace falta que sumes precios: el sistema verifica las cantidades y corrige diferencias pequeñas.
-${instruccionCorreccion}
+CANTIDADES Y PRESUPUESTO: "cantidad" de cada alimento es el inventario TOTAL para los 7 días, en su "unidadMedida", y todo el inventario ya cabe en el presupuesto. "usosMaximos" (si aparece) es en cuántas comidas de la semana alcanza ese alimento con una porción normal: no lo uses en más comidas que eso. Reparte cada alimento a lo largo de la semana sin pasarte de su inventario: si lo usas en N comidas, cada porción debe ser como máximo cantidad / N. No hace falta que sumes precios: el sistema verifica las cantidades y corrige diferencias pequeñas.
+${instruccionCorreccion}${instruccionEscasos}
 
 ${instruccionCalorias}
 MOMENTOS DEL DÍA (fijos, no los cambies): el paciente come ${momentos.length} veces al día y cada "orden" corresponde a un momento: ${listaMomentos}. "tipoComida" debe ser exactamente ese nombre. Piensa cada plato para su momento: el desayuno es comida de desayuno; la merienda es por la tarde, después del almuerzo; la cena es más ligera que el almuerzo.
