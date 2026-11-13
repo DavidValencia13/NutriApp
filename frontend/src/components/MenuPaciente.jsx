@@ -7,7 +7,96 @@ import Modal from "./Modal";
 import FormularioAjustarComida from "./FormularioAjustarComida";
 import EfectividadMenu from "./EfectividadMenu";
 import { IconAlertTriangle } from "./Icons";
-import { Apple, Coffee, Moon, MoonStar, Sunrise, Utensils, UtensilsCrossed } from "lucide-react";
+import {
+  Apple, Check, Coffee, Loader2, Moon, MoonStar, Sparkles, Sunrise, Utensils, UtensilsCrossed,
+} from "lucide-react";
+
+// Pasos que sigue el backend al generar el menú (se muestran mientras espera)
+const PASOS_GENERACION = [
+  "Revisando los alimentos y cantidades del paciente",
+  "Diseñando los platos de la semana con IA",
+  "Calculando calorías y nutrientes con las tablas de referencia",
+  "Ajustando porciones a la meta y al presupuesto",
+];
+
+// Avanza los pasos con el tiempo; el último se queda activo hasta que termine
+function usePasoGeneracion(activo) {
+  const [segundos, setSegundos] = useState(0);
+  useEffect(() => {
+    if (!activo) return undefined;
+    const id = setInterval(() => setSegundos((s) => s + 1), 1000);
+    return () => {
+      clearInterval(id);
+      setSegundos(0);
+    };
+  }, [activo]);
+  const paso = segundos < 3 ? 0 : segundos < 25 ? 1 : segundos < 35 ? 2 : 3;
+  return { paso, segundos };
+}
+
+function PanelGenerando({ paso, segundos }) {
+  return (
+    <div className="mb-4 rounded-xl border border-nutri-brand/20 bg-white p-4 shadow-sm animate-fade-in-up">
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <p className="flex items-center gap-2 text-sm font-semibold text-nutri-ink">
+          <Sparkles size={16} className="text-nutri-brand" aria-hidden="true" />
+          Preparando el menú semanal
+        </p>
+        <span className="text-xs text-gray-500 tabular">{segundos}s</span>
+      </div>
+      <div className="progreso-indef h-1 rounded-full mb-4" />
+      <ol className="space-y-2">
+        {PASOS_GENERACION.map((texto, i) => {
+          const hecho = i < paso;
+          const actual = i === paso;
+          return (
+            <li key={texto} className="flex items-center gap-2.5 text-sm">
+              <span
+                className={`flex items-center justify-center w-5 h-5 rounded-full shrink-0 transition-colors ${
+                  hecho ? "bg-nutri-brand text-white" : actual ? "bg-nutri-brand/15 text-nutri-brand" : "bg-gray-100 text-gray-400"
+                }`}
+              >
+                {hecho ? (
+                  <Check size={12} strokeWidth={3} aria-hidden="true" />
+                ) : actual ? (
+                  <Loader2 size={12} className="animate-spin" aria-hidden="true" />
+                ) : (
+                  <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                )}
+              </span>
+              <span className={hecho ? "text-gray-500" : actual ? "text-nutri-ink font-medium" : "text-gray-400"}>
+                {texto}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+      <p className="text-xs text-gray-500 mt-3">Suele tardar entre 30 segundos y un minuto.</p>
+    </div>
+  );
+}
+
+// Tarjetas de día vacías con brillo mientras llega el menú
+function EsqueletoMenu() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" aria-hidden="true">
+      {Array.from({ length: 6 }, (_, i) => (
+        <div key={i} className="border rounded-lg overflow-hidden bg-white" style={{ opacity: 1 - i * 0.1 }}>
+          <div className="esqueleto h-10" style={{ background: "rgb(31 122 82 / 0.15)" }} />
+          <div className="p-4 space-y-4">
+            {[0, 1, 2].map((j) => (
+              <div key={j} className="space-y-2">
+                <div className="esqueleto h-3 w-24 rounded" />
+                <div className="esqueleto h-4 w-4/5 rounded" />
+                <div className="esqueleto h-3 w-3/5 rounded" />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 // Ícono de línea (Lucide) por momento del día
 const ICONOS_POR_MOMENTO = [
@@ -49,6 +138,7 @@ function MenuPaciente({ idPaciente, presupuesto }) {
   // Cobertura del catálogo: si los alimentos alcanzan para la meta del
   // paciente (y la meta misma, para comparar cada día)
   const [cobertura, setCobertura] = useState(null);
+  const { paso, segundos } = usePasoGeneracion(generando);
 
   useEffect(() => {
     cargarDatos();
@@ -103,7 +193,15 @@ function MenuPaciente({ idPaciente, presupuesto }) {
     cargarDatos();
   }
 
-  if (cargando) return <p>Cargando menú...</p>;
+  if (cargando) {
+    return (
+      <div>
+        <div className="esqueleto h-24 rounded-lg mb-3" />
+        <div className="esqueleto h-9 w-48 rounded-lg mb-4" />
+        <EsqueletoMenu />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -126,16 +224,30 @@ function MenuPaciente({ idPaciente, presupuesto }) {
       <button
         onClick={handleGenerar}
         disabled={generando}
-        className="bg-nutri-brand text-white px-4 py-2 rounded hover:bg-nutri-ink mb-4 disabled:cursor-not-allowed disabled:opacity-60"
+        aria-busy={generando}
+        className={`inline-flex items-center gap-2 text-white px-4 py-2 rounded-lg font-medium mb-4 transition-colors disabled:cursor-wait ${
+          generando ? "boton-generando" : "bg-nutri-brand hover:bg-nutri-ink"
+        }`}
       >
-        {generando
-          ? "Generando menú... (puede tardar hasta un minuto)"
-          : faltanAlimentos(cobertura?.suficiencia)
-            ? "Generar menú de todas formas"
-            : "Generar menú semanal"}
+        {generando ? (
+          <>
+            <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+            Generando menú…
+          </>
+        ) : (
+          <>
+            <Sparkles size={16} aria-hidden="true" />
+            {faltanAlimentos(cobertura?.suficiencia) ? "Generar menú de todas formas" : "Generar menú semanal"}
+          </>
+        )}
       </button>
 
-      {!menu ? (
+      {generando ? (
+        <>
+          <PanelGenerando paso={paso} segundos={segundos} />
+          <EsqueletoMenu />
+        </>
+      ) : !menu ? (
         <p className="text-gray-500">
           Este paciente todavía no tiene un menú generado.
         </p>

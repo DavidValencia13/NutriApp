@@ -110,6 +110,64 @@ h1, h2, h3, h4, h5, .font-display {
   background: var(--color-nutri-brand);
 }
 
+/* ── Generando con IA: degradado en movimiento, esqueletos y progreso ─────── */
+@keyframes gradiente-mov {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+@keyframes brillo {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
+}
+@keyframes progreso-indef {
+  0%   { left: -40%; width: 40%; }
+  60%  { left: 100%; width: 40%; }
+  100% { left: 100%; width: 40%; }
+}
+
+/* Botón mientras la IA trabaja: verde bosque → verde marca → menta, fluyendo */
+.boton-generando {
+  background-image: linear-gradient(110deg,
+    var(--color-nutri-ink) 0%, var(--color-nutri-brand) 25%, #3FA374 45%,
+    var(--color-nutri-brand) 65%, var(--color-nutri-ink) 100%);
+  background-size: 200% 100%;
+  animation: gradiente-mov 2.4s linear infinite;
+  box-shadow: 0 0 0 3px rgb(31 122 82 / 0.15), 0 6px 18px -6px rgb(31 122 82 / 0.55);
+}
+
+/* Bloque gris con un brillo que lo recorre (carga tipo esqueleto) */
+.esqueleto {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-gray-100);
+}
+.esqueleto::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.7), transparent);
+  animation: brillo 1.4s ease-in-out infinite;
+}
+
+/* Barra de progreso indeterminada */
+.progreso-indef {
+  position: relative;
+  overflow: hidden;
+  background: rgb(31 122 82 / 0.12);
+}
+.progreso-indef::after {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, var(--color-nutri-brand), #3FA374);
+  animation: progreso-indef 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boton-generando, .esqueleto::after, .progreso-indef::after { animation: none; }
+}
+
 /* ── Scrollbar ───────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar          { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track    { background: transparent; }
