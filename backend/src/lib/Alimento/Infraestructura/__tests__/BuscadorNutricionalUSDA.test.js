@@ -18,6 +18,20 @@ function fetchFalso({ ok = true, status = 200, body = {} }) {
   });
 }
 
+test("para 'huevos' elige el huevo entero, no la yema", () => {
+  const conKcal = (description, value) => ({
+    description,
+    foodNutrients: [{ nutrientName: "Energy", unitName: "KCAL", value }],
+  });
+  const foods = [
+    conKcal("Eggs, Grade A, Large, egg yolk", 334),
+    conKcal("Eggs, Grade A, Large, egg whole", 148),
+  ];
+  for (const consulta of ["Eggs", "eggs whole", "Eggs, grade A, large"]) {
+    assert.equal(BuscadorNutricionalUSDA.elegirMejorResultado(consulta, foods).description, "Eggs, Grade A, Large, egg whole");
+  }
+});
+
 test("devuelve null si USDA no encuentra resultados", async () => {
   const buscador = new BuscadorNutricionalUSDA(
     pedirCompletionFalso("chicken breast"),

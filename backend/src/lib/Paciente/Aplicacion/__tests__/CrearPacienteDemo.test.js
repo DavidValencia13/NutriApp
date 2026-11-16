@@ -39,6 +39,13 @@ test("crea la paciente de ejemplo con sus alimentos verificados", async () => {
   assert.ok(r.alimentos.every((a) => ["USDA", "USFQ"].includes(a.infoNutricional.fuente)));
 });
 
+test("el catálogo de la demo cabe en su presupuesto (si no, no se puede editar nada)", async () => {
+  const r = repos();
+  const paciente = await new CrearPacienteDemo(r).ejecutar(7);
+  const costo = ALIMENTOS_DEMO.reduce((s, a) => s + a.cantidad * a.precio, 0);
+  assert.ok(costo <= paciente.presupuesto, `catálogo $${costo.toFixed(2)} > presupuesto $${paciente.presupuesto}`);
+});
+
 test("no la duplica si el nutricionista ya la tiene", async () => {
   const r = repos();
   const caso = new CrearPacienteDemo(r);

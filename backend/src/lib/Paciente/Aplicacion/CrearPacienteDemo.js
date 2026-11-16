@@ -17,7 +17,7 @@ const DATOS_DEMO = {
   objetivo: "Bajar Peso",
   nivelActividad: "Moderado",
   numeroComidas: 4,
-  presupuesto: 40,
+  presupuesto: 50, // el catálogo cuesta ~$44: deja margen para editar alimentos
   tiempoParaCocinar: 30,
   restricciones: "",
   preferencias: "Comida casera, platos sencillos",

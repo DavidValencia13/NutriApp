@@ -26,7 +26,7 @@ function normalizar(texto) {
 // mejor con estas reglas (prefijos de palabra, en minúsculas).
 const RESULTADOS_A_EVALUAR = 25;
 const PROCESADO = [
-  "croissant", "strudel", "babyfood", "juice", "butter", "spread", "meatless",
+  "yolk", "croissant", "strudel", "babyfood", "juice", "butter", "spread", "meatless",
   "fat", "frankfurter", "bologna", "bratwurst", "sausage", "fast", "extender",
   "souffle", "spaghetti", "pasta", "oil", "marmalade", "jam", "jelly", "pie",
   "cake", "bread", "cookie", "cracker", "candied", "canned", "dried",
