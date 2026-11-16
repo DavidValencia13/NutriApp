@@ -182,6 +182,15 @@ test("detecta un alimento incompatible con una alergia registrada", () => {
   assert.equal(resultado.listoParaMenu, false);
 });
 
+test("detecta cacahuete como sinónimo de maní", () => {
+  const resultado = evaluar({
+    paciente: { ...pacienteBase, alergias: ["maní"] },
+    alimentos: catalogoCompleto().concat(alimento("Crema de cacahuete", ["grasas_saludables"])),
+  });
+  assert.ok(resultado.alertas.some((alerta) => alerta.tipo.startsWith("alimento_alergia_")));
+  assert.equal(resultado.listoParaMenu, false);
+});
+
 test("detecta alimentos que chocan con una restricción vía sinónimo", () => {
   const paciente = { ...pacienteBase, restricciones: "Sin gluten" };
   const alimentos = catalogoCompleto().concat(

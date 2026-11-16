@@ -10,22 +10,14 @@ function SugerenciasMenu({ idPaciente, idMenu }) {
   const [sugerencias, setSugerencias] = useState([]);
   const [cargando, setCargando] = useState(true);
 
-  async function cargar() {
-    setCargando(true);
-    try {
-      const data = await listarSugerencias(idPaciente, idMenu);
-      setSugerencias(data);
-    } catch {
-      // Silencioso a propósito: si fallan las sugerencias, no debe tumbar
-      // la vista del menú.
-    } finally {
-      setCargando(false);
-    }
-  }
-
   useEffect(() => {
-    cargar();
-  }, [idMenu]);
+    let vigente = true;
+    listarSugerencias(idPaciente, idMenu)
+      .then((data) => { if (vigente) setSugerencias(data); })
+      .catch(() => { if (vigente) setSugerencias([]); })
+      .finally(() => { if (vigente) setCargando(false); });
+    return () => { vigente = false; };
+  }, [idPaciente, idMenu]);
 
   if (cargando || sugerencias.length === 0) return null;
 

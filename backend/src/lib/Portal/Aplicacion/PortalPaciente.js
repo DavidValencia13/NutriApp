@@ -106,6 +106,7 @@ class PortalPaciente {
     return {
       objetivo: paciente.objetivo,
       pesoInicial: paciente.pesoInicial,
+      pesoPrimerControl: registros.find((registro) => Number.isFinite(Number(registro.peso)) && Number(registro.peso) > 0)?.peso ?? null,
       registros: registros.map(({ id, fecha, peso, nivelCumplimiento }) => ({ id, fecha, peso, nivelCumplimiento })),
       cumplimiento: menu ? resumenCumplimiento(menu, marcas) : null,
     };

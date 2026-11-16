@@ -9,3 +9,11 @@ export function faltanAlimentos(suficiencia) {
     (p) => p !== null && p !== undefined && p < UMBRAL_SUFICIENTE,
   );
 }
+
+export function catalogoPreparadoParaMenu(cobertura, cantidadAlimentos) {
+  if (!cobertura || cantidadAlimentos < 1 || !cobertura.listoParaMenu) return false;
+  const suficiencia = cobertura.suficiencia;
+  return !faltanAlimentos(suficiencia) &&
+    !suficiencia?.alimentosSinDatos?.length &&
+    !suficiencia?.alimentosSinPeso?.length;
+}

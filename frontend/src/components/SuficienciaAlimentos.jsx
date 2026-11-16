@@ -27,10 +27,7 @@ function Barra({ etiqueta, indicador, unidad }) {
       <div className="flex justify-between items-baseline text-xs mb-1">
         <span className="text-gray-600">{etiqueta}</span>
         <span className={`font-semibold tabular ${COLOR[e].texto}`}>
-          {indicador.disponibleDia} / {indicador.requeridoDia} {unidad} por día ·{" "}
-          {indicador.porcentaje >= 100
-            ? `Alcanza ✓ (sobran ${indicador.disponibleDia - indicador.requeridoDia} ${unidad})`
-            : `${indicador.porcentaje}%`}
+          Inventario: {indicador.disponibleDia} {unidad}/día · Referencia: {indicador.requeridoDia} {unidad}/día
         </span>
       </div>
       <div className="h-1.5 w-full rounded-full bg-gray-200 overflow-hidden">
@@ -48,7 +45,7 @@ function Micronutrientes({ lista }) {
   if (faltantes.length === 0) {
     return (
       <p className="text-xs text-nutri-green mt-2.5">
-        <span className="font-semibold">Vitaminas y minerales: cubiertos ✓</span>{" "}
+        <span className="font-semibold">Aporte estimado suficiente ✓</span>{" "}
         <span className="text-gray-500">({lista.map((m) => m.label).join(", ")})</span>
       </p>
     );
@@ -69,12 +66,13 @@ function Micronutrientes({ lista }) {
   );
 }
 
-function SuficienciaAlimentos({ suficiencia, titulo = "¿Alcanzan los alimentos para una semana?" }) {
+function SuficienciaAlimentos({ suficiencia, titulo = "Disponibilidad estimada para siete días" }) {
   if (!suficiencia?.calorias || suficiencia.calorias.requeridoDia === null) return null;
   const falta = faltanAlimentos(suficiencia);
   return (
     <div className={`rounded-lg border p-3 ${falta ? "border-nutri-orange/30 bg-nutri-orange/5" : "border-nutri-green/30 bg-nutri-green/5"}`}>
       <p className="text-xs font-semibold text-nutri-ink mb-2">{titulo}</p>
+      <p className="text-xs text-gray-500 mb-2">Se divide el inventario registrado entre siete días. No equivale a lo que comió el paciente ni a una porción indicada.</p>
       <div className="space-y-2">
         <Barra etiqueta="Calorías" indicador={suficiencia.calorias} unidad="kcal" />
         <Barra etiqueta="Proteínas" indicador={suficiencia.proteinas} unidad="g" />
@@ -82,8 +80,8 @@ function SuficienciaAlimentos({ suficiencia, titulo = "¿Alcanzan los alimentos 
       <Micronutrientes lista={suficiencia.micronutrientes} />
       <p className={`text-xs mt-2 ${falta ? "text-nutri-orange" : "text-nutri-green"}`}>
         {falta
-          ? `Faltan alimentos o cantidad: el menú no podrá llegar a la meta del paciente.${suficiencia.calorias.faltaSemana > 0 ? ` Faltan unas ${suficiencia.calorias.faltaSemana} kcal para la semana.` : ""}`
-          : "Las cantidades registradas alcanzan para cubrir la semana del paciente."}
+          ? "Revisa qué alimentos o cantidades faltan antes de preparar el menú."
+          : "El inventario ofrece opciones suficientes para planificar; revisa las porciones del menú."}
       </p>
     </div>
   );

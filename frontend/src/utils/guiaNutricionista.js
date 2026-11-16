@@ -13,7 +13,7 @@ export const PASOS_GUIA_NUTRICIONISTA = [
     texto: "Empieza aquí: peso, altura, objetivo, nivel de actividad, presupuesto semanal, alergias y preferencias.",
   },
   {
-    selector: "paciente-alimentos",
+    selector: "paciente-menu",
     titulo: "Agrega sus alimentos",
     texto:
       "Registra lo que el paciente tiene o puede comprar, con cantidad y precio. Los nutrientes se buscan solos en USDA FoodData Central y en la tabla de la USFQ para alimentos locales.",
@@ -37,13 +37,13 @@ export const PASOS_GUIA_NUTRICIONISTA = [
       "Revisa cada comida: puedes cambiar ingredientes y cantidades. Cuando estés conforme, apruébalo. El paciente solo ve menús que tú aprobaste.",
   },
   {
-    selector: "paciente-app",
+    selector: "paciente-mas",
     titulo: "Dale acceso a su app",
     texto:
       "Crea el correo y la contraseña del paciente. Desde el celular verá su menú, marcará lo que come, registrará su peso y tendrá su lista de compras.",
   },
   {
-    selector: "paciente-seguimiento",
+    selector: "paciente-mas",
     titulo: "Sigue su avance",
     texto:
       "Aquí ves el cumplimiento del menú comida por comida, la evolución de su peso y los comentarios que deja el paciente.",

@@ -7,6 +7,7 @@
     "start": "nodemon index.js",
     "test": "node --test",
     "cargar:usfq": "node scripts/cargarTablaUSFQ.js",
+    "cargar:demo": "node scripts/cargarAlimentosDemo.js",
     "revisar:alimentos": "node scripts/revisarAlimentosConIA.js"
   },
   "keywords": [],

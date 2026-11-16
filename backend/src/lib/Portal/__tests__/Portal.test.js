@@ -164,3 +164,17 @@ test("el peso que registra el paciente entra al seguimiento con el cumplimiento 
   assert.equal(registrado.nivelCumplimiento, "bien");
   assert.match(registrado.observaciones, /100%/);
 });
+
+test("el progreso distingue el peso de ficha del primer control registrado", async () => {
+  const portal = new PortalPaciente({
+    pacienteRepository: { async findById() { return { id: 10, pesoInicial: 68.5, objetivo: "Perder peso" }; } },
+    seguimientoRepository: { async listarPorPaciente() { return [
+      { id: 1, fecha: new Date("2026-10-26"), peso: 70.4, nivelCumplimiento: "regular" },
+      { id: 2, fecha: new Date("2026-11-16"), peso: 68.5, nivelCumplimiento: "bien" },
+    ]; } },
+    menuRepository: { async obtenerMasRecienteAprobadoPorPaciente() { return null; } },
+  });
+  const progreso = await portal.progreso(10);
+  assert.equal(progreso.pesoInicial, 68.5);
+  assert.equal(progreso.pesoPrimerControl, 70.4);
+});

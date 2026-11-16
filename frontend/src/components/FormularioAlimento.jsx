@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import {
   registrarAlimento,
   editarAlimento,
@@ -10,6 +10,7 @@ import {
 } from "../constants/gruposAlimenticios";
 import { CATALOGO_ALIMENTOS_BORRADOR } from "../constants/catalogoAlimentosBorrador";
 import IndicadorPresupuesto from "./IndicadorPresupuesto";
+import { Search, ShieldAlert } from "lucide-react";
 
 // Quita tildes/mayúsculas para comparar texto libre (preferencias) sin
 // depender de cómo lo haya escrito el nutriólogo.
@@ -19,6 +20,18 @@ function normalizar(texto) {
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
     .toLowerCase();
+}
+
+function alergiaCoincidente(nombre, alergias = []) {
+  const alimento = normalizar(nombre);
+  if (!alimento) return null;
+  return alergias.find((alergia) => {
+    const termino = normalizar(alergia).replace(/^alergia a\s+/, "").trim();
+    if (!termino || /^(ninguna?|no aplica)$/.test(termino)) return false;
+    const variantes = termino === "mani" ? ["mani", "cacahuate", "cacahuete"] :
+      termino === "frutos secos" ? ["mani", "cacahuate", "cacahuete", "nuez", "almendra", "avellana"] : [termino];
+    return variantes.some((variante) => alimento.includes(variante));
+  }) || null;
 }
 
 // Grupos a sugerir en el primer paso, priorizados por lo que realmente le
@@ -150,34 +163,50 @@ function FormularioAlimento({
   onSuccess,
   onCancel,
 }) {
-  const [form, setForm] = useState({
-    nombre: "",
-    cantidad: "",
-    unidadMedida: "",
-    precioTotal: "",
-  });
+  const infoInicial = alimentoEditar?.infoNutricional;
+  const [form, setForm] = useState(() => alimentoEditar ? {
+    nombre: alimentoEditar.nombre,
+    cantidad: alimentoEditar.cantidad,
+    unidadMedida: alimentoEditar.unidadMedida,
+    precioTotal: alimentoEditar.precio * alimentoEditar.cantidad,
+  } : { nombre: "", cantidad: "", unidadMedida: "", precioTotal: "" });
+  const alergiaDetectada = alergiaCoincidente(form.nombre, paciente?.alergias);
   // Al crear, puede venir preseleccionado desde un aviso de cobertura ("+
   // Lácteos"); al editar, lo sobreescribe el efecto con los grupos guardados.
   const [gruposAlimenticios, setGruposAlimenticios] = useState(
-    gruposIniciales || [],
+    () => alimentoEditar?.gruposAlimenticios || gruposIniciales || [],
   );
-  const [mostrarNutricional, setMostrarNutricional] = useState(false);
-  const [refUnidad, setRefUnidad] = useState("g");
-  const [gramosPorPorcion, setGramosPorPorcion] = useState("");
-  const [nutrientes, setNutrientes] = useState(NUTRIENTES_VACIOS);
+  const [mostrarNutricional, setMostrarNutricional] = useState(Boolean(infoInicial));
+  const [detallesNutricionalesAbiertos, setDetallesNutricionalesAbiertos] = useState(false);
+  const [refUnidad, setRefUnidad] = useState(infoInicial?.refUnidad || "g");
+  const [gramosPorPorcion, setGramosPorPorcion] = useState(infoInicial?.gramosPorPorcion ?? "");
+  const [nutrientes, setNutrientes] = useState(() => infoInicial ? {
+    ...NUTRIENTES_VACIOS,
+    ...Object.fromEntries(Object.entries(infoInicial).filter(([key, value]) => key in NUTRIENTES_VACIOS && value !== undefined)),
+  } : NUTRIENTES_VACIOS);
   const [error, setError] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [buscandoNutricion, setBuscandoNutricion] = useState(false);
   const [mensajeBusqueda, setMensajeBusqueda] = useState("");
   const [estadoBusqueda, setEstadoBusqueda] = useState("aviso");
-  const [tipoMedida, setTipoMedida] = useState(null);
+  const [tipoMedida, setTipoMedida] = useState(() => alimentoEditar
+    ? UNIDADES_VOLUMEN.has(alimentoEditar.unidadMedida) ? "volumen" : "peso"
+    : null);
   const [sugerenciasBusqueda, setSugerenciasBusqueda] = useState([]);
   // Resultado aplicado al formulario y, si existe, el de la otra fuente
   // (USDA / tabla USFQ) para que el nutriólogo pueda cambiar entre ambos
   const [resultadoFuente, setResultadoFuente] = useState(null);
+  const ultimaConsultaRef = useRef(
+    Object.keys(NUTRIENTES_VACIOS).some((key) => infoInicial?.[key] != null)
+      ? alimentoEditar.nombre : "",
+  );
+  const solicitudRef = useRef(0);
+  const consultaActivaRef = useRef(false);
   // Fuente y nombre exacto en la tabla del alimento que se está editando
   // (se conservan si no se vuelve a buscar)
-  const [referenciaGuardada, setReferenciaGuardada] = useState(null);
+  const referenciaGuardada = normalizar(form.nombre) === normalizar(alimentoEditar?.nombre) && infoInicial?.fuente
+    ? { fuente: infoInicial.fuente, nombreReferencia: infoInicial.nombreReferencia }
+    : null;
   const [otraFuente, setOtraFuente] = useState(null);
   // Preferencia de vista de los nutrientes: total para lo comprado (por
   // defecto) o por 100 g/porción. Los valores GUARDADOS (estado `nutrientes`)
@@ -200,46 +229,29 @@ function FormularioAlimento({
   // se muestran fijos (no editables) más abajo, para no permitir
   // combinaciones sin sentido (ej. "tomate" marcado como proteína y bebida).
   const [origenCatalogo, setOrigenCatalogo] = useState(false);
+  const [busquedaCatalogo, setBusquedaCatalogo] = useState("");
 
   // Si viene un alimento a editar, precarga sus datos en el formulario.
   // El backend guarda precio por unidad (ej. $/g); aquí se muestra el
   // total pagado (precio unitario × cantidad) porque es lo que el
   // nutriólogo recuerda naturalmente ("pagué $30 por estas 500g").
-  useEffect(() => {
-    if (alimentoEditar) {
-      setForm({
-        nombre: alimentoEditar.nombre,
-        cantidad: alimentoEditar.cantidad,
-        unidadMedida: alimentoEditar.unidadMedida,
-        precioTotal: alimentoEditar.precio * alimentoEditar.cantidad,
-      });
-      setGruposAlimenticios(alimentoEditar.gruposAlimenticios || []);
-      setTipoMedida(
-        UNIDADES_VOLUMEN.has(alimentoEditar.unidadMedida) ? "volumen" : "peso",
-      );
-      const info = alimentoEditar.infoNutricional;
-      if (info) {
-        setMostrarNutricional(true);
-        setRefUnidad(info.refUnidad || "g");
-        setGramosPorPorcion(info.gramosPorPorcion ?? "");
-        setReferenciaGuardada(
-          info.fuente ? { fuente: info.fuente, nombreReferencia: info.nombreReferencia } : null,
-        );
-        setNutrientes({
-          ...NUTRIENTES_VACIOS,
-          ...Object.fromEntries(
-            Object.entries(info).filter(
-              ([k]) => k in NUTRIENTES_VACIOS && info[k] !== undefined,
-            ),
-          ),
-        });
-      }
-    }
-  }, [alimentoEditar]);
-
   function handleChange(e) {
     const { name, value } = e.target;
+    if (name === "nombre" && value !== form.nombre) limpiarFichaNutricional();
     setForm((prev) => ({ ...prev, [name]: value }));
+  }
+
+  function limpiarFichaNutricional() {
+    solicitudRef.current += 1;
+    consultaActivaRef.current = false;
+    ultimaConsultaRef.current = "";
+    setResultadoFuente(null);
+    setOtraFuente(null);
+    setNutrientes(NUTRIENTES_VACIOS);
+    setMostrarNutricional(false);
+    setMensajeBusqueda("");
+    setGramosPorPorcion("");
+    setBuscandoNutricion(false);
   }
 
   function handleNutrienteChange(key, value) {
@@ -314,6 +326,14 @@ function FormularioAlimento({
     const nombre =
       typeof nombreOverride === "string" ? nombreOverride : form.nombre;
     if (!nombre || nombre.trim().length === 0) return;
+    const referenciaLocal = CATALOGO_ALIMENTOS_BORRADOR.find(
+      (item) => normalizar(item.nombre) === normalizar(nombre),
+    )?.terminoBusquedaLocal;
+    const terminoConsulta = referenciaLocal || nombre;
+    const solicitud = ++solicitudRef.current;
+    ultimaConsultaRef.current = nombre.trim();
+    consultaActivaRef.current = true;
+    setError("");
     setMensajeBusqueda("");
     setSugerenciasBusqueda([]);
     setResultadoFuente(null);
@@ -321,10 +341,11 @@ function FormularioAlimento({
     setEstadoBusqueda("aviso");
     setBuscandoNutricion(true);
     try {
-      const resultado = await buscarInfoNutricional(idPaciente, nombre);
+      const resultado = await buscarInfoNutricional(idPaciente, terminoConsulta);
+      if (solicitud !== solicitudRef.current) return;
       if (!resultado) {
         setMensajeBusqueda(
-          "No encontramos una coincidencia exacta. Prueba una sugerencia o completa los datos manualmente.",
+          "No encontramos una ficha para este nombre. Prueba otra descripción o guarda el alimento pendiente de datos nutricionales.",
         );
         const grupo = gruposAlimenticios[0] || grupoSeleccionado;
         setSugerenciasBusqueda(
@@ -337,16 +358,20 @@ function FormularioAlimento({
         return;
       }
       const { alternativa, ...principal } = resultado;
-      aplicarResultado(principal);
+      aplicarResultado(principal, nombre);
       setOtraFuente(alternativa || null);
     } catch {
+      if (solicitud !== solicitudRef.current) return;
       setEstadoBusqueda("aviso");
       setSugerenciasBusqueda([]);
       setMensajeBusqueda(
-        "No se pudo completar la búsqueda automática, complétalo manualmente.",
+        "No se pudo consultar la ficha nutricional. Reintenta o guarda el alimento pendiente de datos.",
       );
     } finally {
-      setBuscandoNutricion(false);
+      if (solicitud === solicitudRef.current) {
+        consultaActivaRef.current = false;
+        setBuscandoNutricion(false);
+      }
     }
   }
 
@@ -354,7 +379,10 @@ function FormularioAlimento({
   // Los nutrientes se reemplazan por completo (no se mezclan con los
   // anteriores): si una fuente no trae un nutriente, ese campo queda vacío
   // en vez de conservar el valor de otra fuente.
-  function aplicarResultado(resultado) {
+  function aplicarResultado(resultado, nombreConsultado = form.nombre) {
+    const tipoCatalogo = CATALOGO_ALIMENTOS_BORRADOR.find((item) =>
+      normalizar(item.nombre) === normalizar(nombreConsultado))?.tipoMedida;
+    const tipoAplicable = tipoCatalogo || resultado.tipoMedicion;
     setResultadoFuente(resultado);
     // Peso típico de una pieza que estimó la IA (el nutriólogo puede
     // corregirlo); no pisa un valor ya escrito
@@ -364,9 +392,9 @@ function FormularioAlimento({
     setMostrarNutricional(true);
     setEstadoBusqueda("exito");
     setRefUnidad("g");
-    setTipoMedida(resultado.tipoMedicion);
+    setTipoMedida(tipoAplicable);
     setForm((prev) => {
-      if (resultado.tipoMedicion === "volumen") {
+      if (tipoAplicable === "volumen") {
         return {
           ...prev,
           unidadMedida: UNIDADES_VOLUMEN.has(prev.unidadMedida)
@@ -405,8 +433,10 @@ function FormularioAlimento({
   // reales del alimento (no solo el grupo por el que se navegó, ya
   // clasificados de antemano — no editables, ver sección de grupos más
   // abajo), y busca en USDA con el término en inglés ya preparado para cada
-  // alimento — así funciona aunque la traducción por IA no esté disponible.
+  // alimento. Se consulta primero por su nombre local para aprovechar USFQ;
+  // USDA puede traducirlo desde el backend si está configurado.
   function elegirAlimentoSugerido(item) {
+    limpiarFichaNutricional();
     setTipoMedida(item.tipoMedida || null);
     setForm((prev) => ({
       ...prev,
@@ -420,7 +450,7 @@ function FormularioAlimento({
     setGruposAlimenticios(item.gruposAlimenticios);
     setOrigenCatalogo(true);
     setPaso("form");
-    handleBuscarNutricion(item.terminosBusquedaUsda?.[0] || item.nombre);
+    handleBuscarNutricion(item.nombre);
   }
 
   // Registro manual: un solo grupo principal, editable (ver más abajo);
@@ -431,9 +461,29 @@ function FormularioAlimento({
     setPaso("form");
   }
 
+  function buscarEnFuentes() {
+    const nombre = busquedaCatalogo.trim();
+    if (!nombre) return;
+    limpiarFichaNutricional();
+    setGruposAlimenticios(grupoSeleccionado ? [grupoSeleccionado] : []);
+    setOrigenCatalogo(false);
+    setForm((prev) => ({ ...prev, nombre }));
+    setPaso("form");
+    handleBuscarNutricion(nombre);
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+    if (consultaActivaRef.current) {
+      setError("Espera a que termine la consulta nutricional antes de guardar.");
+      return;
+    }
+    if (!tieneDatosNutricionales && normalizar(ultimaConsultaRef.current) !== normalizar(form.nombre)) {
+      await handleBuscarNutricion(form.nombre);
+      setError("Revisa la ficha encontrada y vuelve a guardar. Si no hay coincidencia, puedes guardarlo pendiente de datos.");
+      return;
+    }
     if (gruposAlimenticios.length === 0) {
       setError("Selecciona al menos un grupo alimenticio");
       return;
@@ -460,8 +510,7 @@ function FormularioAlimento({
         gruposAlimenticios,
       };
 
-      // Solo se manda infoNutricional si el nutriólogo abrió la sección y
-      // cargó al menos un valor; evita mandar un objeto vacío.
+      // La visibilidad del detalle no determina qué datos se guardan.
       if (mostrarNutricional) {
         const nutrientesLlenos = Object.fromEntries(
           Object.entries(nutrientes)
@@ -511,11 +560,50 @@ function FormularioAlimento({
   // su preferencia alimentaria, en vez de una lista plana de los 12 grupos.
   if (paso === "grupo") {
     const sugeridos = gruposSugeridos(cobertura, paciente).slice(0, 6);
+    const nombreBuscado = normalizar(busquedaCatalogo.trim());
+    const coincidencias = nombreBuscado.length > 0
+      ? CATALOGO_ALIMENTOS_BORRADOR.filter((item) => normalizar(item.nombre).includes(nombreBuscado)).slice(0, 7)
+      : [];
     return (
-      <div>
+      <div className="food-pick-stage">
+        <div className="food-entry-heading"><span className="food-coverage-kicker">PASO 1 · ELEGIR ALIMENTO</span><h3>Busca o elige una sugerencia</h3><p>Selecciona un alimento para completar nombre, grupo y nutrientes disponibles. Después indica cuánto tienes y su precio.</p></div>
+        <label className={labelClass} htmlFor="buscar-catalogo">Buscar alimento</label>
+        <div className="food-search-combo">
+          <Search size={18} aria-hidden="true" />
+          <input
+            id="buscar-catalogo"
+            type="search"
+            autoComplete="off"
+            value={busquedaCatalogo}
+            onChange={(event) => setBusquedaCatalogo(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && busquedaCatalogo.trim()) {
+                event.preventDefault();
+                if (coincidencias.length > 0) elegirAlimentoSugerido(coincidencias[0]);
+                else buscarEnFuentes();
+              }
+              if (event.key === "Escape") setBusquedaCatalogo("");
+            }}
+            placeholder="Ej. arroz, pollo, quinua…"
+            aria-describedby="food-search-help"
+          />
+          {nombreBuscado && (
+            <div className="food-search-results">
+              {coincidencias.map((item) => (
+                <button key={item.id} type="button" onClick={() => elegirAlimentoSugerido(item)}>
+                  <span>{item.nombre}</span><small>Catálogo · consultar nutrientes</small>
+                </button>
+              ))}
+              <button type="button" className="food-search-external" onClick={buscarEnFuentes}>
+                <span>Buscar «{busquedaCatalogo.trim()}»</span><small>USDA / USFQ · revisar resultado</small>
+              </button>
+            </div>
+          )}
+        </div>
+        <p id="food-search-help" className="text-xs text-gray-500 mb-5">La coincidencia nutricional procede de USDA o USFQ. Confirma composición, alergias y restricciones antes de usarla en el plan.</p>
         <p className={labelClass}>Sugerencias</p>
         <p className="text-xs text-gray-500 mb-3">
-          Según el objetivo y las preferencias de {paciente?.nombre || "el paciente"}, estos grupos suman más al plan.
+          Grupos a revisar para {paciente?.nombre || "el paciente"}, según la cobertura del catálogo.
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
           {sugeridos.map((valor) => (
@@ -523,7 +611,7 @@ function FormularioAlimento({
               key={valor}
               type="button"
               onClick={() => elegirGrupo(valor)}
-              className="text-sm px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:border-nutri-brand hover:text-nutri-brand text-left"
+              className="food-suggestion-tile"
             >
               {labelGrupoAlimenticio(valor)}
             </button>
@@ -556,7 +644,8 @@ function FormularioAlimento({
       (a) => a.grupoPrincipal === grupoSeleccionado,
     );
     return (
-      <div>
+      <div className="food-pick-stage">
+        <div className="food-entry-heading"><span className="food-coverage-kicker">PASO 1 · SUGERENCIAS</span><h3>Elige un alimento</h3><p>Estas opciones son orientativas. Verifica compatibilidad con las alergias y restricciones del paciente.</p></div>
         <button
           type="button"
           onClick={() => setPaso("grupo")}
@@ -578,7 +667,7 @@ function FormularioAlimento({
                 key={a.id}
                 type="button"
                 onClick={() => elegirAlimentoSugerido(a)}
-                className="text-sm px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:border-nutri-brand hover:text-nutri-brand text-left"
+                className="food-suggestion-tile"
               >
                 {a.nombre}
               </button>
@@ -606,7 +695,8 @@ function FormularioAlimento({
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="food-entry-form">
+      <div className="food-entry-heading"><span className="food-coverage-kicker">PASO 2 · DISPONIBILIDAD</span><h3>Confirma cantidad y precio</h3><p>El nombre y los nutrientes se completan desde la sugerencia o la fuente consultada. Revisa los valores antes de guardar.</p></div>
       {error && (
         <p className="bg-red-100 text-red-700 text-sm p-2 rounded-lg mb-4">
           {error}
@@ -620,6 +710,11 @@ function FormularioAlimento({
             name="nombre"
             value={form.nombre}
             onChange={handleChange}
+            onBlur={() => {
+              if (form.nombre.trim() && normalizar(ultimaConsultaRef.current) !== normalizar(form.nombre)) {
+                handleBuscarNutricion(form.nombre);
+              }
+            }}
             required
             className={inputClass}
             placeholder="Ej: Arroz"
@@ -630,9 +725,10 @@ function FormularioAlimento({
             disabled={buscandoNutricion || !form.nombre?.trim()}
             className="shrink-0 whitespace-nowrap px-3 py-2 rounded-lg border border-nutri-brand text-nutri-brand text-sm hover:bg-nutri-brand/10 disabled:opacity-50"
           >
-            {buscandoNutricion ? "Buscando..." : "Buscar información nutricional"}
+            {buscandoNutricion ? "Buscando..." : resultadoFuente || referenciaGuardada ? "Actualizar nutrientes" : "Buscar nutrientes"}
           </button>
         </div>
+        {alergiaDetectada && <p className="food-entry-allergy-warning" role="alert"><ShieldAlert size={17} aria-hidden="true" /><span><strong>Alerta de alergia:</strong> “{form.nombre}” coincide con {alergiaDetectada}. Revisa sus ingredientes. Si contiene el alérgeno, no lo guardes para este paciente.</span></p>}
         {mensajeBusqueda && (
           <div
             role="status"
@@ -677,6 +773,15 @@ function FormularioAlimento({
                 ))}
               </div>
             )}
+          </div>
+        )}
+        {tieneDatosNutricionales && (
+          <div className="food-nutrition-preview" aria-label="Resumen de composición nutricional">
+            <div><strong>Ficha nutricional cargada</strong><span>{NOMBRE_FUENTE[resultadoFuente?.fuente || referenciaGuardada?.fuente] || "Datos registrados"} · {refUnidad === "porcion" ? "por porción" : tipoMedida === "volumen" ? "por 100 g (≈ 100 ml)" : "por 100 g"}</span></div>
+            <div className="food-nutrition-preview-values">
+              {[["calorias", "kcal"], ["proteinas", "g proteína"], ["carbohidratos", "g carbohidratos"], ["grasasTotales", "g grasas"]].filter(([key]) => nutrientes[key] !== "" && nutrientes[key] != null).map(([key, unidad]) => <span key={key}><b>{Number(nutrientes[key]).toLocaleString("es-EC", { maximumFractionDigits: 1 })}</b> {unidad}</span>)}
+            </div>
+            <small>Confirma que la presentación de la ficha corresponde al alimento que tienes (crudo, cocido, con o sin piel).</small>
           </div>
         )}
       </div>
@@ -839,19 +944,12 @@ function FormularioAlimento({
       </div>
 
       <div className="mb-4">
-        <button
-          type="button"
-          onClick={() => setMostrarNutricional((v) => !v)}
-          className="text-sm text-nutri-brand hover:underline"
-        >
-          {mostrarNutricional
-            ? "− Ocultar detalles nutricionales"
-            : tieneDatosNutricionales
-              ? "Ver detalles nutricionales"
-              : "+ Completar datos nutricionales manualmente (opcional)"}
+        <button type="button" onClick={() => { if (!mostrarNutricional) setMostrarNutricional(true); setDetallesNutricionalesAbiertos((abierto) => !abierto); }} aria-expanded={detallesNutricionalesAbiertos} className="food-nutrition-toggle">
+          {detallesNutricionalesAbiertos ? "Ocultar composición nutricional" : tieneDatosNutricionales ? "Revisar composición nutricional" : "Agregar composición nutricional manualmente"}
+          <span aria-hidden="true">{detallesNutricionalesAbiertos ? "−" : "+"}</span>
         </button>
 
-        {mostrarNutricional && (
+        {mostrarNutricional && detallesNutricionalesAbiertos && (
           <div className="mt-3 border border-gray-200 rounded-lg p-3">
             <h3 className="mb-3 text-sm font-semibold text-nutri-ink">
               Composición nutricional
@@ -936,10 +1034,10 @@ function FormularioAlimento({
         </button>
         <button
           type="submit"
-          disabled={guardando}
+          disabled={guardando || buscandoNutricion}
           className="px-4 py-2 rounded bg-nutri-brand text-white hover:bg-nutri-ink disabled:opacity-50"
         >
-          {guardando ? "Guardando..." : "Guardar"}
+          {guardando ? "Guardando..." : tieneDatosNutricionales ? "Guardar alimento" : "Guardar sin ficha nutricional"}
         </button>
       </div>
     </form>

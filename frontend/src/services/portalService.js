@@ -16,6 +16,14 @@ export const marcarComida = (idComidaMenu, estado, nota) =>
 export const registrarPesoPortal = (peso, nota) =>
   apiFetch("/portal/peso", { method: "POST", body: JSON.stringify({ peso, nota }) });
 
+export const buscarAlimentosDiario = (texto) =>
+  apiFetch(`/portal/alimentos?q=${encodeURIComponent(texto)}`);
+export const listarIngestasPortal = () => apiFetch("/portal/ingestas");
+export const registrarIngestaPortal = (datos) =>
+  apiFetch("/portal/ingestas", { method: "POST", body: JSON.stringify(datos) });
+export const eliminarIngestaPortal = (id) =>
+  apiFetch(`/portal/ingestas/${id}`, { method: "DELETE" });
+
 // ── Nutriólogo: acceso del paciente a la app y su cumplimiento ──
 export const obtenerAccesoPaciente = (idPaciente) => apiFetch(`/paciente/${idPaciente}/acceso`);
 export const guardarAccesoPaciente = (idPaciente, datos) =>
@@ -23,3 +31,4 @@ export const guardarAccesoPaciente = (idPaciente, datos) =>
 export const quitarAccesoPaciente = (idPaciente) =>
   apiFetch(`/paciente/${idPaciente}/acceso`, { method: "DELETE" });
 export const obtenerCumplimientoPaciente = (idPaciente) => apiFetch(`/paciente/${idPaciente}/cumplimiento`);
+export const listarIngestasPaciente = (idPaciente) => apiFetch(`/paciente/${idPaciente}/ingestas`);

@@ -27,7 +27,7 @@ export async function eliminarPaciente(id) {
     method: "DELETE",
   });
 }
-// Crea el paciente de ejemplo (María Demo, con alimentos ya registrados)
+
 export async function crearPacienteDemo() {
-  return await apiFetch("/paciente/demo", { method: "POST" });
+  return apiFetch("/paciente/demo", { method: "POST" });
 }

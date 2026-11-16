@@ -1,13 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { generarMenu, obtenerMenu, aprobarMenu } from "../services/menuService";
-import { obtenerCoberturaCatalogo } from "../services/alimentoService";
+import { listarAlimentos, obtenerCoberturaCatalogo } from "../services/alimentoService";
 import SuficienciaAlimentos from "./SuficienciaAlimentos";
-import { faltanAlimentos } from "../utils/suficiencia";
+import { catalogoPreparadoParaMenu, faltanAlimentos } from "../utils/suficiencia";
 import Modal from "./Modal";
 import FormularioAjustarComida from "./FormularioAjustarComida";
 import EfectividadMenu from "./EfectividadMenu";
+import ListaAlimentos from "./ListaAlimentos";
 import { IconAlertTriangle } from "./Icons";
-import { Check, Loader2, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, ClipboardCheck, Loader2, Smartphone, Sparkles, UtensilsCrossed } from "lucide-react";
 import IconoMomento from "./IconoMomento";
 import { cantidadLegible } from "../utils/cantidad";
 
@@ -98,8 +99,10 @@ function EsqueletoMenu() {
   );
 }
 
-function MenuPaciente({ idPaciente, presupuesto }) {
+function MenuPaciente({ idPaciente, paciente, presupuesto, onSeguimiento, onAcceso }) {
   const [menu, setMenu] = useState(null);
+  const [cantidadAlimentos, setCantidadAlimentos] = useState(0);
+  const [vista, setVista] = useState("resumen");
   const [cargando, setCargando] = useState(true);
   const [generando, setGenerando] = useState(false);
   const [error, setError] = useState("");
@@ -109,36 +112,42 @@ function MenuPaciente({ idPaciente, presupuesto }) {
   const [cobertura, setCobertura] = useState(null);
   const { paso, segundos } = usePasoGeneracion(generando);
 
-  useEffect(() => {
-    cargarDatos();
-  }, [idPaciente]);
-
-  async function cargarDatos() {
+  const cargarDatos = useCallback(async () => {
     setCargando(true);
     setError("");
     try {
-      const [menuData, coberturaData] = await Promise.all([
+      const [menuData, coberturaData, alimentosData] = await Promise.all([
         obtenerMenu(idPaciente),
         obtenerCoberturaCatalogo(idPaciente).catch(() => null),
+        listarAlimentos(idPaciente),
       ]);
       setMenu(menuData);
       setCobertura(coberturaData);
+      setCantidadAlimentos(alimentosData.length);
     } catch (err) {
       setError(err.message);
     } finally {
       setCargando(false);
     }
-  }
+  }, [idPaciente]);
+
+  useEffect(() => {
+    let activo = true;
+    queueMicrotask(() => { if (activo) cargarDatos(); });
+    return () => { activo = false; };
+  }, [cargarDatos]);
 
   async function handleGenerar() {
-    if (generando) return;
+    if (generando || !catalogoPreparadoParaMenu(cobertura, cantidadAlimentos)) return;
     setError("");
     setGenerando(true);
     try {
       await generarMenu(idPaciente);
       await cargarDatos();
     } catch (err) {
-      setError(err.message);
+      setError(err.message === "El servicio de generación no está disponible"
+        ? "No se pudo conectar con la IA. Revisa que GROQ_API_KEY esté configurada en el backend y vuelve a intentar."
+        : err.message);
     } finally {
       setGenerando(false);
     }
@@ -162,6 +171,11 @@ function MenuPaciente({ idPaciente, presupuesto }) {
     cargarDatos();
   }
 
+  function volverDelCatalogo() {
+    setVista("resumen");
+    cargarDatos();
+  }
+
   if (cargando) {
     return (
       <div>
@@ -172,56 +186,92 @@ function MenuPaciente({ idPaciente, presupuesto }) {
     );
   }
 
+  if (vista === "alimentos") {
+    return (
+      <div className="menu-flow menu-flow-food-page">
+        <button type="button" className="menu-flow-back" onClick={volverDelCatalogo}>
+          <ArrowLeft size={16} aria-hidden="true" /> Volver al menú semanal
+        </button>
+        <div className="menu-flow-food-heading">
+          <span className="menu-flow-kicker">PASO 1 · ALIMENTOS</span>
+          <h3>Elige los alimentos disponibles</h3>
+          <p>Selecciona sugerencias del catálogo o busca un alimento. Los nutrientes se consultan en USDA y USFQ; revisa la cantidad y el precio antes de guardarlo.</p>
+        </div>
+        <ListaAlimentos idPaciente={idPaciente} paciente={paciente} onContinue={volverDelCatalogo} />
+      </div>
+    );
+  }
+
+  const hayAlimentos = cantidadAlimentos > 0;
+  const puedeGenerar = catalogoPreparadoParaMenu(cobertura, cantidadAlimentos);
+  const coberturaInsuficiente = faltanAlimentos(cobertura?.suficiencia);
+  const etapaActual = menu ? 3 : puedeGenerar ? 2 : 1;
+
   return (
-    <div>
+    <div className="menu-flow">
+      <div className="menu-flow-heading">
+        <span className="menu-flow-kicker">PLANIFICACIÓN CLÍNICA</span>
+        <h3>Un menú construido en orden</h3>
+        <p>Primero los alimentos disponibles; después la propuesta semanal y tu revisión profesional.</p>
+      </div>
+      <ol className="menu-flow-steps" aria-label="Pasos del menú semanal">
+        {["Alimentos", "Generar", "Revisar y aprobar"].map((nombre, indice) => (
+          <li key={nombre} className={indice + 1 === etapaActual ? "active" : indice + 1 < etapaActual ? "done" : ""} aria-current={indice + 1 === etapaActual ? "step" : undefined}>
+            <span>{indice + 1 < etapaActual ? <Check size={14} strokeWidth={2.8} aria-hidden="true" /> : indice + 1}</span>
+            {nombre}
+          </li>
+        ))}
+      </ol>
       {error && (
-        <p className="bg-red-100 text-red-700 text-sm p-2 rounded mb-4">
+        <p role="alert" className="menu-flow-error">
           {error}
         </p>
       )}
 
-      {/* Antes de generar: ¿alcanzan los alimentos para la meta del paciente? */}
-      {cobertura?.suficiencia && (
-        <div className="mb-3">
-          <SuficienciaAlimentos
-            suficiencia={cobertura.suficiencia}
-            titulo="Antes de generar: ¿alcanzan los alimentos registrados?"
-          />
+      {!menu && !generando && (
+        <div className="menu-flow-preparation">
+          <section className="menu-flow-step-card">
+            <span className="menu-flow-card-icon"><UtensilsCrossed size={20} aria-hidden="true" /></span>
+            <div>
+              <span className="menu-flow-kicker">01 · SELECCIÓN</span>
+              <h4>{hayAlimentos ? `${cantidadAlimentos} alimento${cantidadAlimentos === 1 ? "" : "s"} guardado${cantidadAlimentos === 1 ? "" : "s"}` : "Elige los alimentos"}</h4>
+              <p>{hayAlimentos ? "Puedes revisar cantidades, precios y nutrientes antes de generar." : "Añade alimentos del catálogo; la consulta nutricional completará los datos disponibles."}</p>
+            </div>
+            <button type="button" onClick={() => setVista("alimentos")}>
+              {hayAlimentos ? "Revisar alimentos" : "Elegir alimentos"}<ArrowRight size={15} aria-hidden="true" />
+            </button>
+          </section>
+          {hayAlimentos && coberturaInsuficiente && (
+            <details className="menu-flow-coverage">
+              <summary><IconAlertTriangle style={{ width: 15, height: 15 }} />La cobertura aún es baja. Ver qué conviene añadir</summary>
+              <SuficienciaAlimentos suficiencia={cobertura.suficiencia} titulo="Revisión del inventario semanal" />
+            </details>
+          )}
+          <section className={`menu-flow-step-card menu-flow-generate ${!puedeGenerar ? "locked" : ""}`}>
+            <span className="menu-flow-card-icon"><Sparkles size={20} aria-hidden="true" /></span>
+            <div>
+              <span className="menu-flow-kicker">02 · PROPUESTA</span>
+              <h4>Generar menú semanal</h4>
+              <p>{puedeGenerar ? "La IA propondrá platos con estos alimentos. Podrás revisar cada comida antes de aprobar." : !cobertura && hayAlimentos ? "No se pudo comprobar el catálogo. Vuelve a abrir los alimentos para reintentar." : "Completa alimentos esenciales, cantidades para siete días y datos nutricionales antes de generar."}</p>
+            </div>
+            <button type="button" onClick={handleGenerar} disabled={!puedeGenerar}>
+              Generar menú <ArrowRight size={15} aria-hidden="true" />
+            </button>
+          </section>
         </div>
       )}
-
-      <button
-        onClick={handleGenerar}
-        disabled={generando}
-        aria-busy={generando}
-        className={`inline-flex items-center gap-2 text-white px-4 py-2 rounded-lg font-medium mb-4 transition-colors disabled:cursor-wait ${
-          generando ? "boton-generando" : "bg-nutri-brand hover:bg-nutri-ink"
-        }`}
-      >
-        {generando ? (
-          <>
-            <Loader2 size={16} className="animate-spin" aria-hidden="true" />
-            Generando menú…
-          </>
-        ) : (
-          <>
-            <Sparkles size={16} aria-hidden="true" />
-            {faltanAlimentos(cobertura?.suficiencia) ? "Generar menú de todas formas" : "Generar menú semanal"}
-          </>
-        )}
-      </button>
 
       {generando ? (
         <>
           <PanelGenerando paso={paso} segundos={segundos} />
           <EsqueletoMenu />
         </>
-      ) : !menu ? (
-        <p className="text-gray-500">
-          Este paciente todavía no tiene un menú generado.
-        </p>
-      ) : (
+      ) : menu ? (
         <div>
+          <div className="menu-flow-result-intro">
+            <div><span className="menu-flow-kicker">03 · REVISIÓN</span><p>Revisa porciones, nutrientes y presupuesto antes de aprobar el menú.</p></div>
+            <button type="button" onClick={() => setVista("alimentos")}>Revisar alimentos</button>
+          </div>
           <div className="flex items-center gap-3 mb-4">
             <span
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold ${
@@ -245,7 +295,17 @@ function MenuPaciente({ idPaciente, presupuesto }) {
                 Aprobar menú
               </button>
             )}
+            <button type="button" className="menu-flow-new-version" onClick={handleGenerar} disabled={!puedeGenerar}>Generar nueva versión</button>
           </div>
+
+          {menu.estado === "aprobado" && (
+            <div className="menu-flow-next">
+              <span className="menu-flow-card-icon"><ClipboardCheck size={19} aria-hidden="true" /></span>
+              <div><strong>Siguiente: acompañar al paciente</strong><p>Consulta su evolución o prepara su acceso a la app.</p></div>
+              <button type="button" onClick={onSeguimiento}>Seguimiento</button>
+              <button type="button" onClick={onAcceso}><Smartphone size={15} aria-hidden="true" /> Acceso a la app</button>
+            </div>
+          )}
 
           <EfectividadMenu idPaciente={idPaciente} idMenu={menu.id} />
 
@@ -323,7 +383,7 @@ function MenuPaciente({ idPaciente, presupuesto }) {
             ))}
           </div>
         </div>
-      )}
+      ) : null}
 
       <Modal
         isOpen={comidaEditar !== null}

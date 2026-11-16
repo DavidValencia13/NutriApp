@@ -14,6 +14,9 @@ const NutriologoRepositorySequelize = require("../../../Nutriologo/Infraestructu
 const MenuRepositorySequelize = require("../../../Menu/Infraestructura/MenuRepositorySequelize");
 const SeguimientoRepositorySequelize = require("../../../Seguimiento/Infraestructura/SeguimientoRepositorySequelize");
 const RegistrarSeguimiento = require("../../../Seguimiento/Aplicacion/RegistrarSeguimiento");
+const ReferenciaUSFQModel = require("../../../Alimento/Infraestructura/ReferenciaUSFQModel");
+const RegistroIngestaRepositorySequelize = require("../RegistroIngestaRepositorySequelize");
+const DiarioIngesta = require("../../Aplicacion/DiarioIngesta");
 
 // Errores de dominio (statusCode) → su código; el resto al manejador global
 const manejar = (fn) => async (req, res, next) => {
@@ -31,6 +34,10 @@ module.exports = function registerPortalModule(app) {
   const pacienteRepo = new PacienteRepositorySequelize();
   const menuRepo = new MenuRepositorySequelize();
   const seguimientoRepo = new SeguimientoRepositorySequelize();
+  const diario = new DiarioIngesta({
+    referenciaModel: ReferenciaUSFQModel,
+    registroRepository: new RegistroIngestaRepositorySequelize(),
+  });
 
   const gestionarAcceso = new GestionarAccesoPaciente(accesoRepo);
   const loginPaciente = new LoginPaciente({ accesoRepository: accesoRepo, pacienteRepository: pacienteRepo });
@@ -56,6 +63,8 @@ module.exports = function registerPortalModule(app) {
   app.use("/api/paciente/:idPaciente/acceso", ...soloDueno, acceso);
   app.get("/api/paciente/:idPaciente/cumplimiento", ...soloDueno,
     manejar(async (req, res) => res.json(await obtenerCumplimiento.ejecutar(req.idPaciente))));
+  app.get("/api/paciente/:idPaciente/ingestas", ...soloDueno,
+    manejar(async (req, res) => res.json(await diario.listar(req.idPaciente))));
 
   // ── Paciente: su app ──
   const portalRouter = express.Router();
@@ -64,6 +73,13 @@ module.exports = function registerPortalModule(app) {
   portalRouter.get("/perfil", manejar(async (req, res) => res.json(await portal.perfil(req.idPaciente))));
   portalRouter.get("/menu", manejar(async (req, res) => res.json(await portal.menu(req.idPaciente))));
   portalRouter.get("/compras", manejar(async (req, res) => res.json(await portal.compras(req.idPaciente))));
+  portalRouter.get("/alimentos", manejar(async (req, res) => res.json(await diario.buscarAlimentos(req.query.q))));
+  portalRouter.get("/ingestas", manejar(async (req, res) => res.json(await diario.listar(req.idPaciente))));
+  portalRouter.post("/ingestas", manejar(async (req, res) => res.status(201).json(await diario.registrar(req.idPaciente, req.body || {}))));
+  portalRouter.delete("/ingestas/:id", manejar(async (req, res) => {
+    await diario.eliminar(req.idPaciente, req.params.id);
+    res.status(204).send();
+  }));
   portalRouter.put("/comidas/:idComidaMenu/marca", manejar(async (req, res) => {
     res.json({ marca: await portal.marcarComida(req.idPaciente, req.params.idComidaMenu, req.body || {}) });
   }));

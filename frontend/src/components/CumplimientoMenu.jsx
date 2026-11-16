@@ -32,8 +32,8 @@ function CumplimientoMenu({ idPaciente, version }) {
         <Smartphone size={18} className="shrink-0 mt-0.5 text-nutri-brand" />
         <p>
           {!datos.tieneAcceso
-            ? "Dale acceso a la app (botón «App» en su tarjeta) para que el paciente marque lo que come y registre su peso; aquí verás su cumplimiento."
-            : "Cuando apruebes su menú, aquí verás qué comidas va cumpliendo según lo que marque en la app."}
+            ? "Dale acceso desde Más opciones → Acceso a la app. El paciente podrá registrar alimentos y peso; al aprobar un menú también podrá marcar sus comidas."
+            : "El paciente ya puede registrar alimentos y peso. Cuando apruebes su menú, aquí verás qué comidas va cumpliendo."}
         </p>
       </div>
     );

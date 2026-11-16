@@ -33,6 +33,13 @@ class GeneradorMenuIA {
       // limit, timeout, red caída, etc.)
       console.error("Error al llamar a la IA (menú):", error.message);
 
+      if (["GROQ_API_KEY no está configurada", "ANTHROPIC_API_KEY no está configurada"].includes(error.message)) {
+        throw new ServicioExternoError(
+          "Falta configurar la clave del proveedor de IA en el backend para generar menús.",
+          503,
+        );
+      }
+
       if (error instanceof IATimeoutError) {
         throw new ServicioExternoError(
           "El servicio de generación no respondió a tiempo",
@@ -135,10 +142,12 @@ MOMENTOS DEL DÍA (fijos, no los cambies): el paciente come ${momentos.length} v
 
 PLATOS REALES, BIEN COMBINADOS Y BIEN REDACTADOS (lo más importante del menú):
 - Piensa primero en un platillo real que una familia ecuatoriana prepara de verdad (ej. "Seco de pollo con arroz", "Sopa de lentejas", "Arroz con menestra y carne asada", "Tortilla de verde", "Encebollado de atún", "Bolón con huevo", "Colada de avena con plátano") y después asígnale los alimentos disponibles. Nunca al revés.
+- Adapta la preparación al contexto ecuatoriano y a las preferencias del paciente. Nombra un plato tradicional solo cuando todos sus ingredientes necesarios estén en el inventario; si faltan, usa una preparación casera sencilla con los alimentos disponibles y un nombre literal. No des por incluidos aceite, sal, aderezos ni condimentos ausentes.
+- Considera hábitos caseros de Ecuador sin asumir que el paciente vive en una región concreta. Si las preferencias mencionan Costa, Sierra o Amazonía, adapta las preparaciones a esa región. Usa verde, yuca, mote, quinua, menestra o pescado solo si aparecen en el inventario y son compatibles con el perfil.
 - Desayuno, almuerzo y cena combinan 2 o 3 alimentos que se comen juntos (proteína + carbohidrato + fruta o verdura).
 - Meriendas y refrigerios: 1 o 2 alimentos, pero redactados como un refrigerio real, no como un ingrediente suelto: "Pera picada con yogur griego", "Batido de plátano con leche", "Manzana en rodajas con un vaso de leche". Nunca solo "Pera" o "Manzana". Nunca carnes ni mezclas raras (fruta con huevo o con carne).
 - No mezcles en una misma preparación cosas que nadie combina (lechuga cruda revuelta con huevo, yogur con lentejas, fruta dentro de un guiso). Una verdura cruda va como ensalada aparte.
-- "nombrePlato": nombre natural y claro, como aparecería en la carta de un restaurante, que diga cómo se prepara cada cosa y si va junto o aparte. Ej.: "Avena cocida en leche con plátano en rodajas" (no "Avena con leche y plátano"); "Pollo a la plancha con arroz y ensalada de lechuga"; "Huevos revueltos con pan y una taza de leche". Menciona todos los alimentos asignados y ninguno que no esté.
+- "nombrePlato": nombre casero y claro para un plan nutricional, que diga cómo se prepara cada cosa y si va junto o aparte. Ej.: "Avena cocida en leche con plátano en rodajas" (no "Avena con leche y plátano"); "Pollo a la plancha con arroz y ensalada de lechuga"; "Huevos revueltos con pan y una taza de leche". Menciona todos los alimentos asignados y ninguno que no esté.
 - "descripcion": una sola frase sencilla que explique cómo se prepara y se sirve, para que el paciente sepa exactamente qué comer. Ej.: "La avena se cocina en la leche y se sirve caliente con el plátano en rodajas encima."
 - Variedad: no repitas el mismo plato en la semana; si repites un ingrediente, cambia la preparación (cocido, al horno, en sopa, salteado).
 - Respeta el objetivo del paciente (bajar de peso: porciones moderadas y más verduras; aumentar músculo: más proteína).

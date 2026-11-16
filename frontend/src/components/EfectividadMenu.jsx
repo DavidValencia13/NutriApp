@@ -25,22 +25,14 @@ function EfectividadMenu({ idPaciente, idMenu }) {
   const [efectividad, setEfectividad] = useState(null);
   const [cargando, setCargando] = useState(true);
 
-  async function cargar() {
-    setCargando(true);
-    try {
-      const data = await obtenerEfectividad(idPaciente, idMenu);
-      setEfectividad(data);
-    } catch {
-      // Silencioso a propósito, igual que el resto de widgets de apoyo del
-      // menú: no debe tumbar la vista si falla.
-    } finally {
-      setCargando(false);
-    }
-  }
-
   useEffect(() => {
-    cargar();
-  }, [idMenu]);
+    let vigente = true;
+    obtenerEfectividad(idPaciente, idMenu)
+      .then((data) => { if (vigente) setEfectividad(data); })
+      .catch(() => { if (vigente) setEfectividad(null); })
+      .finally(() => { if (vigente) setCargando(false); });
+    return () => { vigente = false; };
+  }, [idPaciente, idMenu]);
 
   if (
     cargando ||

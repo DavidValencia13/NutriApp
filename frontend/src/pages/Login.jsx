@@ -15,8 +15,6 @@ function Login() {
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
   const [showPass, setShowPass] = useState(false);
-  // El nutricionista puede crear su cuenta (con el código de invitación que
-  // le da quien administra la app); el paciente no: su acceso lo crea su nutricionista
   const [creando, setCreando] = useState(false);
   const [nombre, setNombre] = useState("");
   const [apellido, setApellido] = useState("");
@@ -43,7 +41,7 @@ function Login() {
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-white">
       {/* Panel de marca */}
-      <section className="hidden lg:flex flex-col justify-between bg-nutri-ink text-white p-14">
+      <section className="login-brand-panel hidden lg:flex flex-col justify-between bg-nutri-ink text-white p-14">
         <Logo size={34} light />
         <div className="max-w-md">
           <h1 className="text-5xl font-semibold leading-[1.1]" style={{ letterSpacing: "-0.02em" }}>
@@ -57,7 +55,7 @@ function Login() {
       </section>
 
       {/* Formulario */}
-      <section className="flex items-center justify-center p-6 sm:p-12">
+      <section className="login-form-panel flex items-center justify-center p-6 sm:p-12">
         <div className="w-full max-w-sm">
           <div className="lg:hidden mb-10">
             <Logo size={32} />
@@ -79,6 +77,7 @@ function Login() {
                 onClick={() => {
                   setRol(valor);
                   setError("");
+                  setCreando(false);
                 }}
                 className={`py-2 rounded-full text-sm font-semibold transition-colors cursor-pointer ${
                   rol === valor ? "bg-nutri-ink text-white shadow-sm" : "text-gray-500 hover:text-nutri-ink"
@@ -91,9 +90,7 @@ function Login() {
           <p className="text-gray-500 mt-4 mb-8">
             {rol === "paciente"
               ? "Ingresa con el correo y la contraseña que te dio tu nutricionista."
-              : modoCrear
-                ? "Crea tu cuenta de nutricionista con el código de invitación que recibiste."
-                : "Ingresa con tu cuenta de nutricionista."}
+              : modoCrear ? "Crea tu cuenta con el código de invitación que recibiste." : "Ingresa con tu cuenta de nutricionista."}
           </p>
 
           {error && (
@@ -108,14 +105,8 @@ function Login() {
           <form onSubmit={handleSubmit} className="space-y-5">
             {modoCrear && (
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label htmlFor="reg-nombre" className="block text-sm font-medium mb-2">Nombre</label>
-                  <input id="reg-nombre" required value={nombre} onChange={(e) => setNombre(e.target.value)} autoComplete="given-name" className={inputClass} />
-                </div>
-                <div>
-                  <label htmlFor="reg-apellido" className="block text-sm font-medium mb-2">Apellido</label>
-                  <input id="reg-apellido" required value={apellido} onChange={(e) => setApellido(e.target.value)} autoComplete="family-name" className={inputClass} />
-                </div>
+                <div><label htmlFor="reg-nombre" className="block text-sm font-medium mb-2">Nombre</label><input id="reg-nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} required autoComplete="given-name" className={inputClass} /></div>
+                <div><label htmlFor="reg-apellido" className="block text-sm font-medium mb-2">Apellido</label><input id="reg-apellido" value={apellido} onChange={(e) => setApellido(e.target.value)} required autoComplete="family-name" className={inputClass} /></div>
               </div>
             )}
             <div>
@@ -172,10 +163,7 @@ function Login() {
             </div>
 
             {modoCrear && (
-              <div>
-                <label htmlFor="reg-codigo" className="block text-sm font-medium mb-2">Código de invitación</label>
-                <input id="reg-codigo" value={codigo} onChange={(e) => setCodigo(e.target.value)} placeholder="Te lo da quien administra NutriApp" autoComplete="off" className={inputClass} />
-              </div>
+              <div><label htmlFor="reg-codigo" className="block text-sm font-medium mb-2">Código de invitación</label><input id="reg-codigo" value={codigo} onChange={(e) => setCodigo(e.target.value)} required autoComplete="off" className={inputClass} /></div>
             )}
 
             <button
@@ -193,26 +181,11 @@ function Login() {
                   {modoCrear ? "Creando cuenta…" : "Ingresando…"}
                 </span>
               ) : (
-                modoCrear ? "Crear cuenta" : "Ingresar"
+                modoCrear ? "Crear cuenta e ingresar" : "Ingresar"
               )}
             </button>
           </form>
-
-          {rol === "nutriologo" && (
-            <p className="text-sm text-gray-500 text-center mt-6">
-              {modoCrear ? "¿Ya tienes cuenta?" : "¿Eres nutricionista y no tienes cuenta?"}{" "}
-              <button
-                type="button"
-                onClick={() => {
-                  setCreando(!creando);
-                  setError("");
-                }}
-                className="font-semibold text-nutri-brand hover:underline cursor-pointer"
-              >
-                {modoCrear ? "Inicia sesión" : "Crear cuenta"}
-              </button>
-            </p>
-          )}
+          {rol === "nutriologo" && <button type="button" onClick={() => { setCreando((actual) => !actual); setError(""); }} className="w-full mt-5 text-sm font-semibold text-nutri-brand hover:underline">{modoCrear ? "Ya tengo cuenta" : "Crear cuenta de nutricionista"}</button>}
         </div>
       </section>
     </div>

@@ -4,97 +4,88 @@ import { obtenerCoberturaCatalogo } from "../services/alimentoService";
 import { faltanAlimentos } from "../utils/suficiencia";
 import Modal from "../components/Modal";
 import FormularioPaciente from "../components/FormularioPaciente";
-import ListaAlimentos from "../components/ListaAlimentos";
 import MenuPaciente from "../components/MenuPaciente";
 import SeguimientoPaciente from "../components/SeguimientoPaciente";
-import AsistenteChat from "../components/AsistenteChat";
+import FloatingAssistant from "../components/FloatingAssistant";
+import MiniSeguimiento from "../components/MiniSeguimiento";
 import AccesoPaciente from "../components/AccesoPaciente";
-import { Smartphone } from "lucide-react";
+import { CalendarCheck2, Ellipsis, HeartPulse, Ruler, ShieldAlert, Smartphone, UserRound, UtensilsCrossed } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import { Logo } from "../components/Logo";
+import HeroCarousel from "../components/HeroCarousel";
 import RecorridoGuiado from "../components/RecorridoGuiado";
 import { PASOS_GUIA_NUTRICIONISTA } from "../utils/guiaNutricionista";
-import { useAuth } from "../context/AuthContext";
 import {
   IconUsers,
   IconPlus,
-  IconFork,
-  IconList,
   IconPencil,
   IconTrash,
   IconAlertTriangle,
   IconLeaf,
-  IconCalendarCheck,
   IconSearch,
-  IconMessageSquare,
+  IconLogout,
 } from "../components/Icons";
 
 /* ── Helpers ──────────────────────────────────────────────────────────────── */
-function sinRestricciones(texto = "") {
-  return /^(ninguna?|no aplica|n\/a|-)$/i.test(texto.trim());
-}
-
 function iniciales(nombre = "") {
   const partes = nombre.trim().split(/\s+/);
   return ((partes[0]?.[0] || "") + (partes[1]?.[0] || "")).toUpperCase() || "?";
 }
 
-function bmi(peso, altura) {
-  if (!peso || !altura || altura === 0) return null;
-  return (peso / (altura * altura)).toFixed(1);
+function InicioNavIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="3" width="7" height="7" rx="1.5" />
+      <rect x="13" y="3" width="8" height="4" rx="1.5" />
+      <rect x="13" y="10" width="8" height="11" rx="1.5" />
+      <rect x="3" y="13" width="7" height="8" rx="1.5" />
+    </svg>
+  );
 }
 
-function bmiLabel(val) {
-  if (!val) return null;
-  const v = parseFloat(val);
-  if (v < 18.5) return { label: "Bajo peso", color: "var(--color-nutri-blue)" };
-  if (v < 25)   return { label: "Normal",    color: "var(--color-nutri-green)" };
-  if (v < 30)   return { label: "Sobrepeso", color: "var(--color-nutri-orange)" };
-  return              { label: "Obesidad",   color: "var(--color-nutri-pink)" };
+function ExpedientesNavIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M3 6.5h6l2 2h10v10.5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6.5Z" />
+      <path d="M7 12.5h5M7 16h4M16.5 12v5M14 14.5h5" />
+    </svg>
+  );
 }
 
 /* ── Main component ───────────────────────────────────────────────────────── */
 function Pacientes() {
+  const { nutriologo, logout } = useAuth();
   const [pacientes, setPacientes]   = useState([]);
   const [cargando, setCargando]     = useState(true);
   const [error, setError]           = useState("");
   const [busqueda, setBusqueda]     = useState("");
   const [modal, setModal]           = useState({ tipo: null, paciente: null });
-
-  // Recorrido guiado: sale solo la primera vez que entra este nutricionista
-  // (cuando ya cargaron los pacientes) y se puede reabrir desde la barra lateral
-  const { nutriologo } = useAuth();
+  const [coberturas, setCoberturas] = useState({});
+  const [filtro, setFiltro]         = useState("todos");
+  const [seccionActiva, setSeccionActiva] = useState(() => window.location.hash === "#listado-pacientes" ? "pacientes" : "inicio");
   const claveGuia = `guia-vista-${nutriologo?.id}`;
   const [guiaVista, setGuiaVista] = useState(() => {
-    try {
-      return localStorage.getItem(claveGuia) === "1";
-    } catch {
-      return true;
-    }
+    try { return localStorage.getItem(`guia-vista-${nutriologo?.id}`) === "1"; }
+    catch { return true; }
   });
   const [guiaManual, setGuiaManual] = useState(false);
-  useEffect(() => {
-    const abrir = () => {
-      setModal({ tipo: null, paciente: null });
-      setGuiaManual(true);
-    };
-    window.addEventListener("abrir-guia", abrir);
-    return () => window.removeEventListener("abrir-guia", abrir);
-  }, []);
   function cerrarGuia() {
     setGuiaManual(false);
     setGuiaVista(true);
-    try {
-      localStorage.setItem(claveGuia, "1");
-    } catch {
-      /* sin almacenamiento: la guía volverá a salir la próxima vez */
-    }
+    try { localStorage.setItem(claveGuia, "1"); } catch { /* almacenamiento opcional */ }
   }
-  const guiaAbierta = guiaManual || (!cargando && !guiaVista);
 
   useEffect(() => { cargarPacientes(); }, []);
+  useEffect(() => {
+    const actualizarSeccion = () => setSeccionActiva(window.location.hash === "#listado-pacientes" ? "pacientes" : "inicio");
+    window.addEventListener("hashchange", actualizarSeccion);
+    return () => window.removeEventListener("hashchange", actualizarSeccion);
+  }, []);
 
   async function cargarPacientes() {
     setCargando(true);
     setError("");
+    setCoberturas({});
     try {
       const data = await listarPacientes();
       setPacientes(data);
@@ -118,78 +109,109 @@ function Pacientes() {
   // Al cerrar un modal (ej. después de registrar alimentos) las tarjetas
   // vuelven a revisar si los alimentos alcanzan
   const [versionCobertura, setVersionCobertura] = useState(0);
+  useEffect(() => {
+    let vigente = true;
+    Promise.allSettled(pacientes.map((p) => obtenerCoberturaCatalogo(p.id))).then((resultados) => {
+      if (!vigente) return;
+      setCoberturas(Object.fromEntries(resultados.map((resultado, index) => [
+        pacientes[index].id,
+        resultado.status === "fulfilled" ? resultado.value?.suficiencia || null : null,
+      ])));
+    });
+    return () => { vigente = false; };
+  }, [pacientes, versionCobertura]);
+
   const cerrarModal  = ()  => {
     setModal({ tipo: null, paciente: null });
+    setCoberturas({});
     setVersionCobertura((v) => v + 1);
   };
   const handleSuccessFormularioPaciente = () => { cerrarModal(); cargarPacientes(); };
 
-  const pacientesFiltrados = pacientes.filter((p) =>
-    p.nombre.toLowerCase().includes(busqueda.trim().toLowerCase()),
-  );
+  const conCobertura = pacientes.filter((p) => [
+    coberturas[p.id]?.calorias?.porcentaje,
+    coberturas[p.id]?.proteinas?.porcentaje,
+  ].every(Number.isFinite));
+  const idsConCobertura = new Set(conCobertura.map((p) => p.id));
+  const conAlerta = conCobertura.filter((p) => faltanAlimentos(coberturas[p.id])).length;
+  const conCatalogoSuficiente = conCobertura.length - conAlerta;
+  const coberturaLista = pacientes.length === 0 || pacientes.every((p) => Object.hasOwn(coberturas, p.id));
+  const resumenCoberturaDisponible = coberturaLista && conCobertura.length === pacientes.length;
+  const pacientesFiltrados = pacientes.filter((p) => {
+    const coincide = p.nombre.toLowerCase().includes(busqueda.trim().toLowerCase());
+    if (filtro === "alertas") return coincide && faltanAlimentos(coberturas[p.id]);
+    if (filtro === "suficientes") return coincide && idsConCobertura.has(p.id) && !faltanAlimentos(coberturas[p.id]);
+    return coincide;
+  });
 
   const tituloModal =
     modal.tipo === "paciente"
       ? modal.paciente ? "Editar paciente" : "Nuevo paciente"
-      : modal.tipo === "alimentos"
-        ? `Alimentos — ${modal.paciente?.nombre}`
-        : modal.tipo === "menu"
+      : modal.tipo === "menu"
           ? `Menú — ${modal.paciente?.nombre}`
           : modal.tipo === "seguimiento"
             ? `Seguimiento — ${modal.paciente?.nombre}`
-            : modal.tipo === "asistente"
-              ? `Asistente — ${modal.paciente?.nombre}`
-              : modal.tipo === "acceso"
-                ? `Acceso a la app — ${modal.paciente?.nombre}`
-                : "";
+            : modal.tipo === "acceso"
+              ? `Acceso a la app — ${modal.paciente?.nombre}`
+              : "";
 
-  const conteo = busqueda.trim()
+  const conteo = busqueda.trim() || filtro !== "todos"
     ? `${pacientesFiltrados.length} resultado${pacientesFiltrados.length !== 1 ? "s" : ""}`
     : `${pacientes.length} paciente${pacientes.length !== 1 ? "s" : ""}`;
 
   return (
-    <div className="min-h-screen bg-surface">
-      {/* Franja superior */}
-      <header className="bg-nutri-ink text-white">
-        <div className="px-10 pt-12 pb-10">
-          <h1 className="text-4xl font-semibold" style={{ letterSpacing: "-0.02em" }}>
-            Pacientes
-          </h1>
-          <p className="mt-3 text-base text-white/70 max-w-xl leading-relaxed">
-            Perfiles, planes alimentarios y seguimiento de cada paciente.
-          </p>
-
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-8">
-            <div className="relative w-full sm:max-w-md">
-              <IconSearch
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
-                style={{ width: 16, height: 16 }}
-              />
-              <input
-                id="buscar-pacientes"
-                type="search"
-                value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
-                placeholder="Buscar por nombre"
-                className="w-full bg-white text-nutri-ink placeholder-gray-500 text-sm rounded-full pl-11 pr-4 py-3 outline-none focus:ring-2 focus:ring-nutri-mint"
-              />
+    <div className="dashboard-page min-h-screen bg-surface">
+      <aside className="dashboard-rail" aria-label="Navegación de NutriApp">
+          <div className="rail-brand"><Logo size={44} light /><span>CONSULTA DIGITAL</span></div>
+          <nav className="rail-nav" aria-label="Secciones de Pacientes">
+            <a href="#resumen" aria-current={seccionActiva === "inicio" ? "page" : undefined} onClick={() => setSeccionActiva("inicio")}><InicioNavIcon /> <span>Inicio</span></a>
+            <a href="#listado-pacientes" aria-current={seccionActiva === "pacientes" ? "page" : undefined} onClick={() => setSeccionActiva("pacientes")}><ExpedientesNavIcon /> <span>Pacientes</span></a>
+          </nav>
+          <button type="button" className="rail-guide-link" data-tour="ver-guia" onClick={() => setGuiaManual(true)}>Cómo funciona NutriApp</button>
+      </aside>
+      <div className="dashboard-main">
+        <div className="dashboard-stage-main">
+          <header className="dashboard-topbar">
+            <div className="topbar-greeting">
+              <span className="topbar-eyebrow"><span className="live-dot" /> ESPACIO PROFESIONAL</span>
+              <h1>Hola, {nutriologo?.nombre || "profesional"} <span aria-hidden="true">👋</span></h1>
             </div>
-            <button
-              data-tour="nuevo-paciente"
-              onClick={() => setModal({ tipo: "paciente", paciente: null })}
-              className="flex items-center justify-center gap-2 bg-nutri-mint text-nutri-ink hover:bg-white font-semibold text-sm px-6 py-3 rounded-full transition-colors shrink-0 cursor-pointer"
-            >
-              <IconPlus />
-              Nuevo paciente
-            </button>
-          </div>
+            <div className="topbar-note"><span className="topbar-note-icon"><IconLeaf /></span><span>Tu consulta, <strong>con claridad.</strong></span></div>
+            <div className="topbar-actions">
+              <button type="button" className="topbar-guide-link" onClick={() => setGuiaManual(true)}>Guía</button>
+              <button type="button" className="primary-button" data-tour="nuevo-paciente" onClick={() => setModal({ tipo: "paciente", paciente: null })}>
+                <IconPlus /> Nuevo paciente
+              </button>
+              <button type="button" className="topbar-logout" onClick={logout} aria-label="Cerrar sesión" title="Cerrar sesión">
+                <IconLogout />
+              </button>
+            </div>
+          </header>
+          <HeroCarousel />
         </div>
-      </header>
+        <main className="dashboard-content">
+        <section className="dashboard-stats" aria-label="Indicadores de pacientes">
+          <StatCard label="PACIENTES REGISTRADOS" value={cargando ? "—" : pacientes.length} detail="Expedientes en tu consulta" icon={<IconUsers />} tone="green" />
+          <StatCard label="CATÁLOGO SUFICIENTE" value={cargando || !resumenCoberturaDisponible ? "—" : conCatalogoSuficiente} detail={resumenCoberturaDisponible ? "Según metas de alimentos" : "Sin datos todavía"} icon={<IconLeaf />} tone="violet" />
+          <StatCard label="REQUIEREN ALIMENTOS" value={cargando || !resumenCoberturaDisponible ? "—" : conAlerta} detail={resumenCoberturaDisponible ? "Cobertura por completar" : "Sin datos todavía"} icon={<IconAlertTriangle />} tone="amber" />
+        </section>
 
-      <main className="px-10 py-8">
-        {!cargando && pacientes.length > 0 && (
-          <p className="text-sm text-muted mb-4">{conteo}</p>
-        )}
+        <section id="listado-pacientes" className="patients-section" aria-label="Listado de pacientes">
+          <div className="patients-heading">
+            <div><span className="section-eyebrow">TU CONSULTA</span><h2>Pacientes</h2><p>Perfiles, planes alimentarios y seguimiento en un solo lugar.</p></div>
+            <span className="patients-count">{conteo}</span>
+          </div>
+          <div className="patient-toolbar">
+            <div className="patient-filters" role="group" aria-label="Filtrar pacientes">
+              <button type="button" aria-pressed={filtro === "todos"} className={filtro === "todos" ? "active" : ""} onClick={() => setFiltro("todos")}>Todos <span>{pacientes.length}</span></button>
+              <button type="button" aria-pressed={filtro === "alertas"} className={filtro === "alertas" ? "active" : ""} onClick={() => setFiltro("alertas")}>Requieren alimentos <span>{resumenCoberturaDisponible ? conAlerta : "—"}</span></button>
+              <button type="button" aria-pressed={filtro === "suficientes"} className={filtro === "suficientes" ? "active" : ""} onClick={() => setFiltro("suficientes")}>Catálogo suficiente <span>{resumenCoberturaDisponible ? conCatalogoSuficiente : "—"}</span></button>
+            </div>
+            <label className="topbar-search patient-search" htmlFor="buscar-pacientes">
+              <IconSearch style={{ width: 17, height: 17 }} />
+              <input id="buscar-pacientes" type="search" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Buscar paciente" />
+            </label>
+          </div>
 
         {error && (
           <div className="mb-5 flex items-center gap-2.5 text-sm px-4 py-3 rounded-lg border border-nutri-pink/30 bg-nutri-pink/5 text-nutri-pink">
@@ -199,48 +221,47 @@ function Pacientes() {
         )}
 
         {cargando ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="patient-grid">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="h-52 rounded-xl bg-white border border-line animate-pulse" />
             ))}
           </div>
         ) : pacientes.length === 0 ? (
-          <EmptyState
-            onCreate={() => setModal({ tipo: "paciente", paciente: null })}
-            onDemo={async () => {
-              setError("");
-              try {
-                await crearPacienteDemo();
-                await cargarPacientes();
-              } catch (err) {
-                setError(err.message);
-              }
-            }}
-          />
+          <EmptyState onCreate={() => setModal({ tipo: "paciente", paciente: null })} onDemo={async () => {
+            setError("");
+            try { await crearPacienteDemo(); await cargarPacientes(); }
+            catch (err) { setError(err.message); }
+          }} />
         ) : pacientesFiltrados.length === 0 ? (
-          <p className="text-muted text-sm mt-4">Ningún paciente coincide con "{busqueda}".</p>
+          <div className="filter-empty">No hay pacientes para esta búsqueda o filtro.</div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {pacientesFiltrados.map((p, i) => (
+          <div className="patient-grid">
+            {pacientesFiltrados.map((p) => (
               <PacienteCard
-                primera={i === 0}
-                versionCobertura={versionCobertura}
                 key={p.id}
                 p={p}
-                onAlimentos={() => setModal({ tipo: "alimentos",   paciente: p })}
+                versionSeguimiento={versionCobertura}
                 onMenu       ={() => setModal({ tipo: "menu",        paciente: p })}
                 onSeguimiento={() => setModal({ tipo: "seguimiento", paciente: p })}
-                onAsistente  ={() => setModal({ tipo: "asistente",   paciente: p })}
                 onAcceso     ={() => setModal({ tipo: "acceso",      paciente: p })}
                 onEditar     ={() => setModal({ tipo: "paciente",   paciente: p })}
                 onEliminar   ={() => handleEliminar(p.id)}
               />
             ))}
+            {!busqueda.trim() && filtro === "todos" && (
+              <button type="button" className="patient-create-card" onClick={() => setModal({ tipo: "paciente", paciente: null })}>
+                <span className="patient-create-icon"><IconPlus /></span>
+                <strong>Registrar un nuevo paciente</strong>
+                <span>Crea un expediente y comienza su plan nutricional.</span>
+                <span className="patient-create-action">Iniciar expediente <span aria-hidden="true">→</span></span>
+              </button>
+            )}
           </div>
         )}
-      </main>
-
-      <RecorridoGuiado pasos={PASOS_GUIA_NUTRICIONISTA} abierto={guiaAbierta} onCerrar={cerrarGuia} />
+        </section>
+        </main>
+        <RecorridoGuiado pasos={PASOS_GUIA_NUTRICIONISTA} abierto={guiaManual || (!cargando && !guiaVista)} onCerrar={cerrarGuia} />
+      </div>
 
       {/* Modal */}
       <Modal
@@ -248,10 +269,9 @@ function Pacientes() {
         onClose={cerrarModal}
         title={tituloModal}
         ancho={
-          modal.tipo === "menu" || modal.tipo === "alimentos" ? "max-w-5xl"
-          : modal.tipo === "seguimiento" ? "max-w-2xl"
-          : modal.tipo === "asistente"   ? "max-w-xl"
-          : "max-w-lg"
+          modal.tipo === "menu" ? "max-w-[980px]"
+          : modal.tipo === "seguimiento" ? "max-w-3xl"
+          : "max-w-3xl"
         }
       >
         {modal.tipo === "paciente" && (
@@ -261,22 +281,23 @@ function Pacientes() {
             onCancel={cerrarModal}
           />
         )}
-        {modal.tipo === "alimentos" && modal.paciente && (
-          <ListaAlimentos idPaciente={modal.paciente.id} paciente={modal.paciente} />
-        )}
         {modal.tipo === "menu" && modal.paciente && (
-          <MenuPaciente idPaciente={modal.paciente.id} presupuesto={modal.paciente.presupuesto} />
+          <MenuPaciente
+            idPaciente={modal.paciente.id}
+            paciente={modal.paciente}
+            presupuesto={modal.paciente.presupuesto}
+            onSeguimiento={() => setModal({ tipo: "seguimiento", paciente: modal.paciente })}
+            onAcceso={() => setModal({ tipo: "acceso", paciente: modal.paciente })}
+          />
         )}
         {modal.tipo === "seguimiento" && modal.paciente && (
           <SeguimientoPaciente idPaciente={modal.paciente.id} />
-        )}
-        {modal.tipo === "asistente" && modal.paciente && (
-          <AsistenteChat paciente={modal.paciente} />
         )}
         {modal.tipo === "acceso" && modal.paciente && (
           <AccesoPaciente paciente={modal.paciente} />
         )}
       </Modal>
+      <FloatingAssistant pacientes={pacientes} hidden={modal.tipo !== null} />
     </div>
   );
 }
@@ -300,176 +321,77 @@ function EmptyState({ onCreate, onDemo }) {
         <IconPlus />
         Agregar paciente
       </button>
-      <button
-        onClick={async () => {
-          setCargandoDemo(true);
-          await onDemo();
-          setCargandoDemo(false);
-        }}
-        disabled={cargandoDemo}
-        className="mt-3 text-sm font-semibold text-nutri-brand hover:underline disabled:opacity-60 cursor-pointer"
-      >
-        {cargandoDemo ? "Cargando paciente de ejemplo…" : "o carga un paciente de ejemplo para probar"}
+      <button type="button" disabled={cargandoDemo} onClick={async () => {
+        setCargandoDemo(true);
+        try { await onDemo(); } finally { setCargandoDemo(false); }
+      }} className="mt-3 text-sm font-semibold text-nutri-brand hover:underline disabled:opacity-60">
+        {cargandoDemo ? "Cargando paciente de ejemplo…" : "Cargar paciente de ejemplo"}
       </button>
     </div>
   );
 }
 
+function StatCard({ label, value, detail, icon, tone = "green" }) {
+  return (
+    <div className={`dashboard-stat dashboard-stat-${tone}`}>
+      <div><span>{label}</span><strong>{value}</strong><p>{detail}</p></div>
+      <span className="stat-icon">{icon}</span>
+    </div>
+  );
+}
+
 /* ── Patient card ─────────────────────────────────────────────────────────── */
-function PacienteCard({ p, primera, versionCobertura, onAlimentos, onMenu, onSeguimiento, onAsistente, onAcceso, onEditar, onEliminar }) {
-  // ¿Alcanzan sus alimentos para la meta de calorías y proteínas?
-  const [suficiencia, setSuficiencia] = useState(null);
-  useEffect(() => {
-    let vigente = true;
-    obtenerCoberturaCatalogo(p.id)
-      .then((c) => vigente && setSuficiencia(c?.suficiencia || null))
-      .catch(() => {});
-    return () => {
-      vigente = false;
-    };
-  }, [p.id, versionCobertura]);
-  const faltan = faltanAlimentos(suficiencia);
-  const pctCalorias = suficiencia?.calorias?.porcentaje;
-  const pctProteinas = suficiencia?.proteinas?.porcentaje;
-  const imc     = bmi(p.peso, p.altura);
-  const imcInfo = bmiLabel(imc);
-  const tienRestr = p.restricciones && !sinRestricciones(p.restricciones);
+function PacienteCard({ p, versionSeguimiento, onMenu, onSeguimiento, onAcceso, onEditar, onEliminar }) {
+  const alergias = Array.isArray(p.alergias) ? p.alergias.filter(Boolean) : [];
+  const enfermedades = Array.isArray(p.enfermedades) ? p.enfermedades.filter(Boolean) : [];
 
   return (
-    <article
-      data-tour={primera ? "paciente-tarjeta" : undefined}
-      className="patient-card bg-white rounded-xl border border-line flex flex-col"
-    >
+    <article className="patient-card bg-white rounded-xl border border-line flex flex-col" data-tour="paciente-tarjeta">
       <div className="p-6 flex-1">
         {/* Encabezado */}
-        <div className="flex items-start gap-4">
-          <div className="flex items-center justify-center w-11 h-11 rounded-full bg-surface text-nutri-ink font-semibold text-sm shrink-0">
+        <div className="patient-card-header flex items-start gap-4">
+          <div className="patient-avatar flex items-center justify-center w-11 h-11 rounded-full bg-surface text-nutri-ink font-semibold text-sm shrink-0">
             {iniciales(p.nombre)}
           </div>
-          <div className="flex-1 min-w-0">
+          <div className="patient-card-identity flex-1 min-w-0">
             <h3 className="font-semibold text-lg leading-tight truncate">{p.nombre}</h3>
-            <p className="text-sm text-muted mt-0.5">
-              {p.objetivo}
-              {p.numeroComidas ? (
-                <>
-                  <Separador />
-                  {p.numeroComidas} comidas al día
-                </>
-              ) : null}
-            </p>
+            <p className="patient-goal">{p.objetivo || "Objetivo sin registrar"}</p>
+            {(p.edad || p.altura) && <p className="patient-profile-hint">{p.edad && <span><UserRound size={12} />{p.edad} años</span>}{p.altura && <span><Ruler size={12} />{p.altura} m</span>}</p>}
+            {(alergias.length > 0 || enfermedades.length > 0) && <div className="patient-clinical-flags" aria-label="Alertas clínicas">
+              {alergias.length > 0 && <span className="patient-clinical-tag patient-clinical-alert" title={alergias.join(", ")}><ShieldAlert size={13} /><span>{alergias.length === 1 ? "Alergia" : "Alergias"}: {alergias.slice(0, 2).join(", ")}{alergias.length > 2 ? ` +${alergias.length - 2}` : ""}</span></span>}
+              {enfermedades.length > 0 && <span className="patient-clinical-tag patient-clinical-condition" title={enfermedades.join(", ")}><HeartPulse size={13} /><span>{enfermedades.slice(0, 2).join(", ")}{enfermedades.length > 2 ? ` +${enfermedades.length - 2}` : ""}</span></span>}
+            </div>}
           </div>
-          {imcInfo && (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-700 bg-surface rounded-full px-3 py-1 shrink-0">
-              <span className="w-2 h-2 rounded-full" style={{ background: imcInfo.color }} />
-              <span>
-                IMC {imc}
-                <Separador />
-                {imcInfo.label}
-              </span>
-            </span>
-          )}
+          <div className="patient-card-hero-visual" aria-hidden="true" />
+          <svg className="patient-card-medical-icon" viewBox="0 0 38 38" fill="none" aria-hidden="true" focusable="false">
+            <path className="patient-card-medical-shield" d="M19 3 31 7v11c0 8-4.5 13.5-12 17-7.5-3.5-12-9-12-17V7L19 3Z" />
+            <path d="M19 11v15M11.5 18.5h15" />
+          </svg>
         </div>
 
-        {/* Métricas */}
-        <dl className="grid grid-cols-3 mt-6 border-y border-line divide-x divide-line">
-          <Metric label="Peso" value={p.peso ? `${p.peso} kg` : "—"} />
-          <Metric label="Altura" value={p.altura ? `${p.altura} m` : "—"} />
-          <Metric label="Actividad" value={p.nivelActividad || "—"} />
-        </dl>
-
-        {/* Aviso: los alimentos registrados no alcanzan para su menú */}
-        {faltan && (
-          <button
-            type="button"
-            onClick={onAlimentos}
-            className="mt-4 w-full flex items-start gap-2 rounded-lg border border-nutri-orange/30 bg-nutri-orange/5 px-3 py-2 text-left text-xs text-nutri-orange hover:bg-nutri-orange/10 transition-colors cursor-pointer"
-          >
-            <IconAlertTriangle style={{ width: 14, height: 14, flexShrink: 0, marginTop: 1 }} />
-            <span>
-              <span className="font-semibold">Faltan alimentos para su menú.</span>{" "}
-              Lo registrado cubre {pctCalorias}% de sus calorías
-              {pctProteinas !== null && pctProteinas !== undefined ? ` y ${pctProteinas}% de sus proteínas` : ""}.
-              Agregar alimentos
-            </span>
-          </button>
-        )}
-
-        {/* Restricciones y preferencias */}
-        {(tienRestr || p.preferencias) && (
-          <div className="flex flex-wrap gap-2 mt-4">
-            {tienRestr && (
-              <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full bg-nutri-orange/10 text-nutri-orange">
-                <IconAlertTriangle style={{ width: 12, height: 12, flexShrink: 0 }} />
-                <span className="truncate max-w-[180px]">{p.restricciones}</span>
-              </span>
-            )}
-            {p.preferencias && (
-              <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full bg-nutri-brand/10 text-nutri-brand">
-                <IconLeaf style={{ width: 12, height: 12, flexShrink: 0 }} />
-                <span className="truncate max-w-[180px]">{p.preferencias}</span>
-              </span>
-            )}
-          </div>
-        )}
+        <MiniSeguimiento idPaciente={p.id} version={versionSeguimiento} pesoFicha={p.peso} nivelActividad={p.nivelActividad} objetivo={p.objetivo} />
       </div>
 
       {/* Acciones */}
-      <div className="flex flex-wrap items-center gap-1 px-4 py-3 border-t border-line">
-        <ActionBtn onClick={onMenu}        icon={<IconList />}          label="Menú"        tour={primera && "paciente-menu"} />
-        <ActionBtn onClick={onAlimentos}   icon={<IconFork />}          label="Alimentos"   tour={primera && "paciente-alimentos"} />
-        <ActionBtn onClick={onSeguimiento} icon={<IconCalendarCheck />} label="Seguimiento" tour={primera && "paciente-seguimiento"} />
-        <ActionBtn onClick={onAsistente}   icon={<IconMessageSquare />} label="Asistente" />
-        <ActionBtn onClick={onAcceso}      icon={<Smartphone />}        label="App"         tour={primera && "paciente-app"} />
-        <div className="flex-1" />
-        <IconBtn onClick={onEditar}   icon={<IconPencil />} label="Editar" />
-        <IconBtn onClick={onEliminar} icon={<IconTrash />}  label="Eliminar" danger />
+      <div className="patient-actions">
+        <button type="button" className="patient-plan-action" data-tour="paciente-menu" onClick={onMenu}>
+          <span className="patient-plan-icon"><UtensilsCrossed size={18} strokeWidth={1.8} aria-hidden="true" /></span>
+          <span className="patient-plan-copy"><strong>Menú semanal</strong><small>Plan nutricional personalizado</small></span>
+          <span className="patient-plan-arrow" aria-hidden="true">→</span>
+        </button>
+        <details className="patient-more" data-tour="paciente-mas">
+          <summary aria-label={`Más opciones para ${p.nombre}`} title="Más opciones"><Ellipsis size={19} aria-hidden="true" /></summary>
+          <div className="patient-more-menu">
+            <button type="button" onClick={(event) => { event.currentTarget.closest("details").open = false; onSeguimiento(); }}><CalendarCheck2 size={15} aria-hidden="true" />Seguimiento de peso</button>
+            <button type="button" onClick={(event) => { event.currentTarget.closest("details").open = false; onAcceso(); }}><Smartphone size={15} aria-hidden="true" />Acceso a la app</button>
+            <button type="button" onClick={(event) => { event.currentTarget.closest("details").open = false; onEditar(); }}><IconPencil />Editar datos</button>
+            <button type="button" className="patient-more-danger" onClick={(event) => { event.currentTarget.closest("details").open = false; onEliminar(); }}><IconTrash />Eliminar paciente</button>
+          </div>
+        </details>
       </div>
     </article>
   );
 }
 
-/* ── Separador "·" con espacio visible (Overpass dibuja los espacios muy angostos) */
-function Separador() {
-  return <span className="mx-1.5 text-gray-400" aria-hidden="true">·</span>;
-}
-
 /* ── Metric ───────────────────────────────────────────────────────────────── */
-function Metric({ label, value }) {
-  return (
-    <div className="py-3 px-4 first:pl-0">
-      <dt className="text-xs text-muted">{label}</dt>
-      <dd className="tabular font-semibold mt-0.5 truncate">{value}</dd>
-    </div>
-  );
-}
-
-/* ── Action buttons ───────────────────────────────────────────────────────── */
-function ActionBtn({ onClick, icon, label, tour }) {
-  return (
-    <button
-      data-tour={tour || undefined}
-      onClick={onClick}
-      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-sm text-gray-600 hover:text-nutri-ink hover:bg-surface transition-colors cursor-pointer"
-    >
-      <span className="flex w-4 h-4 [&>svg]:w-4 [&>svg]:h-4">{icon}</span>
-      {label}
-    </button>
-  );
-}
-
-function IconBtn({ onClick, icon, label, danger }) {
-  return (
-    <button
-      onClick={onClick}
-      title={label}
-      aria-label={label}
-      className={`flex items-center justify-center w-8 h-8 rounded-md text-gray-500 transition-colors cursor-pointer ${
-        danger ? "hover:text-nutri-pink hover:bg-nutri-pink/5" : "hover:text-nutri-ink hover:bg-surface"
-      }`}
-    >
-      <span className="flex w-4 h-4 [&>svg]:w-4 [&>svg]:h-4">{icon}</span>
-    </button>
-  );
-}
-
 export default Pacientes;

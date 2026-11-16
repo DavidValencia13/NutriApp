@@ -3,6 +3,7 @@ import { ajustarComida } from "../services/menuService";
 import { listarAlimentos } from "../services/alimentoService";
 import { calcularPreviewNutrientes } from "../services/previewNutrientesService";
 import FeedbackNutricionalComida from "./FeedbackNutricionalComida";
+import { CirclePlus, Trash2, UtensilsCrossed } from "lucide-react";
 
 function FormularioAjustarComida({ idPaciente, idMenu, comida, onSuccess, onCancel }) {
   const [alimentosDisponibles, setAlimentosDisponibles] = useState([]);
@@ -22,50 +23,47 @@ function FormularioAjustarComida({ idPaciente, idMenu, comida, onSuccess, onCanc
   const [errorPreview, setErrorPreview] = useState("");
 
   useEffect(() => {
-    cargarAlimentos();
-  }, []);
+    let vigente = true;
+    listarAlimentos(idPaciente).then((datos) => {
+      if (vigente) setAlimentosDisponibles(datos);
+    }).catch((err) => {
+      if (vigente) setError(err.message);
+    }).finally(() => {
+      if (vigente) setCargando(false);
+    });
+    return () => { vigente = false; };
+  }, [idPaciente]);
 
   // Recalcula el resumen nutricional mientras el nutriólogo edita, con 500ms
   // de espera para no pegarle al backend en cada tecla. Solo se envían las
   // filas ya completas: una fila recién agregada tiene cantidad vacía y el
   // backend la rechazaría (cantidad no plausible), tumbando todo el preview.
   useEffect(() => {
+    let vigente = true;
     const completas = filas
       .filter((f) => f.idAlimento && parseFloat(f.cantidad) > 0)
       .map((f) => ({ idAlimento: f.idAlimento, cantidad: parseFloat(f.cantidad) }));
 
     if (completas.length === 0) {
-      setPreview(null);
-      setCargandoPreview(false);
-      return;
+      queueMicrotask(() => { if (vigente) { setPreview(null); setCargandoPreview(false); } });
+      return () => { vigente = false; };
     }
 
-    setCargandoPreview(true);
-    setErrorPreview("");
+    queueMicrotask(() => { if (vigente) { setCargandoPreview(true); setErrorPreview(""); } });
 
     const timer = setTimeout(async () => {
       try {
-        setPreview(await calcularPreviewNutrientes(idPaciente, idMenu, completas));
+        const resultado = await calcularPreviewNutrientes(idPaciente, idMenu, completas);
+        if (vigente) setPreview(resultado);
       } catch (err) {
-        setErrorPreview(err.message);
+        if (vigente) setErrorPreview(err.message);
       } finally {
-        setCargandoPreview(false);
+        if (vigente) setCargandoPreview(false);
       }
     }, 500);
 
-    return () => clearTimeout(timer);
+    return () => { vigente = false; clearTimeout(timer); };
   }, [filas, idPaciente, idMenu]);
-
-  async function cargarAlimentos() {
-    try {
-      const data = await listarAlimentos(idPaciente);
-      setAlimentosDisponibles(data);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setCargando(false);
-    }
-  }
 
   function handleFilaChange(index, campo, valor) {
     setFilas((prev) =>
@@ -113,23 +111,19 @@ function FormularioAjustarComida({ idPaciente, idMenu, comida, onSuccess, onCanc
 
   const inputClass =
     "w-full border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-nutri-brand";
+  const caloriasEstimadas = Number(preview?.nutrientes?.nutrientes?.calorias);
 
   if (cargando) return <p>Cargando alimentos...</p>;
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="meal-adjust-form">
       {error && (
         <p className="bg-red-100 text-red-700 text-sm p-2 rounded mb-3">
           {error}
         </p>
       )}
 
-      <p className="text-sm text-gray-600 mb-3">
-        Ajustando:{" "}
-        <strong>
-          {comida.tipoComida} — {comida.nombrePlato}
-        </strong>
-      </p>
+      <div className="form-intro"><span className="food-coverage-kicker">REVISIÓN DEL MENÚ</span><h3 className="flex items-center gap-2"><UtensilsCrossed size={20} aria-hidden="true" />{comida.tipoComida}</h3><p>Ajusta los alimentos y confirma el aporte antes de guardar.</p></div>
 
       <label className="text-sm font-medium text-gray-700">
         Nombre del plato
@@ -143,18 +137,11 @@ function FormularioAjustarComida({ idPaciente, idMenu, comida, onSuccess, onCanc
       />
 
       <label className="text-sm font-medium text-gray-700">Calorías</label>
-      <input
-        type="number"
-        step="0.01"
-        value={calorias}
-        onChange={(e) => setCalorias(e.target.value)}
-        required
-        className={`${inputClass} mb-4`}
-      />
+      <div className="meal-calories-row"><input type="number" step="0.01" value={calorias} onChange={(e) => setCalorias(e.target.value)} required className={inputClass} />{!cargandoPreview && Number.isFinite(caloriasEstimadas) && caloriasEstimadas > 0 && <button type="button" onClick={() => setCalorias(Math.round(caloriasEstimadas * 10) / 10)}>Usar estimación: {caloriasEstimadas.toFixed(0)} kcal</button>}</div>
 
       <p className="text-sm font-medium text-gray-700 mb-2">Alimentos</p>
       {filas.map((fila, index) => (
-        <div key={index} className="flex gap-2 mb-2 items-center">
+        <div key={index} className="meal-food-row">
           <select
             value={fila.idAlimento}
             onChange={(e) =>
@@ -172,20 +159,24 @@ function FormularioAjustarComida({ idPaciente, idMenu, comida, onSuccess, onCanc
           <input
             type="number"
             step="0.01"
+            min="0.01"
             placeholder="Cantidad"
             value={fila.cantidad}
             onChange={(e) =>
               handleFilaChange(index, "cantidad", e.target.value)
             }
             required
-            className={`${inputClass} w-28`}
+            className={`${inputClass} meal-food-quantity`}
+            aria-label={`Cantidad de ${alimentosDisponibles.find((a) => String(a.id) === String(fila.idAlimento))?.nombre || "alimento"}`}
           />
+          <span className="meal-food-unit">{alimentosDisponibles.find((a) => String(a.id) === String(fila.idAlimento))?.unidadMedida || "unidad"}</span>
           <button
             type="button"
             onClick={() => eliminarFila(index)}
-            className="text-nutri-pink text-sm px-2"
+            className="meal-food-remove"
+            aria-label="Quitar alimento"
           >
-            Quitar
+            <Trash2 size={16} aria-hidden="true" />
           </button>
         </div>
       ))}
@@ -193,9 +184,9 @@ function FormularioAjustarComida({ idPaciente, idMenu, comida, onSuccess, onCanc
       <button
         type="button"
         onClick={agregarFila}
-        className="text-nutri-brand text-sm underline mb-4"
+        className="meal-food-add"
       >
-        + Agregar alimento
+        <CirclePlus size={16} aria-hidden="true" /> Agregar alimento
       </button>
 
       <FeedbackNutricionalComida

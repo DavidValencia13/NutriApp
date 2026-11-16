@@ -6,20 +6,39 @@ import {
 } from "../services/seguimientoService";
 import { IconTrash } from "./Icons";
 import CumplimientoMenu from "./CumplimientoMenu";
+import DiarioAlimentario from "./DiarioAlimentario";
+import PesoTrendChart from "./PesoTrendChart";
+import { ordenarControles } from "../utils/ordenarControles";
+import { AlertTriangle, CalendarDays, ClipboardCheck, NotebookPen, Scale } from "lucide-react";
 
 const ESTILOS_NIVEL = {
-  bien: { label: "Bien", clase: "bg-nutri-green/15 text-nutri-green" },
-  regular: { label: "Regular", clase: "bg-nutri-orange/15 text-nutri-orange" },
-  mal: { label: "Mal", clase: "bg-nutri-pink/15 text-nutri-pink" },
+  bien: { label: "Buena", clase: "bg-nutri-green/15 text-nutri-green" },
+  regular: { label: "Parcial", clase: "bg-nutri-orange/15 text-nutri-orange" },
+  mal: { label: "Baja", clase: "bg-nutri-pink/15 text-nutri-pink" },
 };
 
-// Convierte el nivel cualitativo en un puntaje para poder graficarlo como
-// línea (mismo criterio que usa el backend en Seguimiento/ResumenSeguimiento
-// para calcular el % de apego a la dieta).
-const PUNTOS_NIVEL = { bien: 100, regular: 60, mal: 20 };
-
 function hoyISO() {
-  return new Date().toISOString().slice(0, 10);
+  const hoy = new Date();
+  return new Date(hoy.getTime() - hoy.getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
+}
+
+function formatoPeso(valor) {
+  return Number(valor).toFixed(1).replace(".", ",");
+}
+
+function controlesDudososMismoDia(pesos) {
+  const porDia = new Map();
+  for (const registro of pesos) {
+    const dia = new Date(registro.fecha).toISOString().slice(0, 10);
+    porDia.set(dia, [...(porDia.get(dia) || []), Number(registro.peso)]);
+  }
+  for (const [dia, valores] of porDia) {
+    if (valores.length < 2) continue;
+    const menor = Math.min(...valores);
+    const mayor = Math.max(...valores);
+    if (mayor >= menor * 1.5) return { dia, menor, mayor };
+  }
+  return null;
 }
 
 // Bitácora simple del paciente: por fecha, registra peso y si la dieta se
@@ -34,7 +53,12 @@ function SeguimientoPaciente({ idPaciente }) {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
   useEffect(() => {
-    cargar();
+    let vigente = true;
+    listarSeguimiento(idPaciente)
+      .then((data) => { if (vigente) setRegistros(data); })
+      .catch((err) => { if (vigente) setError(err.message); })
+      .finally(() => { if (vigente) setCargando(false); });
+    return () => { vigente = false; };
   }, [idPaciente]);
 
   async function cargar() {
@@ -67,66 +91,63 @@ function SeguimientoPaciente({ idPaciente }) {
 
   if (cargando) return <p>Cargando seguimiento...</p>;
 
-  const valoresPeso = registros
-    .filter((r) => r.peso !== undefined)
-    .map((r) => ({ fecha: r.fecha, valor: r.peso }));
-  const valoresCumplimiento = registros.map((r) => ({
-    fecha: r.fecha,
-    valor: PUNTOS_NIVEL[r.nivelCumplimiento],
-  }));
+  const pesos = registros
+    .filter((r) => Number.isFinite(Number(r.peso)) && Number(r.peso) > 0)
+    .sort(ordenarControles);
+  const diasConPeso = new Set(pesos.map((r) => new Date(r.fecha).toISOString().slice(0, 10))).size;
+  const primero = pesos[0];
+  const ultimo = pesos.at(-1);
+  const cambio = pesos.length >= 2 ? Number(ultimo.peso) - Number(primero.peso) : null;
+  const formatoFecha = (valor) => new Date(valor).toLocaleDateString("es-EC", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+  const controlDudoso = controlesDudososMismoDia(pesos);
 
   return (
     <div>
-      {/* Lo que el paciente marca en su app sobre el menú aprobado */}
-      <CumplimientoMenu idPaciente={idPaciente} />
-
       {error && (
         <p className="bg-red-100 text-red-700 text-sm p-2 rounded mb-4">{error}</p>
       )}
 
-      {registros.length === 0 ? null : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-          <GraficaLineas
-            titulo="Peso"
-            unidad="kg"
-            color="#1F7A52"
-            valores={valoresPeso}
-            mensajeVacio="Todavía no hay registros con peso."
-          />
-          <GraficaLineas
-            titulo="Cumplimiento"
-            unidad="%"
-            color="#2F6E9E"
-            valores={valoresCumplimiento}
-          />
-        </div>
-      )}
+      <section className="followup-overview" aria-label="Resumen de controles de peso">
+        <div className="followup-overview-heading"><div><span>CONTROLES CLÍNICOS</span><h3>Evolución del peso corporal</h3></div><small>{pesos.length} {pesos.length === 1 ? "control con peso" : "controles con peso"}</small></div>
+        {controlDudoso && <div className="followup-data-warning" role="alert"><AlertTriangle size={17} aria-hidden="true" /><p><strong>Revisa los pesos del {formatoFecha(controlDudoso.dia)}.</strong> Se guardaron {formatoPeso(controlDudoso.menor)} y {formatoPeso(controlDudoso.mayor)} kg el mismo día. La gráfica muestra el último; ambos siguen en el historial. Si uno fue un error, elimínalo en «Controles registrados».</p></div>}
+        {ultimo ? <>
+          <div className="followup-overview-stats">
+            <div><span>Primer control</span><strong>{formatoPeso(primero.peso)} kg</strong><small>{formatoFecha(primero.fecha)}</small></div>
+            <div><span>Último control</span><strong>{formatoPeso(ultimo.peso)} kg</strong><small>{formatoFecha(ultimo.fecha)}</small></div>
+            <div><span>Cambio entre controles</span><strong>{cambio === null ? "Por calcular" : Math.abs(cambio) < 0.05 ? "Sin variación" : `${cambio < 0 ? "Bajó" : "Subió"} ${formatoPeso(Math.abs(cambio))} kg`}</strong><small>{cambio === null ? "Se necesitan dos controles" : "Comparado con el primer control"}</small></div>
+          </div>
+          {diasConPeso >= 2 && <><p className="followup-chart-context"><Scale size={14} aria-hidden="true" />Peso medido (kg) · último control de cada fecha</p><PesoTrendChart registros={pesos} id={`detalle-${idPaciente}`} /></>}
+          {pesos.length >= 2 && diasConPeso < 2 && <p className="followup-overview-empty">Hay varios controles en la misma fecha. Registra un peso en otra fecha para ver la tendencia.</p>}
+        </> : <p className="followup-overview-empty">Todavía no hay controles con peso. Registra uno para iniciar el seguimiento.</p>}
+        <p className="followup-overview-note">La línea muestra únicamente peso. La alimentación registrada por el paciente aparece más abajo y no modifica esta gráfica.</p>
+      </section>
 
-      <div className="mb-4">
+      <div className="followup-entry-section">
         <button
           onClick={() => setMostrarFormulario((v) => !v)}
-          className="text-sm text-nutri-brand hover:underline"
+          className="followup-open-button"
         >
-          {mostrarFormulario ? "− Cancelar" : "+ Registrar seguimiento"}
+          <Scale size={15} aria-hidden="true" />{mostrarFormulario ? "Cerrar formulario de peso" : "Registrar nuevo peso"}
         </button>
         {mostrarFormulario && (
           <FormularioSeguimiento
             idPaciente={idPaciente}
+            ultimoPeso={ultimo?.peso}
             onSuccess={handleSuccessFormulario}
             onCancel={() => setMostrarFormulario(false)}
           />
         )}
       </div>
 
-      <div>
+      <div className="followup-records">
         <p className="font-semibold text-nutri-ink mb-2 text-sm">
-          Registros ({registros.length})
+          Controles registrados ({registros.length})
         </p>
         {registros.length === 0 ? (
           <p className="text-gray-500 text-xs">Todavía no hay registros de seguimiento.</p>
         ) : (
           <div className="grid gap-1.5">
-            {[...registros].reverse().map((r) => {
+            {[...registros].sort(ordenarControles).reverse().map((r) => {
               const estilo = ESTILOS_NIVEL[r.nivelCumplimiento] || ESTILOS_NIVEL.regular;
               return (
                 <div
@@ -135,10 +156,10 @@ function SeguimientoPaciente({ idPaciente }) {
                 >
                   <div className="min-w-0">
                     <p className="font-medium text-nutri-ink flex items-center gap-2 flex-wrap">
-                      {new Date(r.fecha).toLocaleDateString()}
-                      {r.peso !== undefined && <span>· {r.peso} kg</span>}
+                      {formatoFecha(r.fecha)}
+                      {r.peso != null && <span>· Peso: {formatoPeso(r.peso)} kg</span>}
                       <span className={`px-2 py-0.5 rounded-full font-medium ${estilo.clase}`}>
-                        {estilo.label}
+                        Adherencia: {estilo.label}
                       </span>
                     </p>
                     {r.observaciones && (
@@ -148,7 +169,7 @@ function SeguimientoPaciente({ idPaciente }) {
                   <button
                     onClick={() => handleEliminar(r.id)}
                     className="text-nutri-pink hover:opacity-70 shrink-0"
-                    aria-label="Eliminar registro"
+                    aria-label={`Eliminar control del ${formatoFecha(r.fecha)}${r.peso != null ? ` de ${formatoPeso(r.peso)} kg` : ""}`}
                   >
                     <IconTrash width="14" height="14" />
                   </button>
@@ -158,33 +179,48 @@ function SeguimientoPaciente({ idPaciente }) {
           </div>
         )}
       </div>
+
+      <div className="followup-food-section"><DiarioAlimentario idPaciente={idPaciente} /></div>
+      <CumplimientoMenu idPaciente={idPaciente} />
     </div>
   );
 }
 
-function FormularioSeguimiento({ idPaciente, onSuccess, onCancel }) {
+function FormularioSeguimiento({ idPaciente, ultimoPeso, onSuccess, onCancel }) {
   const [form, setForm] = useState({
     fecha: hoyISO(),
     peso: "",
-    nivelCumplimiento: "bien",
+    nivelCumplimiento: "",
     observaciones: "",
   });
   const [error, setError] = useState("");
   const [guardando, setGuardando] = useState(false);
+  const [pesoConfirmado, setPesoConfirmado] = useState(false);
+  const pesoIngresado = form.peso === "" ? null : Number(form.peso);
+  const pesoAnterior = Number(ultimoPeso);
+  const diferencia = pesoIngresado > 0 && pesoAnterior > 0 ? pesoIngresado - pesoAnterior : null;
+  const cambioInusual = diferencia !== null && Math.abs(diferencia) >= pesoAnterior * 0.25;
 
   function handleChange(e) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+    if (name === "peso") setPesoConfirmado(false);
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+    if (cambioInusual && !pesoConfirmado) {
+      setError("Confirma que ingresaste el peso total medido, no solo los kilos que cambiaron.");
+      return;
+    }
     setGuardando(true);
     try {
       const datos = {
-        fecha: form.fecha ? new Date(form.fecha) : undefined,
-        peso: form.peso === "" ? undefined : parseFloat(form.peso),
+        // El formulario captura un día, no una hora. El final del día UTC
+        // conserva esa fecha y sitúa el nuevo control tras los previos del día.
+        fecha: new Date(`${form.fecha}T23:59:59.000Z`),
+        peso: pesoIngresado,
         nivelCumplimiento: form.nivelCumplimiento,
         observaciones: form.observaciones || undefined,
       };
@@ -201,31 +237,39 @@ function FormularioSeguimiento({ idPaciente, onSuccess, onCancel }) {
   const labelClass = "block mb-1 text-xs font-medium text-gray-600";
 
   return (
-    <form onSubmit={handleSubmit} className="mt-3 border border-gray-200 rounded-lg p-3 bg-gray-50">
+    <form onSubmit={handleSubmit} className="followup-entry-form mt-3 border border-gray-200 rounded-lg p-3 bg-gray-50">
+      <div className="followup-form-heading"><Scale size={19} aria-hidden="true" /><div><strong>Nuevo control de peso</strong><p>Registra el peso total y valora la adherencia. Los alimentos se anotan por separado en la app del paciente.</p></div></div>
       {error && <p className="bg-red-100 text-red-700 text-xs p-2 rounded mb-2">{error}</p>}
 
-      <div className="grid grid-cols-3 gap-2 mb-2">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2">
         <div>
-          <label className={labelClass}>Fecha *</label>
-          <input type="date" name="fecha" value={form.fecha} onChange={handleChange} required className={inputClass} />
+          <label htmlFor={`followup-date-${idPaciente}`} className={labelClass}><CalendarDays size={13} aria-hidden="true" />Fecha del control *</label>
+          <input id={`followup-date-${idPaciente}`} type="date" name="fecha" value={form.fecha} max={hoyISO()} onChange={handleChange} required className={inputClass} />
         </div>
         <div>
-          <label className={labelClass}>Peso (kg)</label>
-          <input type="number" step="any" min="0" name="peso" value={form.peso} onChange={handleChange} className={inputClass} />
+          <label htmlFor={`followup-weight-${idPaciente}`} className={labelClass}><Scale size={13} aria-hidden="true" />Peso total medido (kg) *</label>
+          <input id={`followup-weight-${idPaciente}`} type="number" step="any" min="0.1" inputMode="decimal" placeholder="Ej. 68.5" name="peso" value={form.peso} onChange={handleChange} required className={inputClass} />
         </div>
         <div>
-          <label className={labelClass}>Cumplimiento *</label>
-          <select name="nivelCumplimiento" value={form.nivelCumplimiento} onChange={handleChange} className={inputClass}>
-            <option value="bien">Bien</option>
-            <option value="regular">Regular</option>
-            <option value="mal">Mal</option>
+          <label htmlFor={`followup-adherence-${idPaciente}`} className={labelClass}><ClipboardCheck size={13} aria-hidden="true" />Adherencia valorada *</label>
+          <select id={`followup-adherence-${idPaciente}`} name="nivelCumplimiento" value={form.nivelCumplimiento} onChange={handleChange} required className={inputClass}>
+            <option value="" disabled>Selecciona</option>
+            <option value="bien">Buena</option>
+            <option value="regular">Parcial</option>
+            <option value="mal">Baja</option>
           </select>
         </div>
       </div>
 
+      <div className="followup-weight-help" aria-live="polite">
+        <span>{pesoAnterior > 0 ? `Último peso: ${formatoPeso(pesoAnterior)} kg.` : ""} Escribe el valor completo de la báscula, no cuánto cambió.</span>
+        {diferencia !== null && <strong className={cambioInusual ? "followup-weight-change-warning" : ""}>Cambio frente al último control: {diferencia > 0 ? "+" : ""}{formatoPeso(diferencia)} kg</strong>}
+      </div>
+      {cambioInusual && <label className="followup-weight-confirm"><input type="checkbox" checked={pesoConfirmado} onChange={(event) => setPesoConfirmado(event.target.checked)} />Confirmo que {formatoPeso(pesoIngresado)} kg es el peso total medido.</label>}
+
       <div className="mb-3">
-        <label className={labelClass}>Observaciones</label>
-        <textarea name="observaciones" value={form.observaciones} onChange={handleChange} rows={2} className={inputClass} />
+        <label htmlFor={`followup-notes-${idPaciente}`} className={labelClass}><NotebookPen size={13} aria-hidden="true" />Observaciones (opcional)</label>
+        <textarea id={`followup-notes-${idPaciente}`} name="observaciones" value={form.observaciones} onChange={handleChange} rows={2} className={inputClass} />
       </div>
 
       <div className="flex justify-end gap-2">
@@ -233,106 +277,10 @@ function FormularioSeguimiento({ idPaciente, onSuccess, onCancel }) {
           Cancelar
         </button>
         <button type="submit" disabled={guardando} className="px-3 py-1.5 rounded bg-nutri-brand text-white text-sm disabled:opacity-50">
-          {guardando ? "Guardando..." : "Guardar"}
+          {guardando ? "Guardando..." : "Guardar control de peso"}
         </button>
       </div>
     </form>
-  );
-}
-
-// Gráfico de líneas simple (un solo trazo) — versión reducida del patrón ya
-// usado antes en el historial del paciente, sin small multiples ni
-// comparación de periodos: aquí solo importa ver la tendencia de un vistazo.
-function GraficaLineas({ titulo, unidad, color, valores, mensajeVacio }) {
-  const [hover, setHover] = useState(null);
-
-  if (valores.length === 0) {
-    return (
-      <div className="bg-white border border-gray-200 rounded-lg p-3">
-        <p className="text-xs font-semibold text-nutri-ink mb-1">{titulo}</p>
-        <p className="text-xs text-gray-400">{mensajeVacio || "Todavía no hay datos suficientes."}</p>
-      </div>
-    );
-  }
-
-  const w = 280;
-  const h = 110;
-  const padX = 10;
-  const padY = 20;
-  const min = Math.min(...valores.map((v) => v.valor));
-  const max = Math.max(...valores.map((v) => v.valor));
-  const rango = max - min || 1;
-
-  const x = (i) => padX + (i * (w - padX * 2)) / Math.max(valores.length - 1, 1);
-  const y = (v) => h - padY - ((v - min) / rango) * (h - padY * 2);
-  const puntosPath = valores.map((v, i) => `${x(i)},${y(v.valor)}`).join(" ");
-
-  const primero = valores[0];
-  const ultimo = valores[valores.length - 1];
-  const delta = valores.length > 1 ? ultimo.valor - primero.valor : undefined;
-
-  return (
-    <div className="bg-white border border-gray-200 rounded-lg p-3">
-      <div className="flex justify-between items-baseline mb-1">
-        <p className="text-xs font-semibold text-nutri-ink">{titulo}</p>
-        {delta !== undefined && (
-          <span className={`text-[11px] font-medium ${Math.abs(delta) < 0.05 ? "text-gray-400" : "text-nutri-ink"}`}>
-            {delta > 0 ? "+" : ""}
-            {delta.toFixed(1)} {unidad}
-          </span>
-        )}
-      </div>
-      <svg
-        viewBox={`0 0 ${w} ${h}`}
-        className="w-full h-auto"
-        role="img"
-        aria-label={`Evolución de ${titulo}: ${valores.map((v) => v.valor.toFixed(1)).join(", ")}`}
-      >
-        <line x1={padX} y1={y(min)} x2={w - padX} y2={y(min)} stroke="#E1E6E0" strokeWidth="1" />
-        {max !== min && (
-          <line x1={padX} y1={y(max)} x2={w - padX} y2={y(max)} stroke="#E1E6E0" strokeWidth="1" />
-        )}
-        {valores.length > 1 && (
-          <polyline
-            points={puntosPath}
-            fill="none"
-            stroke={color}
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        )}
-        {valores.map((v, i) => (
-          <circle
-            key={i}
-            cx={x(i)}
-            cy={y(v.valor)}
-            r={hover === i ? 5 : 3.5}
-            fill={color}
-            stroke="#fff"
-            strokeWidth="1.5"
-            onMouseEnter={() => setHover(i)}
-            onMouseLeave={() => setHover(null)}
-            style={{ cursor: "pointer" }}
-          />
-        ))}
-        <text
-          x={x(valores.length - 1)}
-          y={Math.max(y(ultimo.valor) - 8, 10)}
-          textAnchor="end"
-          fontSize="10"
-          fill={color}
-          fontWeight="600"
-        >
-          {ultimo.valor.toFixed(1)}
-          {unidad}
-        </text>
-      </svg>
-      <p className="text-[10px] text-gray-400 text-center h-3">
-        {hover !== null &&
-          `${new Date(valores[hover].fecha).toLocaleDateString()}: ${valores[hover].valor.toFixed(1)} ${unidad}`}
-      </p>
-    </div>
   );
 }
 

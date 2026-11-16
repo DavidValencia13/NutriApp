@@ -96,7 +96,7 @@ class GenerarMenuSemanal {
         return { resultado, diasPersistibles };
       } catch (error) {
         const esUltimoIntento = intento === MAX_INTENTOS;
-        const noReintentable = error.statusCode === 429 || error.statusCode === 504;
+        const noReintentable = [429, 503, 504].includes(error.statusCode);
         if (esUltimoIntento || noReintentable) throw error;
         // Se acumulan las correcciones: con solo la última, la IA arreglaba
         // un problema y volvía a cometer el del intento anterior

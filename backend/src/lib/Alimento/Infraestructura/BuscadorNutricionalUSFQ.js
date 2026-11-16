@@ -1,5 +1,5 @@
 // Busca en la tabla USFQ (colección tabla_usfq) por nombre en español o en
-// inglés (el catálogo de sugerencias busca con términos en inglés).
+// inglés. El catálogo de sugerencias usa referencias locales en español.
 // Es conservador: solo acepta alimentos cuyo nombre contiene TODAS las
 // palabras buscadas; ante la duda devuelve null en vez de un alimento
 // parecido pero distinto.
@@ -25,6 +25,12 @@ function variantes(t) {
   const v = [t];
   if (t.length > 3 && t.endsWith("s")) v.push(t.slice(0, -1));
   if (t.length > 4 && t.endsWith("es")) v.push(t.slice(0, -2));
+  // La tabla usa "grano seco" y la búsqueda suele decir "arveja seca".
+  // Solo se alterna el género de adjetivos descriptivos comunes, sin
+  // relajar la coincidencia del nombre del alimento.
+  if (/^(seco|seca|crudo|cruda|cocido|cocida|maduro|madura)$/.test(t)) {
+    v.push(t.slice(0, -1) + (t.endsWith("a") ? "o" : "a"));
+  }
   return v;
 }
 

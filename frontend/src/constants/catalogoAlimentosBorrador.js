@@ -5,28 +5,28 @@
 // elegido desde aquí se marca en el formulario como sugerencia sin validar.
 export const CATALOGO_ALIMENTOS_BORRADOR = [
   // ---- Proteínas ----
-  { id: "pechuga-pollo", nombre: "Pechuga de pollo", grupoPrincipal: "proteinas", gruposAlimenticios: ["proteinas"] , terminosBusquedaUsda: ["chicken breast, cooked","chicken breast, raw"]},
+  { id: "pechuga-pollo", nombre: "Pechuga de pollo", grupoPrincipal: "proteinas", gruposAlimenticios: ["proteinas"], terminoBusquedaLocal: "Pollo, pechuga, con piel, cruda", terminosBusquedaUsda: ["chicken breast, cooked","chicken breast, raw"]},
   { id: "carne-res-magra", nombre: "Carne de res (magra)", grupoPrincipal: "proteinas", gruposAlimenticios: ["proteinas"] , terminosBusquedaUsda: ["beef, lean, cooked"]},
-  { id: "pescado-tilapia", nombre: "Pescado (tilapia)", grupoPrincipal: "proteinas", gruposAlimenticios: ["proteinas"] , terminosBusquedaUsda: ["tilapia, cooked","fish, tilapia, raw"]},
+  { id: "pescado-tilapia", nombre: "Pescado (tilapia)", grupoPrincipal: "proteinas", gruposAlimenticios: ["proteinas"], terminoBusquedaLocal: "Tilapia, fresca, cruda", terminosBusquedaUsda: ["tilapia, cooked","fish, tilapia, raw"]},
   { id: "atun-agua", nombre: "Atún (enlatado en agua)", grupoPrincipal: "proteinas", gruposAlimenticios: ["proteinas"] , terminosBusquedaUsda: ["tuna, canned in water, drained"]},
-  { id: "huevo", nombre: "Huevo", grupoPrincipal: "proteinas", gruposAlimenticios: ["proteinas"] , terminosBusquedaUsda: ["egg, whole, cooked"]},
+  { id: "huevo", nombre: "Huevo", grupoPrincipal: "proteinas", gruposAlimenticios: ["proteinas"], terminoBusquedaLocal: "Huevo de gallina, entero, crudo", terminosBusquedaUsda: ["egg, whole, cooked"]},
   { id: "camaron", nombre: "Camarón", grupoPrincipal: "proteinas", gruposAlimenticios: ["proteinas"] , terminosBusquedaUsda: ["shrimp, cooked"]},
   { id: "cerdo-lomo", nombre: "Cerdo (lomo)", grupoPrincipal: "proteinas", gruposAlimenticios: ["proteinas"] , terminosBusquedaUsda: ["pork loin, cooked"]},
   { id: "pavo", nombre: "Pavo", grupoPrincipal: "proteinas", gruposAlimenticios: ["proteinas"] , terminosBusquedaUsda: ["turkey breast, cooked"]},
 
   // ---- Legumbres ----
-  { id: "lenteja", nombre: "Lenteja", grupoPrincipal: "legumbres", gruposAlimenticios: ["legumbres", "proteinas"] , terminosBusquedaUsda: ["lentils, cooked, boiled"]},
+  { id: "lenteja", nombre: "Lenteja", grupoPrincipal: "legumbres", gruposAlimenticios: ["legumbres", "proteinas"], terminoBusquedaLocal: "Lenteja, grano seco, crudo", terminosBusquedaUsda: ["lentils, cooked, boiled"]},
   { id: "garbanzo", nombre: "Garbanzo", grupoPrincipal: "legumbres", gruposAlimenticios: ["legumbres", "proteinas"] , terminosBusquedaUsda: ["chickpeas, cooked, boiled"]},
-  { id: "frejol-negro", nombre: "Fréjol negro", grupoPrincipal: "legumbres", gruposAlimenticios: ["legumbres", "proteinas"] , terminosBusquedaUsda: ["beans, black, cooked, boiled"]},
+  { id: "frejol-negro", nombre: "Fréjol negro", grupoPrincipal: "legumbres", gruposAlimenticios: ["legumbres", "proteinas"], terminoBusquedaLocal: "Fréjol, negro, grano seco, crudo", terminosBusquedaUsda: ["beans, black, cooked, boiled"]},
   { id: "frejol-rojo", nombre: "Fréjol rojo", grupoPrincipal: "legumbres", gruposAlimenticios: ["legumbres", "proteinas"] , terminosBusquedaUsda: ["beans, kidney, red, cooked, boiled"]},
-  { id: "arveja-seca", nombre: "Arveja seca", grupoPrincipal: "legumbres", gruposAlimenticios: ["legumbres", "proteinas"] , terminosBusquedaUsda: ["peas, split, cooked, boiled"]},
+  { id: "arveja-seca", nombre: "Arveja seca", grupoPrincipal: "legumbres", gruposAlimenticios: ["legumbres", "proteinas"], terminoBusquedaLocal: "Arveja, grano seco, crudo", terminosBusquedaUsda: ["peas, split, cooked, boiled"]},
   { id: "haba", nombre: "Haba", grupoPrincipal: "legumbres", gruposAlimenticios: ["legumbres", "proteinas"] , terminosBusquedaUsda: ["fava beans, cooked, boiled"]},
-  { id: "chocho", nombre: "Chocho (lupino andino)", grupoPrincipal: "legumbres", gruposAlimenticios: ["legumbres", "proteinas"] , terminosBusquedaUsda: ["lupini beans, cooked"]},
+  { id: "chocho", nombre: "Chocho (lupino andino)", grupoPrincipal: "legumbres", gruposAlimenticios: ["legumbres", "proteinas"], terminoBusquedaLocal: "Chocho, cocido, sin sal", terminosBusquedaUsda: ["lupini beans, cooked"]},
   { id: "soya-grano", nombre: "Soya (grano)", grupoPrincipal: "legumbres", gruposAlimenticios: ["legumbres", "proteinas"] , terminosBusquedaUsda: ["soybeans, mature, cooked, boiled"]},
 
   // ---- Carbohidratos ----
   { id: "papa", nombre: "Papa", grupoPrincipal: "carbohidratos", gruposAlimenticios: ["carbohidratos"] , terminosBusquedaUsda: ["potato, cooked, boiled"]},
-  { id: "yuca", nombre: "Yuca", grupoPrincipal: "carbohidratos", gruposAlimenticios: ["carbohidratos"] , terminosBusquedaUsda: ["cassava, cooked"]},
+  { id: "yuca", nombre: "Yuca", grupoPrincipal: "carbohidratos", gruposAlimenticios: ["carbohidratos"], terminoBusquedaLocal: "Yuca, mandioca, raíz", terminosBusquedaUsda: ["cassava, cooked"]},
   { id: "camote", nombre: "Camote", grupoPrincipal: "carbohidratos", gruposAlimenticios: ["carbohidratos"] , terminosBusquedaUsda: ["sweet potato, cooked, boiled"]},
   { id: "platano-verde", nombre: "Plátano verde", grupoPrincipal: "carbohidratos", gruposAlimenticios: ["carbohidratos"] , terminosBusquedaUsda: ["plantains, green, cooked"]},
   { id: "platano-maduro", nombre: "Plátano maduro", grupoPrincipal: "carbohidratos", gruposAlimenticios: ["carbohidratos"] , terminosBusquedaUsda: ["plantains, ripe, cooked"]},
@@ -34,19 +34,19 @@ export const CATALOGO_ALIMENTOS_BORRADOR = [
   { id: "zanahoria-blanca", nombre: "Zanahoria blanca (arracacha)", grupoPrincipal: "carbohidratos", gruposAlimenticios: ["carbohidratos"] , terminosBusquedaUsda: ["arracacha, cooked"]},
 
   // ---- Granos y cereales ----
-  { id: "arroz-blanco", nombre: "Arroz blanco", grupoPrincipal: "granos_cereales", gruposAlimenticios: ["granos_cereales"] , terminosBusquedaUsda: ["rice, white, cooked"]},
+  { id: "arroz-blanco", nombre: "Arroz blanco", grupoPrincipal: "granos_cereales", gruposAlimenticios: ["granos_cereales"], terminoBusquedaLocal: "Arroz blanco, grano largo crudo", terminosBusquedaUsda: ["rice, white, cooked"]},
   { id: "arroz-integral", nombre: "Arroz integral", grupoPrincipal: "granos_cereales", gruposAlimenticios: ["granos_cereales"] , terminosBusquedaUsda: ["rice, brown, cooked"]},
-  { id: "avena", nombre: "Avena", grupoPrincipal: "granos_cereales", gruposAlimenticios: ["granos_cereales"] , terminosBusquedaUsda: ["oatmeal, cooked"]},
-  { id: "quinua", nombre: "Quinua", grupoPrincipal: "granos_cereales", gruposAlimenticios: ["granos_cereales", "proteinas"] , terminosBusquedaUsda: ["quinoa, cooked"]},
+  { id: "avena", nombre: "Avena", grupoPrincipal: "granos_cereales", gruposAlimenticios: ["granos_cereales"], terminoBusquedaLocal: "Avena, hojuelas, sin fortificar, Mosh", terminosBusquedaUsda: ["oatmeal, cooked"]},
+  { id: "quinua", nombre: "Quinua", grupoPrincipal: "granos_cereales", gruposAlimenticios: ["granos_cereales", "proteinas"], terminoBusquedaLocal: "Quinua, cruda", terminosBusquedaUsda: ["quinoa, cooked"]},
   { id: "choclo", nombre: "Choclo (maíz tierno)", grupoPrincipal: "granos_cereales", gruposAlimenticios: ["granos_cereales"] , terminosBusquedaUsda: ["corn, sweet, cooked"]},
   { id: "pan-integral", nombre: "Pan integral", grupoPrincipal: "granos_cereales", gruposAlimenticios: ["granos_cereales"] , terminosBusquedaUsda: ["bread, whole wheat"]},
   { id: "pasta", nombre: "Pasta / fideo", grupoPrincipal: "granos_cereales", gruposAlimenticios: ["granos_cereales"] , terminosBusquedaUsda: ["pasta, cooked"]},
 
   // ---- Frutas ----
-  { id: "banano", nombre: "Banano", grupoPrincipal: "frutas", gruposAlimenticios: ["frutas"] , terminosBusquedaUsda: ["banana, raw"]},
+  { id: "banano", nombre: "Banano", grupoPrincipal: "frutas", gruposAlimenticios: ["frutas"], terminoBusquedaLocal: "Banano, guineo, plátano seda", terminosBusquedaUsda: ["banana, raw"]},
   { id: "manzana", nombre: "Manzana", grupoPrincipal: "frutas", gruposAlimenticios: ["frutas"] , terminosBusquedaUsda: ["apple, raw"]},
-  { id: "naranja", nombre: "Naranja", grupoPrincipal: "frutas", gruposAlimenticios: ["frutas"] , terminosBusquedaUsda: ["orange, raw"]},
-  { id: "papaya", nombre: "Papaya", grupoPrincipal: "frutas", gruposAlimenticios: ["frutas"] , terminosBusquedaUsda: ["papaya, raw"]},
+  { id: "naranja", nombre: "Naranja", grupoPrincipal: "frutas", gruposAlimenticios: ["frutas"], terminoBusquedaLocal: "Naranja, dulce, común", terminosBusquedaUsda: ["orange, raw"]},
+  { id: "papaya", nombre: "Papaya", grupoPrincipal: "frutas", gruposAlimenticios: ["frutas"], terminoBusquedaLocal: "Papaya, lechosa, madura, pulpa", terminosBusquedaUsda: ["papaya, raw"]},
   { id: "pina", nombre: "Piña", grupoPrincipal: "frutas", gruposAlimenticios: ["frutas"] , terminosBusquedaUsda: ["pineapple, raw"]},
   { id: "mango", nombre: "Mango", grupoPrincipal: "frutas", gruposAlimenticios: ["frutas"] , terminosBusquedaUsda: ["mango, raw"]},
   { id: "maracuya", nombre: "Maracuyá", grupoPrincipal: "frutas", gruposAlimenticios: ["frutas"] , terminosBusquedaUsda: ["passion fruit, raw"]},

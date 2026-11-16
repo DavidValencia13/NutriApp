@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, Check, ChartPie, ChefHat, Flame, LogOut, Scale, ShoppingCart, Sun, TrendingUp, X } from "lucide-react";
+import { CalendarDays, Check, ChartPie, ChefHat, Flame, LogOut, MessageCircle, Scale, ShoppingCart, Sun, TrendingUp, UtensilsCrossed, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { Logo } from "../components/Logo";
 import IconoMomento from "../components/IconoMomento";
+import DiarioAlimentario from "../components/DiarioAlimentario";
+import AsistenteChat from "../components/AsistenteChat";
 import { cantidadLegible } from "../utils/cantidad";
 import {
   obtenerPerfilPortal,
@@ -20,7 +22,9 @@ const SECCIONES = [
   { id: "hoy", label: "Hoy", Icono: Sun },
   { id: "semana", label: "Mi semana", Icono: CalendarDays },
   { id: "progreso", label: "Mi progreso", Icono: TrendingUp },
+  { id: "diario", label: "Mi diario", Icono: UtensilsCrossed },
   { id: "compras", label: "Compras", Icono: ShoppingCart },
+  { id: "asistente", label: "Asistente", Icono: MessageCircle },
 ];
 
 const OPCIONES_MARCA = [
@@ -108,9 +112,9 @@ function PortalPaciente() {
   const nombre = primerNombre(perfil?.nombre || paciente?.nombre);
 
   return (
-    <div className="min-h-screen bg-surface md:flex">
+    <div className="portal-root min-h-screen bg-surface md:flex">
       {/* Barra lateral (computadora) */}
-      <aside className="hidden md:flex w-60 shrink-0 flex-col bg-nutri-ink text-white sticky top-0 h-screen">
+      <aside className="portal-rail hidden md:flex w-60 shrink-0 flex-col bg-nutri-ink text-white sticky top-0 h-screen">
         <div className="px-5 h-16 flex items-center border-b border-white/10">
           <Logo size={30} light />
         </div>
@@ -157,7 +161,7 @@ function PortalPaciente() {
         </div>
 
         {/* Saludo */}
-        <header className="bg-nutri-ink text-white">
+        <header className="portal-header bg-nutri-ink text-white">
           <div className="max-w-3xl mx-auto px-4 sm:px-8 pt-6 md:pt-12 pb-8">
             <h1 className="text-3xl md:text-4xl font-semibold" style={{ letterSpacing: "-0.02em" }}>
               Hola{nombre ? `, ${nombre}` : ""}
@@ -180,8 +184,16 @@ function PortalPaciente() {
                 <div key={i} className="esqueleto h-36 rounded-xl" />
               ))}
             </div>
+          ) : seccion === "diario" ? (
+            <DiarioAlimentario />
           ) : seccion === "progreso" ? (
             <SeccionProgreso perfil={perfil} />
+          ) : seccion === "asistente" ? (
+            <section className="bg-white rounded-xl border border-line p-4 sm:p-6">
+              <h2 className="font-semibold text-lg mb-1">NutriAsistente</h2>
+              <p className="text-sm text-gray-500 mb-4">Pregunta por tu menú aprobado, tu diario o tu progreso. Tu nutricionista toma las decisiones clínicas.</p>
+              <AsistenteChat paciente={perfil} modoPaciente />
+            </section>
           ) : !menu ? (
             <SinMenu />
           ) : seccion === "hoy" ? (
@@ -195,7 +207,7 @@ function PortalPaciente() {
       </div>
 
       {/* Navegación inferior (celular) */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-line grid grid-cols-4 z-20">
+      <nav className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-line grid grid-cols-6 z-20">
         {SECCIONES.map(({ id, label, Icono }) => (
           <button
             key={id}
@@ -530,8 +542,8 @@ function SeccionProgreso({ perfil }) {
   if (!datos) return <div className="esqueleto h-64 rounded-xl" />;
 
   const ultimo = pesos.at(-1)?.peso ?? perfil?.peso;
-  const inicial = datos.pesoInicial ?? perfil?.pesoInicial;
-  const diferencia = ultimo && inicial ? Math.round((ultimo - inicial) * 10) / 10 : null;
+  const inicial = datos.pesoPrimerControl ?? datos.pesoInicial ?? perfil?.pesoInicial;
+  const diferencia = pesos.length >= 2 && ultimo && inicial ? Math.round((ultimo - inicial) * 10) / 10 : null;
   const cumplimiento = datos.cumplimiento?.porcentaje;
 
   return (
@@ -539,9 +551,9 @@ function SeccionProgreso({ perfil }) {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <Tarjeta titulo="Peso actual" valor={ultimo ? `${ultimo} kg` : "—"} />
         <Tarjeta
-          titulo="Desde el inicio"
+          titulo="Cambio desde primer control"
           valor={diferencia === null ? "—" : `${diferencia > 0 ? "+" : ""}${diferencia} kg`}
-          detalle={datos.objetivo ? `Objetivo: ${datos.objetivo}` : null}
+          detalle={pesos.length >= 2 ? `Registro inicial: ${inicial} kg` : "Registra dos pesos para comparar"}
         />
         <Tarjeta
           titulo="Cumplimiento del menú"

@@ -21,6 +21,13 @@ test("si ambas encuentran, usa la principal y ofrece la otra como alternativa", 
   assert.deepEqual(r.alternativa, USFQ);
 });
 
+test("una referencia ecuatoriana exacta usa USFQ y deja USDA como alternativa", async () => {
+  const b = new BuscadorNutricionalCombinado({ principal: devuelve(USDA), secundario: devuelve(USFQ) });
+  const r = await b.buscar("Chocho, cocido, sin sal");
+  assert.equal(r.fuente, "USFQ");
+  assert.deepEqual(r.alternativa, USDA);
+});
+
 test("si la principal no encuentra, usa la secundaria sin alternativa", async () => {
   const b = new BuscadorNutricionalCombinado({ principal: devuelve(null), secundario: devuelve(USFQ) });
   assert.deepEqual(await b.buscar("chocho"), USFQ);

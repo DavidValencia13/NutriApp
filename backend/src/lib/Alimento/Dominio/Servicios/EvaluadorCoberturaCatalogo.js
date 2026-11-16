@@ -63,7 +63,7 @@ const SINONIMOS_RESTRICCION = {
   cerdo: ["cerdo", "jamon", "tocino", "chuleta", "chorizo"],
   mariscos: ["camaron", "langosta", "cangrejo", "almeja", "mejillon", "pulpo", "calamar"],
   pescado: ["pescado", "atun", "salmon", "tilapia", "sardina", "trucha", "bacalao"],
-  mani: ["mani", "cacahuate"],
+  mani: ["mani", "cacahuate", "cacahuete"],
   huevo: ["huevo", "mayonesa"],
   soya: ["soya", "soja", "tofu", "edamame"],
   frutos_secos: ["nuez", "nueces", "almendra", "mani", "cacahuate", "avellana", "pistacho"],
@@ -231,7 +231,7 @@ function evaluar({ paciente, alimentos }) {
     alertas.push({
       tipo: "alimentos_sin_info_nutricional",
       nivel: sinInfo.length === catalogo.length ? "critica" : "advertencia",
-      mensaje: `${sinInfo.length} de ${catalogo.length} alimentos no tienen información nutricional (${nombres}${resto}). Sin ella el menú solo se puede evaluar por calorías estimadas — complétala a mano o con "Buscar en USDA".`,
+      mensaje: `${sinInfo.length} de ${catalogo.length} alimentos no tienen información nutricional (${nombres}${resto}). Abre cada alimento para consultar automáticamente USDA o la tabla ecuatoriana USFQ y confirma la coincidencia antes de usarlo en el menú.`,
       gruposSugeridos: [],
     });
   }

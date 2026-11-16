@@ -40,6 +40,23 @@ test("respuesta válida: devuelve los días del menú", async () => {
   assert.equal(resultado.dias.length, 7);
 });
 
+test("el prompt sitúa el menú en Ecuador y limita los platos al inventario", () => {
+  const prompt = crearGenerador(respuestaValida())._armarPrompt(perfilPaciente, alimentosDisponibles);
+  assert.match(prompt, /Costa, Sierra o Amazonía/);
+  assert.match(prompt, /solo cuando todos sus ingredientes necesarios estén en el inventario/);
+  assert.match(prompt, /No inventes ingredientes fuera de la lista/);
+});
+
+test("sin clave del proveedor responde 503 con una causa útil", async () => {
+  const generador = new GeneradorMenuIA(async () => {
+    throw new Error("GROQ_API_KEY no está configurada");
+  });
+  await assert.rejects(
+    () => generador.generar({ perfilPaciente, alimentosDisponibles }),
+    (error) => error instanceof ServicioExternoError && error.statusCode === 503 && /Falta configurar la clave/.test(error.message),
+  );
+});
+
 test("incluye el diagnóstico anterior como corrección obligatoria", async () => {
   let promptEnviado;
   const generador = new GeneradorMenuIA(async (messages) => {

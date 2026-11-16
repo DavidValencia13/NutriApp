@@ -17,6 +17,8 @@ const TABLA = [
   { nombre: "Yogurt, natural, entero", nombreIngles: "Yogurt, plain, whole milk", codigoFuente: 1, unidadBase: "g", nutrientes: { calorias: 61 } },
   { nombre: "Carnero, carne, crudo", nombreIngles: "Lamb, meat, raw", codigoFuente: 1, unidadBase: "g", nutrientes: { calorias: 304.95 } },
   { nombre: "Res, carne magra, cruda", nombreIngles: "Beef, lean, raw", codigoFuente: 1, unidadBase: "g", nutrientes: { calorias: 119.62 } },
+  { nombre: "Harina de arveja seca", nombreIngles: "Dried pea flour", codigoFuente: 1, unidadBase: "g", nutrientes: { calorias: 360.5 } },
+  { nombre: "Arveja, grano seco, crudo", nombreIngles: "Peas, dry, raw", codigoFuente: 1, unidadBase: "g", nutrientes: { calorias: 352 } },
 ];
 
 test("prefiere el nombre que empieza con la palabra buscada y el más genérico", () => {
@@ -78,4 +80,8 @@ test("palabras de 5+ letras coinciden como prefijo (yogur ~ yogurt)", () => {
 
 test("una coincidencia exacta gana a una por prefijo (carne no es carnero)", () => {
   assert.equal(elegirMejorCoincidencia("carne", TABLA).nombre, "Res, carne magra, cruda");
+});
+
+test("arveja seca identifica el grano y no la harina", () => {
+  assert.equal(elegirMejorCoincidencia("arveja seca", TABLA).nombre, "Arveja, grano seco, crudo");
 });

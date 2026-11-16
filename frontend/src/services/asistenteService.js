@@ -15,3 +15,10 @@ export async function chatAsistente({ idPaciente, mensaje, historial = [] }) {
     body: JSON.stringify({ idPaciente, mensaje, historial }),
   });
 }
+
+export async function chatAsistentePaciente({ mensaje, historial = [] }) {
+  return apiFetch("/portal/asistente/chat", {
+    method: "POST",
+    body: JSON.stringify({ mensaje, historial }),
+  });
+}

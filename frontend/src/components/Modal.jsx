@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
+import { Logo } from "./Logo";
 
 function Modal({ isOpen, onClose, title, children, ancho = "max-w-lg" }) {
+  const esMenu = title?.startsWith("Menú");
   const closeButtonRef = useRef(null);
 
   useEffect(() => {
@@ -25,10 +27,13 @@ function Modal({ isOpen, onClose, title, children, ancho = "max-w-lg" }) {
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className={`modal-card bg-white w-full ${ancho} max-h-[90vh] flex flex-col overflow-hidden rounded-xl shadow-2xl`}
+        className={`modal-card bg-white w-full ${ancho} ${esMenu ? "max-h-[96vh]" : "max-h-[90vh]"} flex flex-col overflow-hidden rounded-xl shadow-2xl`}
       >
         <div className="flex items-center justify-between px-6 py-4 shrink-0 border-b border-line">
-          <h2 className="font-semibold text-lg">{title}</h2>
+          <div className="flex items-center gap-4 min-w-0">
+            {esMenu && <><Logo size={25} /><span className="h-6 w-px bg-line" aria-hidden="true" /></>}
+            <h2 className="font-semibold text-lg truncate">{title}</h2>
+          </div>
           <button
             ref={closeButtonRef}
             onClick={onClose}

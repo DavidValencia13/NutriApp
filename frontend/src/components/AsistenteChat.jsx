@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { chatAsistente } from "../services/asistenteService";
+import { chatAsistente, chatAsistentePaciente } from "../services/asistenteService";
 
 function LogoLeaf() {
   return (
@@ -54,22 +54,22 @@ function IndicadorEscribiendo() {
   );
 }
 
-function AsistenteChat({ paciente }) {
-  const [historial, setHistorial] = useState([]);
+function saludoInicial(paciente) {
+  return {
+    rol: "asistente",
+    contenido: paciente
+      ? `Hola, soy NutriAsistente. Puedo ayudarte a revisar el perfil y los registros disponibles de ${paciente.nombre}. ¿En qué te ayudo?`
+      : "Hola, soy NutriAsistente. Puedo ayudarte con soporte de la app, dudas nutricionales o el seguimiento de tus pacientes. ¿En qué te ayudo?",
+  };
+}
+
+function AsistenteChat({ paciente, onStateChange, modoPaciente = false }) {
+  const [historial, setHistorial] = useState(() => [saludoInicial(paciente)]);
   const [input, setInput]         = useState("");
   const [cargando, setCargando]   = useState(false);
   const [error, setError]         = useState("");
   const listRef  = useRef(null);
   const inputRef = useRef(null);
-
-  useEffect(() => {
-    setHistorial([{
-      rol: "asistente",
-      contenido: paciente
-        ? `Hola, soy NutriAsistente. Tengo el perfil completo de ${paciente.nombre} — peso, altura, objetivo y registros de seguimiento. ¿En qué te ayudo?`
-        : "Hola, soy NutriAsistente. Puedo ayudarte con soporte de la app, dudas nutricionales o el seguimiento de tus pacientes. ¿En qué te ayudo?",
-    }]);
-  }, [paciente?.id]);
 
   useEffect(() => {
     if (listRef.current) {
@@ -89,16 +89,19 @@ function AsistenteChat({ paciente }) {
     setInput("");
     setCargando(true);
     setError("");
+    onStateChange?.("thinking");
 
     try {
-      const { respuesta } = await chatAsistente({
+      const { respuesta } = await (modoPaciente ? chatAsistentePaciente : chatAsistente)({
         idPaciente: paciente?.id ?? null,
         mensaje: texto,
-        historial: nuevoHistorial.slice(1),
+        historial: historial.slice(1),
       });
       setHistorial((prev) => [...prev, { rol: "asistente", contenido: respuesta }]);
+      onStateChange?.("ready");
     } catch (err) {
       setError(err.message || "Error al contactar el asistente");
+      onStateChange?.("error");
     } finally {
       setCargando(false);
       inputRef.current?.focus();
@@ -106,17 +109,13 @@ function AsistenteChat({ paciente }) {
   }
 
   function handleLimpiar() {
-    setHistorial([{
-      rol: "asistente",
-      contenido: paciente
-        ? `Hola, soy NutriAsistente. Tengo el perfil completo de ${paciente.nombre}. ¿En qué te ayudo?`
-        : "Hola, soy NutriAsistente. ¿En qué te ayudo?",
-    }]);
+    setHistorial([saludoInicial(paciente)]);
     setError("");
+    onStateChange?.("idle");
   }
 
   return (
-    <div className="flex flex-col" style={{ height: 520 }}>
+    <div className="assistant-chat flex flex-col">
       {/* Patient context bar */}
       {paciente && (
         <div className="flex items-center gap-2 mb-3 px-3 py-2 rounded-lg text-xs bg-surface text-gray-700">
@@ -135,7 +134,7 @@ function AsistenteChat({ paciente }) {
       {/* Messages */}
       <div
         ref={listRef}
-        className="flex-1 overflow-y-auto rounded-lg px-3 py-3 bg-surface"
+        className="assistant-messages flex-1 overflow-y-auto rounded-lg px-3 py-3 bg-surface"
       >
         {historial.map((m, i) => (
           <BurbujaMensaje key={i} mensaje={m} />
@@ -166,7 +165,7 @@ function AsistenteChat({ paciente }) {
           ref={inputRef}
           type="text"
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={(e) => { setInput(e.target.value); onStateChange?.(e.target.value.trim() ? "reading" : "idle"); }}
           disabled={cargando}
           maxLength={2000}
           placeholder={paciente ? `Pregunta sobre ${paciente.nombre}…` : "Escribe tu pregunta…"}

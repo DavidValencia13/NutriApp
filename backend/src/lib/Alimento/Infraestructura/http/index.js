@@ -25,12 +25,15 @@ module.exports = function registerAlimentoModule(app) {
   const repo = new AlimentoRepositoryMongo();
   const pacienteRepo = new PacienteRepositorySequelize();
 
-  // USDA FoodData Central es la fuente principal; la tabla USFQ cubre los
-  // alimentos de uso local que USDA no tiene
-  const buscadorNutricional = new BuscadorNutricionalCombinado({
-    principal: new BuscadorNutricionalUSDA(pedirCompletion),
-    secundario: new BuscadorNutricionalUSFQ(() => ReferenciaUSFQModel.find().lean()),
-  });
+  const buscadorLocal = new BuscadorNutricionalUSFQ(() => ReferenciaUSFQModel.find().lean());
+  // Sin clave USDA se usa directamente la tabla local: no se intenta una
+  // petición externa que sabemos que fallará en cada alimento.
+  const buscadorNutricional = process.env.USDA_FDC_API_KEY
+    ? new BuscadorNutricionalCombinado({
+      principal: new BuscadorNutricionalUSDA(pedirCompletion),
+      secundario: buscadorLocal,
+    })
+    : buscadorLocal;
 
   const controller = new AlimentoController({
     registrarAlimento: new RegistrarAlimento(repo),
