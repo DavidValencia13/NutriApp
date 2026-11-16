@@ -3,9 +3,15 @@ const Alimento = require("../../Alimento/Dominio/Entidades/Alimento");
 const ALIMENTOS_DEMO = require("../Infraestructura/demo/alimentosDemo.json");
 
 // Paciente de ejemplo para que el nutricionista pruebe la app sin armar todo
-// desde cero: datos de una paciente típica y 17 alimentos con su información
-// nutricional ya verificada (USDA y tabla USFQ), suficientes para que el
-// menú llegue a su meta de calorías y proteínas.
+// desde cero: una paciente típica con la compra de una semana real en
+// Ecuador (15 alimentos con información nutricional de USDA y de la tabla
+// USFQ) que cubre su meta de calorías, proteínas, vitaminas y minerales.
+//
+// Presupuesto realista: la Canasta Familiar Básica de Consumo del INEC
+// (julio 2026) destina $355,27 al mes a alimentos para un hogar de 4,
+// ≈ $89 por persona al mes ≈ $20,50 a la semana. Precios de mercado 2026
+// (pollo $1,40/lb, cubeta de huevos $4,10, arroz $1,44/kg); la compra
+// completa cuesta ≈ $20,40.
 const NOMBRE_DEMO = "María Demo (paciente de ejemplo)";
 
 const DATOS_DEMO = {
@@ -17,7 +23,7 @@ const DATOS_DEMO = {
   objetivo: "Bajar Peso",
   nivelActividad: "Moderado",
   numeroComidas: 4,
-  presupuesto: 50, // el catálogo cuesta ~$44: deja margen para editar alimentos
+  presupuesto: 21, // ≈ canasta del INEC por persona a la semana
   tiempoParaCocinar: 30,
   restricciones: "",
   preferencias: "Comida casera, platos sencillos",

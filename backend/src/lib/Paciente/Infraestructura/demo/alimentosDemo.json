@@ -1,179 +1,9 @@
 [
   {
-    "nombre": "Carne",
-    "cantidad": 1,
-    "unidadMedida": "kg",
-    "precio": 5,
-    "gruposAlimenticios": [
-      "proteinas"
-    ],
-    "infoNutricional": {
-      "refCantidad": 100,
-      "refUnidad": "g",
-      "calorias": 119.62,
-      "proteinas": 22.03,
-      "carbohidratos": 0,
-      "grasasTotales": 3.5,
-      "grasasSaturadas": 1.2,
-      "fibra": 0,
-      "sodio": 57,
-      "potasio": 375,
-      "calcio": 4,
-      "hierro": 2.15,
-      "vitaminaA": 0,
-      "vitaminaC": 0,
-      "vitaminaB12": 2.98,
-      "fuente": "USFQ",
-      "nombreReferencia": "Res, carne magra, cruda"
-    }
-  },
-  {
-    "nombre": "Lechuga",
-    "cantidad": 1,
-    "unidadMedida": "unidad",
-    "precio": 0.8,
-    "gruposAlimenticios": [
-      "verduras_hortalizas"
-    ],
-    "infoNutricional": {
-      "refCantidad": 100,
-      "refUnidad": "g",
-      "calorias": 17.1,
-      "proteinas": 0.742,
-      "carbohidratos": 3.37,
-      "grasasTotales": 0.0738,
-      "sodio": 16.1,
-      "potasio": 139,
-      "calcio": 14.2,
-      "hierro": 0.0332,
-      "magnesio": 6.31,
-      "gramosPorPorcion": 400,
-      "fuente": "USDA",
-      "nombreReferencia": "Lettuce, iceberg, raw"
-    }
-  },
-  {
-    "nombre": "Arroz",
-    "cantidad": 1,
-    "unidadMedida": "kg",
-    "precio": 3,
-    "gruposAlimenticios": [
-      "carbohidratos"
-    ],
-    "infoNutricional": {
-      "refCantidad": 100,
-      "refUnidad": "g",
-      "calorias": 354.26,
-      "proteinas": 7.13,
-      "carbohidratos": 79.95,
-      "grasasTotales": 0.66,
-      "grasasSaturadas": 0.18,
-      "fibra": 1.3,
-      "sodio": 5,
-      "potasio": 115,
-      "calcio": 28,
-      "hierro": 0.8,
-      "vitaminaA": 0,
-      "vitaminaC": 0,
-      "vitaminaB12": 0,
-      "fuente": "USFQ",
-      "nombreReferencia": "Arroz blanco, grano largo crudo"
-    }
-  },
-  {
-    "nombre": "Aceite de oliva",
-    "cantidad": 0.5,
-    "unidadMedida": "l",
-    "precio": 1.1,
-    "gruposAlimenticios": [
-      "grasas_saludables"
-    ],
-    "infoNutricional": {
-      "refCantidad": 100,
-      "refUnidad": "g",
-      "calorias": 900,
-      "proteinas": 0,
-      "carbohidratos": 0,
-      "grasasTotales": 100,
-      "grasasSaturadas": 13.81,
-      "fibra": 0,
-      "sodio": 2,
-      "potasio": 1,
-      "calcio": 1,
-      "hierro": 0.56,
-      "vitaminaA": 0,
-      "vitaminaC": 0,
-      "vitaminaB12": 0,
-      "fuente": "USFQ",
-      "nombreReferencia": "Aceite, de oliva"
-    }
-  },
-  {
-    "nombre": "Manzana",
-    "cantidad": 12,
-    "unidadMedida": "unidad",
-    "precio": 0.2167,
-    "gruposAlimenticios": [
-      "frutas"
-    ],
-    "infoNutricional": {
-      "refCantidad": 100,
-      "refUnidad": "g",
-      "calorias": 57.81,
-      "proteinas": 0.26,
-      "carbohidratos": 13.81,
-      "grasasTotales": 0.17,
-      "grasasSaturadas": 0.03,
-      "fibra": 2.4,
-      "sodio": 1,
-      "potasio": 107,
-      "calcio": 6,
-      "hierro": 0.12,
-      "vitaminaA": 3,
-      "vitaminaC": 5,
-      "vitaminaB12": 0,
-      "gramosPorPorcion": 180,
-      "fuente": "USFQ",
-      "nombreReferencia": "Manzana, con casacara, importada"
-    }
-  },
-  {
-    "nombre": "Peras",
-    "cantidad": 10,
-    "unidadMedida": "unidad",
-    "precio": 0.32,
-    "gruposAlimenticios": [
-      "frutas"
-    ],
-    "infoNutricional": {
-      "refCantidad": 100,
-      "refUnidad": "g",
-      "calorias": 57,
-      "proteinas": 0.36,
-      "carbohidratos": 15.2,
-      "grasasTotales": 0.14,
-      "grasasSaturadas": 0.022,
-      "fibra": 3.1,
-      "azucares": 9.75,
-      "sodio": 1,
-      "potasio": 116,
-      "calcio": 9,
-      "hierro": 0.18,
-      "magnesio": 7,
-      "vitaminaA": 1,
-      "vitaminaC": 4.3,
-      "vitaminaD": 0,
-      "vitaminaB12": 0,
-      "gramosPorPorcion": 170,
-      "fuente": "USDA",
-      "nombreReferencia": "Pears, raw"
-    }
-  },
-  {
     "nombre": "Pollo",
     "cantidad": 2,
     "unidadMedida": "lb",
-    "precio": 1.25,
+    "precio": 1.4,
     "gruposAlimenticios": [
       "proteinas"
     ],
@@ -198,10 +28,41 @@
     }
   },
   {
-    "nombre": "Atún en lata",
-    "cantidad": 8,
+    "nombre": "Huevos",
+    "cantidad": 12,
     "unidadMedida": "unidad",
-    "precio": 0.5625,
+    "precio": 0.14,
+    "gruposAlimenticios": [
+      "proteinas"
+    ],
+    "infoNutricional": {
+      "refCantidad": 100,
+      "refUnidad": "g",
+      "gramosPorPorcion": 50,
+      "fuente": "USDA",
+      "nombreReferencia": "Eggs, Grade A, Large, egg whole",
+      "calorias": 148,
+      "proteinas": 12.4,
+      "carbohidratos": 0.96,
+      "grasasTotales": 9.96,
+      "grasasSaturadas": 3.2,
+      "fibra": 0,
+      "azucares": 0.2,
+      "sodio": 129,
+      "potasio": 132,
+      "calcio": 48,
+      "hierro": 1.67,
+      "magnesio": 11.4,
+      "vitaminaA": 180,
+      "vitaminaD": 2.46,
+      "vitaminaB12": 1.02
+    }
+  },
+  {
+    "nombre": "Atún en lata",
+    "cantidad": 1,
+    "unidadMedida": "unidad",
+    "precio": 1.3,
     "gruposAlimenticios": [
       "proteinas"
     ],
@@ -230,118 +91,68 @@
     }
   },
   {
-    "nombre": "Pimiento rojo",
-    "cantidad": 5,
-    "unidadMedida": "unidad",
-    "precio": 0.24,
+    "nombre": "Lenteja",
+    "cantidad": 0.5,
+    "unidadMedida": "kg",
+    "precio": 2.2,
     "gruposAlimenticios": [
-      "verduras_hortalizas"
+      "legumbres",
+      "proteinas"
     ],
     "infoNutricional": {
       "refCantidad": 100,
       "refUnidad": "g",
-      "calorias": 31.3,
-      "proteinas": 0.896,
-      "carbohidratos": 6.65,
-      "grasasTotales": 0.126,
-      "fibra": 1.16,
-      "sodio": 0,
-      "potasio": 213,
-      "calcio": 6.36,
-      "hierro": 0.353,
-      "magnesio": 11,
-      "vitaminaC": 142,
-      "gramosPorPorcion": 150,
-      "fuente": "USDA",
-      "nombreReferencia": "Peppers, bell, red, raw"
-    }
-  },
-  {
-    "nombre": "Brócoli",
-    "cantidad": 2,
-    "unidadMedida": "unidad",
-    "precio": 0.5,
-    "gruposAlimenticios": [
-      "verduras_hortalizas"
-    ],
-    "infoNutricional": {
-      "refCantidad": 100,
-      "refUnidad": "g",
-      "calorias": 31,
-      "proteinas": 2.57,
-      "carbohidratos": 6.27,
-      "grasasTotales": 0.34,
-      "grasasSaturadas": 0.039,
-      "fibra": 2.4,
-      "azucares": 1.4,
-      "sodio": 36,
-      "potasio": 303,
-      "calcio": 46,
-      "hierro": 0.69,
-      "magnesio": 21,
-      "vitaminaA": 8,
-      "vitaminaC": 91.3,
-      "gramosPorPorcion": 300,
-      "fuente": "USDA",
-      "nombreReferencia": "Broccoli, raw"
-    }
-  },
-  {
-    "nombre": "Avena",
-    "cantidad": 500,
-    "unidadMedida": "g",
-    "precio": 0.0016,
-    "gruposAlimenticios": [
-      "granos_cereales"
-    ],
-    "infoNutricional": {
-      "refCantidad": 100,
-      "refUnidad": "g",
-      "calorias": 394.74,
-      "proteinas": 16.89,
-      "carbohidratos": 66.27,
-      "grasasTotales": 6.9,
-      "grasasSaturadas": 1.22,
-      "fibra": 10.6,
-      "sodio": 2,
-      "potasio": 429,
-      "calcio": 54,
-      "hierro": 4.72,
-      "vitaminaA": 0,
-      "vitaminaC": 0,
+      "calorias": 353.06,
+      "proteinas": 25.8,
+      "carbohidratos": 60.08,
+      "grasasTotales": 1.06,
+      "grasasSaturadas": 0.16,
+      "fibra": 30.5,
+      "sodio": 6,
+      "potasio": 955,
+      "calcio": 56,
+      "hierro": 7.54,
+      "vitaminaA": 2,
+      "vitaminaC": 4,
       "vitaminaB12": 0,
       "fuente": "USFQ",
-      "nombreReferencia": "Avena, hojuelas, sin fortificar, Mosh"
+      "nombreReferencia": "Lenteja, grano seco, crudo"
     }
   },
   {
-    "nombre": "Yogur Griego",
-    "cantidad": 2,
-    "unidadMedida": "unidad",
-    "precio": 1.25,
+    "nombre": "Queso fresco",
+    "cantidad": 0.5,
+    "unidadMedida": "kg",
+    "precio": 6,
     "gruposAlimenticios": [
-      "lacteos"
+      "lacteos",
+      "proteinas"
     ],
     "infoNutricional": {
       "refCantidad": 100,
       "refUnidad": "g",
-      "gramosPorPorcion": 150,
-      "fuente": "USFQ",
-      "nombreReferencia": "Yogurt, tipo griego, Toni",
-      "calorias": 65,
-      "proteinas": 8,
-      "carbohidratos": 6,
-      "grasasTotales": 1,
-      "grasasSaturadas": 0.67,
+      "calorias": 168.04,
+      "proteinas": 24.35,
+      "carbohidratos": 1.91,
+      "grasasTotales": 7,
+      "grasasSaturadas": 4.34,
       "fibra": 0,
-      "sodio": 46.67
+      "sodio": 612,
+      "potasio": 66,
+      "calcio": 414,
+      "hierro": 0.42,
+      "vitaminaA": 60,
+      "vitaminaC": 0,
+      "vitaminaB12": 0.49,
+      "fuente": "USFQ",
+      "nombreReferencia": "Queso, fresco, leche semidescremada"
     }
   },
   {
     "nombre": "Leche",
     "cantidad": 3,
     "unidadMedida": "l",
-    "precio": 1.1,
+    "precio": 1,
     "gruposAlimenticios": [
       "lacteos"
     ],
@@ -367,40 +178,36 @@
     }
   },
   {
-    "nombre": "Platano",
-    "cantidad": 12,
-    "unidadMedida": "unidad",
-    "precio": 0.1083,
+    "nombre": "Arroz",
+    "cantidad": 1,
+    "unidadMedida": "kg",
+    "precio": 1.44,
     "gruposAlimenticios": [
-      "frutas"
+      "carbohidratos"
     ],
     "infoNutricional": {
       "refCantidad": 100,
       "refUnidad": "g",
-      "gramosPorPorcion": 120,
-      "fuente": "USDA",
-      "nombreReferencia": "Bananas, raw",
-      "calorias": 89,
-      "proteinas": 1.09,
-      "carbohidratos": 22.8,
-      "grasasTotales": 0.33,
-      "grasasSaturadas": 0.112,
-      "fibra": 2.6,
-      "azucares": 12.2,
-      "sodio": 1,
-      "potasio": 358,
-      "calcio": 5,
-      "hierro": 0.26,
-      "magnesio": 27,
-      "vitaminaA": 3,
-      "vitaminaC": 8.7,
-      "vitaminaD": 0,
-      "vitaminaB12": 0
+      "calorias": 354.26,
+      "proteinas": 7.13,
+      "carbohidratos": 79.95,
+      "grasasTotales": 0.66,
+      "grasasSaturadas": 0.18,
+      "fibra": 1.3,
+      "sodio": 5,
+      "potasio": 115,
+      "calcio": 28,
+      "hierro": 0.8,
+      "vitaminaA": 0,
+      "vitaminaC": 0,
+      "vitaminaB12": 0,
+      "fuente": "USFQ",
+      "nombreReferencia": "Arroz blanco, grano largo crudo"
     }
   },
   {
     "nombre": "Papa",
-    "cantidad": 3,
+    "cantidad": 1.5,
     "unidadMedida": "kg",
     "precio": 0.6,
     "gruposAlimenticios": [
@@ -430,61 +237,149 @@
     }
   },
   {
-    "nombre": "Huevos",
-    "cantidad": 30,
-    "unidadMedida": "unidad",
-    "precio": 0.15,
-    "gruposAlimenticios": [
-      "proteinas"
-    ],
-    "infoNutricional": {
-      "refCantidad": 100,
-      "refUnidad": "g",
-      "gramosPorPorcion": 50,
-      "fuente": "USDA",
-      "nombreReferencia": "Eggs, Grade A, Large, egg whole",
-      "calorias": 148,
-      "proteinas": 12.4,
-      "carbohidratos": 0.96,
-      "grasasTotales": 9.96,
-      "grasasSaturadas": 3.2,
-      "fibra": 0,
-      "azucares": 0.2,
-      "sodio": 129,
-      "potasio": 132,
-      "calcio": 48,
-      "hierro": 1.67,
-      "magnesio": 11.4,
-      "vitaminaA": 180,
-      "vitaminaD": 2.46,
-      "vitaminaB12": 1.02
-    }
-  },
-  {
-    "nombre": "Fideo",
-    "cantidad": 1,
-    "unidadMedida": "kg",
-    "precio": 1.5,
+    "nombre": "Avena",
+    "cantidad": 400,
+    "unidadMedida": "g",
+    "precio": 0.0025,
     "gruposAlimenticios": [
       "granos_cereales"
     ],
     "infoNutricional": {
       "refCantidad": 100,
       "refUnidad": "g",
+      "calorias": 394.74,
+      "proteinas": 16.89,
+      "carbohidratos": 66.27,
+      "grasasTotales": 6.9,
+      "grasasSaturadas": 1.22,
+      "fibra": 10.6,
+      "sodio": 2,
+      "potasio": 429,
+      "calcio": 54,
+      "hierro": 4.72,
+      "vitaminaA": 0,
+      "vitaminaC": 0,
+      "vitaminaB12": 0,
+      "fuente": "USFQ",
+      "nombreReferencia": "Avena, hojuelas, sin fortificar, Mosh"
+    }
+  },
+  {
+    "nombre": "Platano",
+    "cantidad": 7,
+    "unidadMedida": "unidad",
+    "precio": 0.1,
+    "gruposAlimenticios": [
+      "frutas"
+    ],
+    "infoNutricional": {
+      "refCantidad": 100,
+      "refUnidad": "g",
+      "gramosPorPorcion": 120,
       "fuente": "USDA",
-      "nombreReferencia": "Pasta, whole grain, 51% whole wheat, remaining enriched semolina, dry (Includes foods for USDA's Food Distribution Program)",
-      "calorias": 361,
-      "proteinas": 13.2,
-      "carbohidratos": 73.3,
-      "grasasTotales": 2.55,
-      "grasasSaturadas": 0.324,
-      "fibra": 11.3,
-      "azucares": 2.2,
-      "sodio": 12,
-      "potasio": 318,
-      "calcio": 25,
-      "hierro": 3.41,
-      "magnesio": 94
+      "nombreReferencia": "Bananas, raw",
+      "calorias": 89,
+      "proteinas": 1.09,
+      "carbohidratos": 22.8,
+      "grasasTotales": 0.33,
+      "grasasSaturadas": 0.112,
+      "fibra": 2.6,
+      "azucares": 12.2,
+      "sodio": 1,
+      "potasio": 358,
+      "calcio": 5,
+      "hierro": 0.26,
+      "magnesio": 27,
+      "vitaminaA": 3,
+      "vitaminaC": 8.7,
+      "vitaminaD": 0,
+      "vitaminaB12": 0
+    }
+  },
+  {
+    "nombre": "Manzana",
+    "cantidad": 3,
+    "unidadMedida": "unidad",
+    "precio": 0.35,
+    "gruposAlimenticios": [
+      "frutas"
+    ],
+    "infoNutricional": {
+      "refCantidad": 100,
+      "refUnidad": "g",
+      "calorias": 57.81,
+      "proteinas": 0.26,
+      "carbohidratos": 13.81,
+      "grasasTotales": 0.17,
+      "grasasSaturadas": 0.03,
+      "fibra": 2.4,
+      "sodio": 1,
+      "potasio": 107,
+      "calcio": 6,
+      "hierro": 0.12,
+      "vitaminaA": 3,
+      "vitaminaC": 5,
+      "vitaminaB12": 0,
+      "gramosPorPorcion": 180,
+      "fuente": "USFQ",
+      "nombreReferencia": "Manzana, con casacara, importada"
+    }
+  },
+  {
+    "nombre": "Brócoli",
+    "cantidad": 1,
+    "unidadMedida": "unidad",
+    "precio": 0.75,
+    "gruposAlimenticios": [
+      "verduras_hortalizas"
+    ],
+    "infoNutricional": {
+      "refCantidad": 100,
+      "refUnidad": "g",
+      "calorias": 31,
+      "proteinas": 2.57,
+      "carbohidratos": 6.27,
+      "grasasTotales": 0.34,
+      "grasasSaturadas": 0.039,
+      "fibra": 2.4,
+      "azucares": 1.4,
+      "sodio": 36,
+      "potasio": 303,
+      "calcio": 46,
+      "hierro": 0.69,
+      "magnesio": 21,
+      "vitaminaA": 8,
+      "vitaminaC": 91.3,
+      "gramosPorPorcion": 300,
+      "fuente": "USDA",
+      "nombreReferencia": "Broccoli, raw"
+    }
+  },
+  {
+    "nombre": "Pimiento rojo",
+    "cantidad": 2,
+    "unidadMedida": "unidad",
+    "precio": 0.25,
+    "gruposAlimenticios": [
+      "verduras_hortalizas"
+    ],
+    "infoNutricional": {
+      "refCantidad": 100,
+      "refUnidad": "g",
+      "calorias": 31.3,
+      "proteinas": 0.896,
+      "carbohidratos": 6.65,
+      "grasasTotales": 0.126,
+      "fibra": 1.16,
+      "sodio": 0,
+      "potasio": 213,
+      "calcio": 6.36,
+      "hierro": 0.353,
+      "magnesio": 11,
+      "vitaminaC": 142,
+      "gramosPorPorcion": 150,
+      "fuente": "USDA",
+      "nombreReferencia": "Peppers, bell, red, raw"
     }
   },
   {
@@ -517,32 +412,24 @@
     }
   },
   {
-    "nombre": "Queso fresco",
-    "cantidad": 0.5,
-    "unidadMedida": "kg",
-    "precio": 6,
+    "nombre": "Aceite vegetal",
+    "cantidad": 0.2,
+    "unidadMedida": "l",
+    "precio": 2.8,
     "gruposAlimenticios": [
-      "lacteos",
-      "proteinas"
+      "grasas_saludables"
     ],
     "infoNutricional": {
       "refCantidad": 100,
       "refUnidad": "g",
-      "calorias": 168.04,
-      "proteinas": 24.35,
-      "carbohidratos": 1.91,
-      "grasasTotales": 7,
-      "grasasSaturadas": 4.34,
-      "fibra": 0,
-      "sodio": 612,
-      "potasio": 66,
-      "calcio": 414,
-      "hierro": 0.42,
-      "vitaminaA": 60,
-      "vitaminaC": 0,
-      "vitaminaB12": 0.49,
+      "calorias": 900,
+      "proteinas": 0,
+      "carbohidratos": 0,
+      "grasasTotales": 100,
+      "grasasSaturadas": 49.3,
+      "vitaminaA": 0,
       "fuente": "USFQ",
-      "nombreReferencia": "Queso, fresco, leche semidescremada"
+      "nombreReferencia": "Aceite, de palma"
     }
   }
 ]
