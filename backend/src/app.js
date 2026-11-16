@@ -14,7 +14,13 @@ const registerPortalModule = require("./lib/Portal/Infraestructura/http");
 function buildApp() {
   const app = express();
 
-  app.use(cors()); // habilita CORS globalmente
+  // CORS: en la nube solo se aceptan pedidos desde la página publicada
+  // (CORS_ORIGIN, se pueden poner varias separadas por coma); en local, todos
+  const origenes = (process.env.CORS_ORIGIN || "")
+    .split(",")
+    .map((o) => o.trim().replace(/\/$/, ""))
+    .filter(Boolean);
+  app.use(cors(origenes.length ? { origin: origenes } : undefined));
   app.use(express.json()); // parsea (interpreta) el body en JSON
   app.use(express.urlencoded({ extended: true })); // parsea el body tipo formulario
 

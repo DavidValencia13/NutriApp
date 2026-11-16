@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Logo } from "../components/Logo";
+import { registrarNutriologo } from "../services/authService";
 
 const inputClass =
   "w-full text-sm bg-white border border-gray-300 rounded-lg px-4 py-3 text-nutri-ink placeholder-gray-400 outline-none transition-colors focus:border-nutri-brand focus:ring-2 focus:ring-nutri-brand/15";
@@ -14,6 +15,13 @@ function Login() {
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
   const [showPass, setShowPass] = useState(false);
+  // El nutricionista puede crear su cuenta (con el código de invitación que
+  // le da quien administra la app); el paciente no: su acceso lo crea su nutricionista
+  const [creando, setCreando] = useState(false);
+  const [nombre, setNombre] = useState("");
+  const [apellido, setApellido] = useState("");
+  const [codigo, setCodigo] = useState("");
+  const modoCrear = creando && rol === "nutriologo";
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -21,7 +29,10 @@ function Login() {
     setCargando(true);
     try {
       if (rol === "paciente") await loginPaciente(email, password);
-      else await login(email, password);
+      else {
+        if (modoCrear) await registrarNutriologo({ nombre, apellido, email, password, codigoInvitacion: codigo });
+        await login(email, password);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -53,7 +64,7 @@ function Login() {
           </div>
 
           <h2 className="text-3xl font-semibold" style={{ letterSpacing: "-0.02em" }}>
-            Iniciar sesión
+            {modoCrear ? "Crear cuenta" : "Iniciar sesión"}
           </h2>
           <div role="tablist" aria-label="Tipo de cuenta" className="grid grid-cols-2 gap-1 p-1 mt-6 rounded-full bg-surface border border-line">
             {[
@@ -80,7 +91,9 @@ function Login() {
           <p className="text-gray-500 mt-4 mb-8">
             {rol === "paciente"
               ? "Ingresa con el correo y la contraseña que te dio tu nutricionista."
-              : "Ingresa con tu cuenta de nutricionista."}
+              : modoCrear
+                ? "Crea tu cuenta de nutricionista con el código de invitación que recibiste."
+                : "Ingresa con tu cuenta de nutricionista."}
           </p>
 
           {error && (
@@ -93,6 +106,18 @@ function Login() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {modoCrear && (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="reg-nombre" className="block text-sm font-medium mb-2">Nombre</label>
+                  <input id="reg-nombre" required value={nombre} onChange={(e) => setNombre(e.target.value)} autoComplete="given-name" className={inputClass} />
+                </div>
+                <div>
+                  <label htmlFor="reg-apellido" className="block text-sm font-medium mb-2">Apellido</label>
+                  <input id="reg-apellido" required value={apellido} onChange={(e) => setApellido(e.target.value)} autoComplete="family-name" className={inputClass} />
+                </div>
+              </div>
+            )}
             <div>
               <label htmlFor="login-email" className="block text-sm font-medium mb-2">
                 Correo electrónico
@@ -120,7 +145,7 @@ function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  autoComplete="current-password"
+                  autoComplete={modoCrear ? "new-password" : "current-password"}
                   placeholder="••••••••"
                   className={`${inputClass} pr-12`}
                 />
@@ -146,6 +171,13 @@ function Login() {
               </div>
             </div>
 
+            {modoCrear && (
+              <div>
+                <label htmlFor="reg-codigo" className="block text-sm font-medium mb-2">Código de invitación</label>
+                <input id="reg-codigo" value={codigo} onChange={(e) => setCodigo(e.target.value)} placeholder="Te lo da quien administra NutriApp" autoComplete="off" className={inputClass} />
+              </div>
+            )}
+
             <button
               type="submit"
               disabled={cargando}
@@ -158,13 +190,29 @@ function Login() {
                     <circle cx="12" cy="12" r="10" strokeOpacity="0.25"/>
                     <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round"/>
                   </svg>
-                  Ingresando…
+                  {modoCrear ? "Creando cuenta…" : "Ingresando…"}
                 </span>
               ) : (
-                "Ingresar"
+                modoCrear ? "Crear cuenta" : "Ingresar"
               )}
             </button>
           </form>
+
+          {rol === "nutriologo" && (
+            <p className="text-sm text-gray-500 text-center mt-6">
+              {modoCrear ? "¿Ya tienes cuenta?" : "¿Eres nutricionista y no tienes cuenta?"}{" "}
+              <button
+                type="button"
+                onClick={() => {
+                  setCreando(!creando);
+                  setError("");
+                }}
+                className="font-semibold text-nutri-brand hover:underline cursor-pointer"
+              >
+                {modoCrear ? "Inicia sesión" : "Crear cuenta"}
+              </button>
+            </p>
+          )}
         </div>
       </section>
     </div>

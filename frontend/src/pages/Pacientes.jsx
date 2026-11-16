@@ -10,6 +10,9 @@ import SeguimientoPaciente from "../components/SeguimientoPaciente";
 import AsistenteChat from "../components/AsistenteChat";
 import AccesoPaciente from "../components/AccesoPaciente";
 import { Smartphone } from "lucide-react";
+import RecorridoGuiado from "../components/RecorridoGuiado";
+import { PASOS_GUIA_NUTRICIONISTA } from "../utils/guiaNutricionista";
+import { useAuth } from "../context/AuthContext";
 import {
   IconUsers,
   IconPlus,
@@ -55,6 +58,37 @@ function Pacientes() {
   const [error, setError]           = useState("");
   const [busqueda, setBusqueda]     = useState("");
   const [modal, setModal]           = useState({ tipo: null, paciente: null });
+
+  // Recorrido guiado: sale solo la primera vez que entra este nutricionista
+  // (cuando ya cargaron los pacientes) y se puede reabrir desde la barra lateral
+  const { nutriologo } = useAuth();
+  const claveGuia = `guia-vista-${nutriologo?.id}`;
+  const [guiaVista, setGuiaVista] = useState(() => {
+    try {
+      return localStorage.getItem(claveGuia) === "1";
+    } catch {
+      return true;
+    }
+  });
+  const [guiaManual, setGuiaManual] = useState(false);
+  useEffect(() => {
+    const abrir = () => {
+      setModal({ tipo: null, paciente: null });
+      setGuiaManual(true);
+    };
+    window.addEventListener("abrir-guia", abrir);
+    return () => window.removeEventListener("abrir-guia", abrir);
+  }, []);
+  function cerrarGuia() {
+    setGuiaManual(false);
+    setGuiaVista(true);
+    try {
+      localStorage.setItem(claveGuia, "1");
+    } catch {
+      /* sin almacenamiento: la guía volverá a salir la próxima vez */
+    }
+  }
+  const guiaAbierta = guiaManual || (!cargando && !guiaVista);
 
   useEffect(() => { cargarPacientes(); }, []);
 
@@ -141,6 +175,7 @@ function Pacientes() {
               />
             </div>
             <button
+              data-tour="nuevo-paciente"
               onClick={() => setModal({ tipo: "paciente", paciente: null })}
               className="flex items-center justify-center gap-2 bg-nutri-mint text-nutri-ink hover:bg-white font-semibold text-sm px-6 py-3 rounded-full transition-colors shrink-0 cursor-pointer"
             >
@@ -175,8 +210,9 @@ function Pacientes() {
           <p className="text-muted text-sm mt-4">Ningún paciente coincide con "{busqueda}".</p>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {pacientesFiltrados.map((p) => (
+            {pacientesFiltrados.map((p, i) => (
               <PacienteCard
+                primera={i === 0}
                 versionCobertura={versionCobertura}
                 key={p.id}
                 p={p}
@@ -192,6 +228,8 @@ function Pacientes() {
           </div>
         )}
       </main>
+
+      <RecorridoGuiado pasos={PASOS_GUIA_NUTRICIONISTA} abierto={guiaAbierta} onCerrar={cerrarGuia} />
 
       {/* Modal */}
       <Modal
@@ -255,7 +293,7 @@ function EmptyState({ onCreate }) {
 }
 
 /* ── Patient card ─────────────────────────────────────────────────────────── */
-function PacienteCard({ p, versionCobertura, onAlimentos, onMenu, onSeguimiento, onAsistente, onAcceso, onEditar, onEliminar }) {
+function PacienteCard({ p, primera, versionCobertura, onAlimentos, onMenu, onSeguimiento, onAsistente, onAcceso, onEditar, onEliminar }) {
   // ¿Alcanzan sus alimentos para la meta de calorías y proteínas?
   const [suficiencia, setSuficiencia] = useState(null);
   useEffect(() => {
@@ -275,7 +313,10 @@ function PacienteCard({ p, versionCobertura, onAlimentos, onMenu, onSeguimiento,
   const tienRestr = p.restricciones && !sinRestricciones(p.restricciones);
 
   return (
-    <article className="patient-card bg-white rounded-xl border border-line flex flex-col">
+    <article
+      data-tour={primera ? "paciente-tarjeta" : undefined}
+      className="patient-card bg-white rounded-xl border border-line flex flex-col"
+    >
       <div className="p-6 flex-1">
         {/* Encabezado */}
         <div className="flex items-start gap-4">
@@ -351,11 +392,11 @@ function PacienteCard({ p, versionCobertura, onAlimentos, onMenu, onSeguimiento,
 
       {/* Acciones */}
       <div className="flex flex-wrap items-center gap-1 px-4 py-3 border-t border-line">
-        <ActionBtn onClick={onMenu}        icon={<IconList />}          label="Menú" />
-        <ActionBtn onClick={onAlimentos}   icon={<IconFork />}          label="Alimentos" />
-        <ActionBtn onClick={onSeguimiento} icon={<IconCalendarCheck />} label="Seguimiento" />
+        <ActionBtn onClick={onMenu}        icon={<IconList />}          label="Menú"        tour={primera && "paciente-menu"} />
+        <ActionBtn onClick={onAlimentos}   icon={<IconFork />}          label="Alimentos"   tour={primera && "paciente-alimentos"} />
+        <ActionBtn onClick={onSeguimiento} icon={<IconCalendarCheck />} label="Seguimiento" tour={primera && "paciente-seguimiento"} />
         <ActionBtn onClick={onAsistente}   icon={<IconMessageSquare />} label="Asistente" />
-        <ActionBtn onClick={onAcceso}      icon={<Smartphone />}        label="App" />
+        <ActionBtn onClick={onAcceso}      icon={<Smartphone />}        label="App"         tour={primera && "paciente-app"} />
         <div className="flex-1" />
         <IconBtn onClick={onEditar}   icon={<IconPencil />} label="Editar" />
         <IconBtn onClick={onEliminar} icon={<IconTrash />}  label="Eliminar" danger />
@@ -380,9 +421,10 @@ function Metric({ label, value }) {
 }
 
 /* ── Action buttons ───────────────────────────────────────────────────────── */
-function ActionBtn({ onClick, icon, label }) {
+function ActionBtn({ onClick, icon, label, tour }) {
   return (
     <button
+      data-tour={tour || undefined}
       onClick={onClick}
       className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-sm text-gray-600 hover:text-nutri-ink hover:bg-surface transition-colors cursor-pointer"
     >

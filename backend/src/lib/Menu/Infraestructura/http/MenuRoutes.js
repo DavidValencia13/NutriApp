@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
 
-module.exports = (controller) => {
-  router.post("/generar", controller.generar); // RF-008
+module.exports = (controller, { limiteGeneracion } = {}) => {
+  // limiteGeneracion: middleware que corta si ya generó demasiados menús hoy
+  router.post("/generar", ...(limiteGeneracion ? [limiteGeneracion] : []), controller.generar); // RF-008
   router.get("/", controller.obtener); // RF-009 / RF-0010
   router.put("/comida/:idComidaMenu", controller.ajustar); // RF-0011
   router.post("/:idMenu/preview-nutrientes", controller.previewNutrientes); // feedback en vivo

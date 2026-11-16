@@ -10,6 +10,7 @@ const AjustarComidaMenu = require("../../Aplicacion/AjustarComidaMenu");
 const AprobarMenu = require("../../Aplicacion/AprobarMenu");
 const CalcularNutrientesPreviewComida = require("../../Aplicacion/CalcularNutrientesPreviewComida");
 
+const limitarMenusPorDia = require("./limitarMenusPorDia");
 const authMiddleware = require("../../../Nutriologo/Infraestructura/http/authMiddleware");
 const verificarPropietarioPaciente = require("../../../Alimento/Infraestructura/http/verificarPropietarioPaciente");
 const PacienteRepositorySequelize = require("../../../Paciente/Infraestructura/PacienteRepositorySequelize");
@@ -40,6 +41,6 @@ module.exports = function registerMenuModule(app) {
     "/api/paciente/:idPaciente/menu",
     authMiddleware,
     verificarPropietarioPaciente(pacienteRepo),
-    MenuRoutes(controller),
+    MenuRoutes(controller, { limiteGeneracion: limitarMenusPorDia(menuRepo) }),
   );
 };

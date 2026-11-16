@@ -9,7 +9,7 @@ module.exports = function registerNutriologoModule(app) {
   const repo = new NutriologoRepositorySequelize();
 
   const controller = new NutriologoController({
-    registrarNutriologo: new RegistrarNutriologo(repo),
+    registrarNutriologo: new RegistrarNutriologo(repo, { codigoInvitacion: process.env.CODIGO_INVITACION }),
     loginNutriologo: new LoginNutriologo(repo),
     obtenerNutriologo: new ObtenerNutriologo(repo),
   });

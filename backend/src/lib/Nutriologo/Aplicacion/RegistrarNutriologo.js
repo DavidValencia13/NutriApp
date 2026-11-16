@@ -1,13 +1,29 @@
 const Nutriologo = require("../Dominio/Entidades/Nutriologo");
 const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
 
-// Caso de uso: registrar un nuevo nutriólogo
+// Compara sin revelar por el tiempo de respuesta cuántos caracteres acertó
+function mismoCodigo(a, b) {
+  const x = crypto.createHash("sha256").update(String(a)).digest();
+  const y = crypto.createHash("sha256").update(String(b)).digest();
+  return crypto.timingSafeEqual(x, y);
+}
+
+// Caso de uso: registrar un nuevo nutriólogo.
+// Si hay código de invitación configurado (CODIGO_INVITACION en la página
+// publicada), solo se puede crear cuenta con ese código: así un desconocido
+// que encuentre el link no puede registrarse y gastar los créditos de IA.
 class RegistrarNutriologo {
-  constructor(nutriologoRepository) {
+  constructor(nutriologoRepository, { codigoInvitacion } = {}) {
     this.nutriologoRepository = nutriologoRepository;
+    this.codigoInvitacion = codigoInvitacion || null;
   }
 
   async ejecutar(data) {
+    if (this.codigoInvitacion && !mismoCodigo(String(data?.codigoInvitacion || "").trim(), this.codigoInvitacion)) {
+      throw new Error("El código de invitación no es válido");
+    }
+
     // Valida con la contraseña en texto plano: después de encriptarla el hash
     // siempre mide 60 caracteres y la regla de longitud mínima no tendría efecto
     const validado = new Nutriologo(data);

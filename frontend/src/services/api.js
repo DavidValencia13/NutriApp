@@ -1,5 +1,7 @@
 // URL base de tu backend (todo lo que armamos: nutriologo, paciente, etc.)
-const API_URL = "http://localhost:3000/api";
+// En la página publicada viene de VITE_API_URL (se configura en Cloudflare
+// Pages); en la computadora local, el backend de siempre.
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
 // Función genérica para hacer peticiones al backend
 async function apiFetch(endpoint, options = {}) {
@@ -15,10 +17,27 @@ async function apiFetch(endpoint, options = {}) {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  // El servidor gratis de la nube se duerme si nadie lo usa: si tarda más de
+  // 5 s se avisa "Conectando..." (menos al generar menú, que tiene su propia espera)
+  const avisar = !endpoint.endsWith("/generar");
+  const temporizador = avisar
+    ? setTimeout(() => window.dispatchEvent(new CustomEvent("servidor-lento", { detail: true })), 5000)
+    : null;
+
+  let response;
+  try {
+    response = await fetch(`${API_URL}${endpoint}`, {
+      ...options,
+      headers,
+    });
+  } catch {
+    throw new Error("No se pudo conectar con el servidor. Revisa tu internet e inténtalo de nuevo.");
+  } finally {
+    if (temporizador) {
+      clearTimeout(temporizador);
+      window.dispatchEvent(new CustomEvent("servidor-lento", { detail: false }));
+    }
+  }
 
   const data = await response.json().catch(() => null);
   // (catch vacío por si la respuesta no trae JSON, ej: en un DELETE con 204)

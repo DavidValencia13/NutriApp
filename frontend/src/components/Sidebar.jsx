@@ -1,6 +1,7 @@
 import { useAuth } from "../context/AuthContext";
 import { IconUsers, IconLogout } from "./Icons";
 import { Logo } from "./Logo";
+import { CircleHelp } from "lucide-react";
 
 function iniciales(nombre = "", apellido = "") {
   return ((nombre[0] || "") + (apellido[0] || "")).toUpperCase() || "?";
@@ -28,6 +29,18 @@ function Sidebar() {
         <NavItem icon={<IconCalendar />} label="Consultas"       disabled />
         <NavItem icon={<IconBrain />}    label="Inteligencia IA" disabled />
       </nav>
+
+      {/* Volver a ver el recorrido guiado */}
+      <div className="px-3 pb-3">
+        <button
+          data-tour="ver-guia"
+          onClick={() => window.dispatchEvent(new Event("abrir-guia"))}
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm text-white/70 hover:bg-white/5 hover:text-white transition-colors cursor-pointer"
+        >
+          <CircleHelp size={18} aria-hidden="true" />
+          Ver guía
+        </button>
+      </div>
 
       {/* Usuario */}
       <div className="px-3 py-4 border-t border-white/10">

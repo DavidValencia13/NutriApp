@@ -14,3 +14,11 @@ export async function loginPaciente(email, password) {
     body: JSON.stringify({ email, password }),
   });
 }
+
+// Crear cuenta de nutricionista (en la página publicada pide código de invitación)
+export async function registrarNutriologo(datos) {
+  return await apiFetch("/nutriologo/registrar", {
+    method: "POST",
+    body: JSON.stringify(datos),
+  });
+}

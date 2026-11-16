@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const { sequelize } = require("../../../Infraestructura/database/postgres");
 const {
   MenuModel,
@@ -75,6 +76,14 @@ class MenuRepositorySequelize {
     if (!doc) return null;
     this._ordenarArbol(doc);
     return doc; // el controller serializa el árbol completo tal cual (RF-009/RF-0010)
+  }
+
+  // Cuántos menús generó un nutriólogo (todos sus pacientes) desde una fecha
+  async contarGeneradosPorNutriologoDesde(idNutriologo, desde) {
+    return await MenuModel.count({
+      where: { fechaGeneracion: { [Op.gte]: desde } },
+      include: { model: PacienteModel, as: "paciente", where: { idNutriologo }, required: true },
+    });
   }
 
   // Último menú APROBADO: es el único que ve el paciente en su app
