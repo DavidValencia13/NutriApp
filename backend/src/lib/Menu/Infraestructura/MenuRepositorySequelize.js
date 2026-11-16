@@ -77,6 +77,21 @@ class MenuRepositorySequelize {
     return doc; // el controller serializa el árbol completo tal cual (RF-009/RF-0010)
   }
 
+  // Último menú APROBADO: es el único que ve el paciente en su app
+  async obtenerMasRecienteAprobadoPorPaciente(idPaciente) {
+    const doc = await MenuModel.findOne({
+      where: { idPaciente, estado: "aprobado" },
+      order: [
+        ["fechaGeneracion", "DESC"],
+        ["id", "DESC"],
+      ],
+      include: this._includeArbolCompleto(),
+    });
+    if (!doc) return null;
+    this._ordenarArbol(doc);
+    return doc;
+  }
+
   // Igual que obtenerMasRecientePorPaciente pero por id específico — lo usa
   // Sugerencia (ObtenerSugerenciasMenu) para evaluar un menú puntual sin
   // depender de que sea "el más reciente" del paciente.

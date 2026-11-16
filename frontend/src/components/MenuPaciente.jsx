@@ -7,9 +7,9 @@ import Modal from "./Modal";
 import FormularioAjustarComida from "./FormularioAjustarComida";
 import EfectividadMenu from "./EfectividadMenu";
 import { IconAlertTriangle } from "./Icons";
-import {
-  Apple, Check, Coffee, Loader2, Moon, MoonStar, Sparkles, Sunrise, Utensils, UtensilsCrossed,
-} from "lucide-react";
+import { Check, Loader2, Sparkles } from "lucide-react";
+import IconoMomento from "./IconoMomento";
+import { cantidadLegible } from "../utils/cantidad";
 
 // Pasos que sigue el backend al generar el menú (se muestran mientras espera)
 const PASOS_GENERACION = [
@@ -96,37 +96,6 @@ function EsqueletoMenu() {
       ))}
     </div>
   );
-}
-
-// Ícono de línea (Lucide) por momento del día
-const ICONOS_POR_MOMENTO = [
-  [/desayuno/, Sunrise],
-  [/media ma/, Apple],
-  [/almuerzo/, UtensilsCrossed],
-  [/merienda/, Coffee],
-  [/antes de dormir/, MoonStar],
-  [/cena/, Moon],
-];
-
-function IconoMomento({ tipoComida }) {
-  const texto = (tipoComida || "").toLowerCase();
-  const Icono = ICONOS_POR_MOMENTO.find(([regex]) => regex.test(texto))?.[1] || Utensils;
-  return (
-    <span className="flex items-center justify-center w-6 h-6 rounded-md bg-nutri-brand/10 text-nutri-brand shrink-0">
-      <Icono size={14} strokeWidth={2} aria-hidden="true" />
-    </span>
-  );
-}
-
-// Cantidad legible para el paciente: kg y l se muestran en g y ml
-// ("0.25 l" -> "250 ml"), y sin decimales sobrantes ("1.00" -> "1")
-function cantidadLegible(cantidad, unidad) {
-  const n = Number(cantidad);
-  const formato = (valor) => String(Math.round(valor * 100) / 100);
-  if (unidad === "kg") return `${formato(n * 1000)} g`;
-  if (unidad === "l") return `${formato(n * 1000)} ml`;
-  if (unidad === "unidad") return formato(n);
-  return `${formato(n)} ${unidad}`;
 }
 
 function MenuPaciente({ idPaciente, presupuesto }) {

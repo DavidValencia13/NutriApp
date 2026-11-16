@@ -8,6 +8,8 @@ import ListaAlimentos from "../components/ListaAlimentos";
 import MenuPaciente from "../components/MenuPaciente";
 import SeguimientoPaciente from "../components/SeguimientoPaciente";
 import AsistenteChat from "../components/AsistenteChat";
+import AccesoPaciente from "../components/AccesoPaciente";
+import { Smartphone } from "lucide-react";
 import {
   IconUsers,
   IconPlus,
@@ -103,7 +105,9 @@ function Pacientes() {
             ? `Seguimiento — ${modal.paciente?.nombre}`
             : modal.tipo === "asistente"
               ? `Asistente — ${modal.paciente?.nombre}`
-              : "";
+              : modal.tipo === "acceso"
+                ? `Acceso a la app — ${modal.paciente?.nombre}`
+                : "";
 
   const conteo = busqueda.trim()
     ? `${pacientesFiltrados.length} resultado${pacientesFiltrados.length !== 1 ? "s" : ""}`
@@ -180,6 +184,7 @@ function Pacientes() {
                 onMenu       ={() => setModal({ tipo: "menu",        paciente: p })}
                 onSeguimiento={() => setModal({ tipo: "seguimiento", paciente: p })}
                 onAsistente  ={() => setModal({ tipo: "asistente",   paciente: p })}
+                onAcceso     ={() => setModal({ tipo: "acceso",      paciente: p })}
                 onEditar     ={() => setModal({ tipo: "paciente",   paciente: p })}
                 onEliminar   ={() => handleEliminar(p.id)}
               />
@@ -219,6 +224,9 @@ function Pacientes() {
         {modal.tipo === "asistente" && modal.paciente && (
           <AsistenteChat paciente={modal.paciente} />
         )}
+        {modal.tipo === "acceso" && modal.paciente && (
+          <AccesoPaciente paciente={modal.paciente} />
+        )}
       </Modal>
     </div>
   );
@@ -247,7 +255,7 @@ function EmptyState({ onCreate }) {
 }
 
 /* ── Patient card ─────────────────────────────────────────────────────────── */
-function PacienteCard({ p, versionCobertura, onAlimentos, onMenu, onSeguimiento, onAsistente, onEditar, onEliminar }) {
+function PacienteCard({ p, versionCobertura, onAlimentos, onMenu, onSeguimiento, onAsistente, onAcceso, onEditar, onEliminar }) {
   // ¿Alcanzan sus alimentos para la meta de calorías y proteínas?
   const [suficiencia, setSuficiencia] = useState(null);
   useEffect(() => {
@@ -347,6 +355,7 @@ function PacienteCard({ p, versionCobertura, onAlimentos, onMenu, onSeguimiento,
         <ActionBtn onClick={onAlimentos}   icon={<IconFork />}          label="Alimentos" />
         <ActionBtn onClick={onSeguimiento} icon={<IconCalendarCheck />} label="Seguimiento" />
         <ActionBtn onClick={onAsistente}   icon={<IconMessageSquare />} label="Asistente" />
+        <ActionBtn onClick={onAcceso}      icon={<Smartphone />}        label="App" />
         <div className="flex-1" />
         <IconBtn onClick={onEditar}   icon={<IconPencil />} label="Editar" />
         <IconBtn onClick={onEliminar} icon={<IconTrash />}  label="Eliminar" danger />

@@ -5,6 +5,7 @@ import {
   eliminarSeguimiento,
 } from "../services/seguimientoService";
 import { IconTrash } from "./Icons";
+import CumplimientoMenu from "./CumplimientoMenu";
 
 const ESTILOS_NIVEL = {
   bien: { label: "Bien", clase: "bg-nutri-green/15 text-nutri-green" },
@@ -76,6 +77,9 @@ function SeguimientoPaciente({ idPaciente }) {
 
   return (
     <div>
+      {/* Lo que el paciente marca en su app sobre el menú aprobado */}
+      <CumplimientoMenu idPaciente={idPaciente} />
+
       {error && (
         <p className="bg-red-100 text-red-700 text-sm p-2 rounded mb-4">{error}</p>
       )}

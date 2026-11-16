@@ -19,6 +19,11 @@ function authMiddleware(req, res, next) {
   try {
     // jwt.verify revisa que el token sea válido y no haya expirado (recuerda: dura 6h)
     const payload = jwt.verify(token, obtenerJwtSecret());
+    // Los pacientes también tienen sesión (rol "paciente"); su token solo
+    // sirve en /api/portal, nunca en las rutas del nutriólogo
+    if (payload.rol === "paciente") {
+      return res.status(403).json({ message: "No autorizado" });
+    }
     // Guardamos los datos del nutriólogo logueado en req.nutriologo
     // (así el controller que sigue puede usarlos, ej: saber de quién son los pacientes)
     req.nutriologo = payload;

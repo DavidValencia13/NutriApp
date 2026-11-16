@@ -6,7 +6,9 @@ const inputClass =
   "w-full text-sm bg-white border border-gray-300 rounded-lg px-4 py-3 text-nutri-ink placeholder-gray-400 outline-none transition-colors focus:border-nutri-brand focus:ring-2 focus:ring-nutri-brand/15";
 
 function Login() {
-  const { login } = useAuth();
+  const { login, loginPaciente } = useAuth();
+  // "nutriologo" o "paciente": cada uno entra a su propio panel
+  const [rol, setRol] = useState("nutriologo");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -18,7 +20,8 @@ function Login() {
     setError("");
     setCargando(true);
     try {
-      await login(email, password);
+      if (rol === "paciente") await loginPaciente(email, password);
+      else await login(email, password);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -52,7 +55,33 @@ function Login() {
           <h2 className="text-3xl font-semibold" style={{ letterSpacing: "-0.02em" }}>
             Iniciar sesión
           </h2>
-          <p className="text-gray-500 mt-2 mb-8">Ingresa con tu cuenta de nutriólogo.</p>
+          <div role="tablist" aria-label="Tipo de cuenta" className="grid grid-cols-2 gap-1 p-1 mt-6 rounded-full bg-surface border border-line">
+            {[
+              ["nutriologo", "Nutricionista"],
+              ["paciente", "Paciente"],
+            ].map(([valor, texto]) => (
+              <button
+                key={valor}
+                type="button"
+                role="tab"
+                aria-selected={rol === valor}
+                onClick={() => {
+                  setRol(valor);
+                  setError("");
+                }}
+                className={`py-2 rounded-full text-sm font-semibold transition-colors cursor-pointer ${
+                  rol === valor ? "bg-nutri-ink text-white shadow-sm" : "text-gray-500 hover:text-nutri-ink"
+                }`}
+              >
+                {texto}
+              </button>
+            ))}
+          </div>
+          <p className="text-gray-500 mt-4 mb-8">
+            {rol === "paciente"
+              ? "Ingresa con el correo y la contraseña que te dio tu nutricionista."
+              : "Ingresa con tu cuenta de nutricionista."}
+          </p>
 
           {error && (
             <div className="flex items-center gap-2.5 text-sm mb-5 px-4 py-3 rounded-lg border border-nutri-pink/30 bg-nutri-pink/5 text-nutri-pink">
