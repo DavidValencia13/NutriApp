@@ -34,8 +34,9 @@ class GeneradorMenuIA {
       console.error("Error al llamar a la IA (menú):", error.message);
 
       if (["GROQ_API_KEY no está configurada", "ANTHROPIC_API_KEY no está configurada"].includes(error.message)) {
+        const proveedor = error.message.startsWith("GROQ_") ? "Groq" : "Anthropic";
         throw new ServicioExternoError(
-          "Falta configurar la clave del proveedor de IA en el backend para generar menús.",
+          `La generación con ${proveedor} todavía no está activada. Pide a quien administra NutriApp que configure la clave de IA.`,
           503,
         );
       }

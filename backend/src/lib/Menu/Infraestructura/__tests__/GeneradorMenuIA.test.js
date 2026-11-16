@@ -53,7 +53,7 @@ test("sin clave del proveedor responde 503 con una causa útil", async () => {
   });
   await assert.rejects(
     () => generador.generar({ perfilPaciente, alimentosDisponibles }),
-    (error) => error instanceof ServicioExternoError && error.statusCode === 503 && /Falta configurar la clave/.test(error.message),
+    (error) => error instanceof ServicioExternoError && error.statusCode === 503 && /generación con Groq todavía no está activada/.test(error.message),
   );
 });
 
