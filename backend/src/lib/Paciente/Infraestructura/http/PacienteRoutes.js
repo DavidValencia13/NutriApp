@@ -6,6 +6,7 @@ const authMiddleware = require("../../../Nutriologo/Infraestructura/http/authMid
 module.exports = (controller) => {
   // Son todas las rutas de Paciente requieren estar logueado
   router.post("/", authMiddleware, controller.registrar);
+  router.post("/demo", authMiddleware, controller.crearDemo);
   router.put("/:id", authMiddleware, controller.editar);
   router.delete("/:id", authMiddleware, controller.eliminar);
   router.get("/", authMiddleware, controller.listar);

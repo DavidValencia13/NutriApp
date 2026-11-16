@@ -4,12 +4,25 @@ class PacienteController {
     editarPaciente,
     eliminarPaciente,
     listarPacientes,
+    crearPacienteDemo,
   }) {
     this.registrarPaciente = registrarPaciente;
     this.editarPaciente = editarPaciente;
     this.eliminarPaciente = eliminarPaciente;
     this.listarPacientes = listarPacientes;
+    this.crearPacienteDemo = crearPacienteDemo;
   }
+
+  // Crea el paciente de ejemplo (si el nutricionista todavía no lo tiene)
+  crearDemo = async (req, res, next) => {
+    try {
+      const paciente = await this.crearPacienteDemo.ejecutar(req.nutriologo.id);
+      if (!paciente) return res.status(409).json({ message: "Ya tienes el paciente de ejemplo" });
+      res.status(201).json(paciente);
+    } catch (error) {
+      next(error);
+    }
+  };
 
   registrar = async (req, res) => {
     try {

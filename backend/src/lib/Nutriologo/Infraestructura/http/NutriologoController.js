@@ -1,16 +1,24 @@
 // Controller HTTP del Nutriólogo
 // Recibe peticiones y las delega a los casos de uso
 class NutriologoController {
-  constructor({ registrarNutriologo, loginNutriologo, obtenerNutriologo }) {
+  constructor({ registrarNutriologo, loginNutriologo, obtenerNutriologo, crearPacienteDemo }) {
     this.registrarNutriologo = registrarNutriologo;
     this.loginNutriologo = loginNutriologo;
     this.obtenerNutriologo = obtenerNutriologo;
+    this.crearPacienteDemo = crearPacienteDemo;
   }
 
   // Registrar nuevo nutriólogo
   registrar = async (req, res) => {
     try {
       const nutriologo = await this.registrarNutriologo.ejecutar(req.body);
+      // Cuenta nueva con un paciente de ejemplo listo para probar. Si falla,
+      // la cuenta igual queda creada (lo puede cargar luego con el botón)
+      if (this.crearPacienteDemo) {
+        await this.crearPacienteDemo
+          .ejecutar(nutriologo.id)
+          .catch((e) => console.error("No se pudo crear el paciente de ejemplo:", e.message));
+      }
       res.status(201).json(this._aPublico(nutriologo));
     } catch (error) {
       res.status(400).json({ message: error.message });

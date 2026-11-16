@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { listarPacientes, eliminarPaciente } from "../services/pacienteService";
+import { listarPacientes, eliminarPaciente, crearPacienteDemo } from "../services/pacienteService";
 import { obtenerCoberturaCatalogo } from "../services/alimentoService";
 import { faltanAlimentos } from "../utils/suficiencia";
 import Modal from "../components/Modal";
@@ -205,7 +205,18 @@ function Pacientes() {
             ))}
           </div>
         ) : pacientes.length === 0 ? (
-          <EmptyState onCreate={() => setModal({ tipo: "paciente", paciente: null })} />
+          <EmptyState
+            onCreate={() => setModal({ tipo: "paciente", paciente: null })}
+            onDemo={async () => {
+              setError("");
+              try {
+                await crearPacienteDemo();
+                await cargarPacientes();
+              } catch (err) {
+                setError(err.message);
+              }
+            }}
+          />
         ) : pacientesFiltrados.length === 0 ? (
           <p className="text-muted text-sm mt-4">Ningún paciente coincide con "{busqueda}".</p>
         ) : (
@@ -271,7 +282,8 @@ function Pacientes() {
 }
 
 /* ── Empty state ──────────────────────────────────────────────────────────── */
-function EmptyState({ onCreate }) {
+function EmptyState({ onCreate, onDemo }) {
+  const [cargandoDemo, setCargandoDemo] = useState(false);
   return (
     <div className="flex flex-col items-center justify-center py-20 rounded-xl text-center bg-white border border-line">
       <div className="flex items-center justify-center w-14 h-14 rounded-full bg-surface text-nutri-brand mb-4">
@@ -287,6 +299,17 @@ function EmptyState({ onCreate }) {
       >
         <IconPlus />
         Agregar paciente
+      </button>
+      <button
+        onClick={async () => {
+          setCargandoDemo(true);
+          await onDemo();
+          setCargandoDemo(false);
+        }}
+        disabled={cargandoDemo}
+        className="mt-3 text-sm font-semibold text-nutri-brand hover:underline disabled:opacity-60 cursor-pointer"
+      >
+        {cargandoDemo ? "Cargando paciente de ejemplo…" : "o carga un paciente de ejemplo para probar"}
       </button>
     </div>
   );
