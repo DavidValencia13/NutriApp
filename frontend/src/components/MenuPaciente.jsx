@@ -8,8 +8,9 @@ import FormularioAjustarComida from "./FormularioAjustarComida";
 import EfectividadMenu from "./EfectividadMenu";
 import ListaAlimentos from "./ListaAlimentos";
 import { IconAlertTriangle } from "./Icons";
-import { ArrowLeft, ArrowRight, CalendarDays, Check, ChevronLeft, ChevronRight, ClipboardCheck, Flame, Leaf, Loader2, Smartphone, Sparkles, UtensilsCrossed } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarDays, Check, ChevronLeft, ChevronRight, ClipboardCheck, Loader2, Smartphone, Sparkles, UtensilsCrossed } from "lucide-react";
 import IconoMomento from "./IconoMomento";
+import NutriIcon from "./NutriIcon";
 import { cantidadLegible } from "../utils/cantidad";
 import menuFoodHero from "../assets/menu-food-hero.png";
 
@@ -358,7 +359,7 @@ function MenuSemanalVista({ menu, paciente, idPaciente, presupuesto, cobertura, 
       <div className="weekly-menu-layout">
         <aside className="weekly-menu-sidebar" aria-label="Resumen del plan">
           <section className="weekly-side-card weekly-goal">
-            <div className="weekly-side-heading"><span className="weekly-side-icon"><Leaf size={18} aria-hidden="true" /></span><strong>Objetivo del plan</strong></div>
+            <div className="weekly-side-heading"><span className="weekly-side-icon"><NutriIcon name="objetivo" size={22} /></span><strong>Objetivo del plan</strong></div>
             <b>{objetivo}</b>
             {paciente?.preferencias && <p>{paciente.preferencias}</p>}
           </section>
@@ -391,7 +392,7 @@ function MenuSemanalVista({ menu, paciente, idPaciente, presupuesto, cobertura, 
           {diaActivo && <article className="weekly-day-detail" role="tabpanel">
             <div className="weekly-day-heading">
               <h4><CalendarDays size={19} aria-hidden="true" /> {fechaDelPlan(menu.fechaInicio, diaActivo.numeroDia, { weekday: "long", day: "numeric", month: "long" }) || `Día ${diaActivo.numeroDia}`}</h4>
-              <span className="weekly-day-calories"><Flame size={16} aria-hidden="true" /> {Math.round(Number(diaActivo.caloriasTotales) || 0)} kcal</span>
+              <span className="weekly-day-calories"><NutriIcon name="calorias" size={18} /> {Math.round(Number(diaActivo.caloriasTotales) || 0)} kcal</span>
             </div>
             <NutrientesDelDia dia={diaActivo} metaCalorias={cobertura?.suficiencia?.calorias?.requeridoDia} metaProteinas={cobertura?.suficiencia?.proteinas?.requeridoDia} />
             <div className="weekly-meals">
@@ -473,10 +474,10 @@ function ResumenPresupuesto({ dias, presupuesto }) {
 // Nutrientes que se comerán en el día: calorías frente a la meta, macros
 // (proteína frente a su meta) y, al desplegar, minerales y vitaminas.
 const MACROS_DIA = [
-  { campo: "proteinas", label: "Proteínas", unidad: "g", meta: "proteinas" },
-  { campo: "carbohidratos", label: "Carbohidratos", unidad: "g" },
-  { campo: "grasasTotales", label: "Grasas", unidad: "g" },
-  { campo: "fibra", label: "Fibra", unidad: "g" },
+  { campo: "proteinas", label: "Proteínas", unidad: "g", meta: "proteinas", icono: "proteinas" },
+  { campo: "carbohidratos", label: "Carbohidratos", unidad: "g", icono: "carbohidratos" },
+  { campo: "grasasTotales", label: "Grasas", unidad: "g", icono: "grasas" },
+  { campo: "fibra", label: "Fibra", unidad: "g", icono: "fibra" },
 ];
 const MICROS_DIA = [
   { campo: "grasasSaturadas", label: "Grasas saturadas", unidad: "g" },
@@ -515,6 +516,7 @@ function NutrientesDelDia({ dia, metaCalorias, metaProteinas }) {
       <div className="weekly-nutrient-list">
         {MACROS_DIA.map((m) => (
           <div key={m.campo} className="weekly-nutrient-item">
+            <NutriIcon name={m.icono} size={18} />
             <span>{m.label}</span>
             <strong>{formatoNutriente(n[m.campo], m.unidad)}</strong>
             {m.meta && metas[m.meta] && n[m.campo] !== undefined && <small>de {Math.round(metas[m.meta])} g</small>}
@@ -572,7 +574,7 @@ function ResumenNutricional({ resumen }) {
 
   return (
     <section className="weekly-side-card weekly-average">
-      <div className="weekly-side-heading"><span className="weekly-side-icon"><Flame size={18} aria-hidden="true" /></span><strong>Promedio diario</strong></div>
+      <div className="weekly-side-heading"><span className="weekly-side-icon"><NutriIcon name="calorias" size={22} /></span><strong>Promedio diario</strong></div>
       {!resumen.completo && <p className="weekly-average-warning">Estimado: faltan valores de algunos alimentos.</p>}
       <dl>
         {items.map((i) => (
