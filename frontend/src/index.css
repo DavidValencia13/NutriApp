@@ -1034,3 +1034,87 @@ h1, h2, h3, h4, h5, .font-display {
   .patient-vital-goal strong { font-size: 10.5px; }
 }
 @media (prefers-reduced-motion: reduce) { .weight-chart-current-halo, .patient-card-medical-icon, .patient-card-hero-visual::after { animation: none; } }
+.weekly-menu { color: #153a34; }
+.weekly-menu-hero { min-height: 118px; padding: 18px 24px; border: 1px solid #d5efea; border-radius: 18px; background-color: #effffb; background-position: center right; background-size: cover; overflow: hidden; }
+.weekly-menu-hero .menu-flow-kicker { color: #008462; font-size: 10px; }
+.weekly-menu-title { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 3px 0 4px; }
+.weekly-menu-title h3 { margin: 0; color: #122d3d; font-size: clamp(23px, 3vw, 30px); font-weight: 850; letter-spacing: -.045em; line-height: 1.1; }
+.weekly-menu-title span { display: inline-flex; align-items: center; gap: 5px; padding: 5px 9px; border: 1px solid #a6e8dc; border-radius: 999px; background: #dffcf7; color: #006c5b; font-size: 11px; font-weight: 800; }
+.weekly-menu-hero p { margin: 0; max-width: 58%; color: #476679; font-size: 12px; }
+.weekly-menu-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 14px 0; }
+.weekly-menu-week { display: inline-flex; align-items: center; gap: 7px; padding: 8px 12px; border: 1px solid #dce9f0; border-radius: 12px; color: #123b45; background: #fff; font-size: 13px; font-weight: 800; white-space: nowrap; }
+.weekly-menu-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+.weekly-menu-status { display: inline-flex; align-items: center; gap: 5px; padding: 7px 9px; border: 1px solid #b8e6d6; border-radius: 999px; color: #077354; background: #effcf7; font-size: 11px; font-weight: 750; }
+.weekly-menu-status.approved { background: #dcfce9; }
+.weekly-menu-approve { display: inline-flex; align-items: center; gap: 5px; padding: 8px 12px; border: 0; border-radius: 10px; color: white; background: linear-gradient(125deg, #007d60, #06aa78); box-shadow: 0 5px 14px #008d6330; font-size: 12px; font-weight: 800; cursor: pointer; }
+.weekly-menu-approve:hover { filter: brightness(1.07); }
+.weekly-menu-more { position: relative; }
+.weekly-menu-more summary { display: grid; place-items: center; width: 36px; height: 34px; border: 1px solid #dce9f0; border-radius: 10px; background: white; color: #315c60; font-size: 22px; font-weight: 800; line-height: 1; cursor: pointer; list-style: none; }
+.weekly-menu-more summary::-webkit-details-marker { display: none; }
+.weekly-menu-more > div { position: absolute; z-index: 10; right: 0; top: 40px; min-width: 180px; padding: 5px; border: 1px solid #d6eae5; border-radius: 11px; background: white; box-shadow: 0 12px 32px #103c3126; }
+.weekly-menu-more button { display: block; width: 100%; padding: 8px 9px; border: 0; border-radius: 7px; background: transparent; color: #1a493f; text-align: left; font-size: 12px; cursor: pointer; }
+.weekly-menu-more button:hover { background: #edfaf5; }
+.weekly-menu-more button:disabled { opacity: .45; cursor: not-allowed; }
+.weekly-menu-next { margin-bottom: 13px; }
+.weekly-menu-layout { display: grid; grid-template-columns: minmax(190px, 220px) minmax(0, 1fr); gap: 14px; align-items: start; }
+.weekly-menu-sidebar { display: grid; gap: 10px; min-width: 0; }
+.weekly-side-card { padding: 12px 13px; border: 1px solid #deedf0; border-radius: 15px; background: linear-gradient(145deg, #fff 55%, #f0fcfb); box-shadow: 0 5px 18px #183e3a0b; }
+.weekly-side-heading { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: #143e39; font-size: 12px; }
+.weekly-side-icon { display: grid; place-items: center; width: 30px; height: 30px; flex: none; border-radius: 10px; color: #07876a; background: #ddf9ed; }
+.weekly-goal b { display: block; font-size: 16px; line-height: 1.2; }
+.weekly-goal p { margin: 5px 0 0; color: #398467; font-size: 11px; }
+.weekly-average dl { margin: 0; }
+.weekly-average dl > div { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; padding: 5px 0; border-bottom: 1px solid #e5eff0; font-size: 11px; }
+.weekly-average dt { color: #587571; }
+.weekly-average dd { margin: 0; color: #153e38; font-size: 12px; font-weight: 800; white-space: nowrap; }
+.weekly-average-warning { margin: 0 0 6px; color: #a66a1d; font-size: 10px; }
+.weekly-average-extra summary { margin-top: 7px; color: #08775e; font-size: 11px; font-weight: 700; cursor: pointer; }
+.weekly-menu-sidebar > .rounded-lg { margin: 0; padding: 12px 13px; border-radius: 15px; font-size: 11px; }
+.weekly-menu-content { min-width: 0; }
+.weekly-day-nav { display: none; }
+.weekly-day-strip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin-bottom: 12px; }
+.weekly-day-strip button { min-width: 0; min-height: 70px; padding: 8px 3px; border: 1px solid #deedf0; border-radius: 13px; background: #fff; color: #173a43; text-align: center; cursor: pointer; transition: transform .18s, border-color .18s, box-shadow .18s; }
+.weekly-day-strip button:hover { transform: translateY(-2px); border-color: #78d8b6; }
+.weekly-day-strip button.selected { border: 2px solid #13b878; background: linear-gradient(160deg, #e4ffe9, #f5fffd); box-shadow: 0 5px 16px #1caf7430; }
+.weekly-day-strip strong, .weekly-day-strip span, .weekly-day-strip small { display: block; }
+.weekly-day-strip strong { font-size: 13px; line-height: 1.1; }
+.weekly-day-strip span { margin: 3px 0 6px; color: #60817c; font-size: 10px; }
+.weekly-day-strip small { color: #183b3d; font-size: 10px; font-weight: 750; white-space: nowrap; }
+.weekly-day-detail { padding: 13px; border: 1px solid #d7edf2; border-radius: 17px; background: linear-gradient(145deg, #fff, #f3fcff); box-shadow: 0 10px 24px #19536312; }
+.weekly-day-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.weekly-day-heading h4 { display: flex; align-items: center; gap: 7px; margin: 0; color: #163444; font-size: 18px; font-weight: 850; }
+.weekly-day-heading h4 svg { color: #00986e; }
+.weekly-day-calories { display: inline-flex; align-items: center; gap: 5px; padding: 6px 9px; border-radius: 999px; background: #dcf9e9; color: #07583d; font-size: 12px; font-weight: 850; white-space: nowrap; }
+.weekly-nutrients { padding: 8px 10px; border: 1px solid #dceef0; border-radius: 12px; background: #f6fcfc; }
+.weekly-nutrient-meta { display: flex; justify-content: space-between; gap: 8px; color: #5d7b79; font-size: 10px; }
+.weekly-nutrient-meta span { font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+.weekly-nutrient-meta small { font-size: 10px; }
+.weekly-nutrient-list { display: flex; flex-wrap: wrap; align-items: center; gap: 0; margin-top: 6px; }
+.weekly-nutrient-item { display: flex; align-items: baseline; gap: 4px; min-width: 0; padding: 0 10px; border-right: 1px solid #d8e7e6; line-height: 1.2; white-space: nowrap; }
+.weekly-nutrient-item:first-child { padding-left: 0; }
+.weekly-nutrient-item:last-child { border-right: 0; }
+.weekly-nutrient-item span { color: #5a7672; font-size: 10px; }
+.weekly-nutrient-item strong { color: #143d3a; font-size: 13px; }
+.weekly-nutrient-item small { color: #7c9691; font-size: 9px; }
+.weekly-micros button { margin-top: 7px; padding: 0; border: 0; color: #008369; background: transparent; font-size: 10px; font-weight: 750; cursor: pointer; }
+.weekly-micros-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px 12px; margin: 6px 0 0; }
+.weekly-micros-list > div { display: flex; justify-content: space-between; gap: 8px; font-size: 10px; }
+.weekly-micros-list dd { margin: 0; font-weight: 750; }
+.weekly-meals { display: grid; gap: 7px; margin-top: 10px; }
+.weekly-meal { border: 1px solid #e1edf0; border-radius: 12px; background: white; transition: border-color .18s, box-shadow .18s; }
+.weekly-meal:hover { border-color: #a6dccf; box-shadow: 0 5px 16px #0c695a10; }
+.weekly-meal summary { display: flex; align-items: center; gap: 9px; min-height: 54px; padding: 8px 10px; cursor: pointer; list-style: none; }
+.weekly-meal summary::-webkit-details-marker { display: none; }
+.weekly-meal-icon { display: grid; place-items: center; width: 34px; height: 34px; flex: none; border-radius: 10px; color: #078967; background: #e5faef; }
+.weekly-meal-copy { min-width: 0; flex: 1; }
+.weekly-meal-copy strong { display: block; color: #17453e; font-size: 11px; }
+.weekly-meal-copy > span { display: block; color: #1a303f; font-size: 13px; font-weight: 750; line-height: 1.25; }
+.weekly-meal-calories { display: inline-flex; align-items: center; gap: 2px; padding: 4px 7px; border-radius: 999px; color: #076543; background: #e2fbe9; font-size: 11px; white-space: nowrap; }
+.weekly-meal-chevron { flex: none; color: #087b5f; transition: transform .2s; }
+.weekly-meal[open] .weekly-meal-chevron { transform: rotate(90deg); }
+.weekly-meal-details { padding: 0 11px 9px 53px; color: #69817d; font-size: 11px; }
+.weekly-meal-details p { margin: 2px 0; line-height: 1.35; }
+.weekly-meal-details > div { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 5px; }
+.weekly-meal-details button { display: inline-flex; align-items: center; gap: 3px; padding: 4px 7px; border: 1px solid #bfe6d8; border-radius: 7px; color: #067c62; background: #f1fcf7; font-size: 10px; font-weight: 750; cursor: pointer; }
+@media (max-width: 800px) { .weekly-menu-layout { grid-template-columns: 1fr; } .weekly-menu-sidebar { grid-template-columns: repeat(2, minmax(0, 1fr)); } .weekly-menu-sidebar > .rounded-lg { grid-column: span 2; } }
+@media (max-width: 620px) { .weekly-menu-hero { min-height: 106px; padding: 15px; background-position: 70% center; } .weekly-menu-hero p { max-width: 70%; } .weekly-menu-toolbar { align-items: flex-start; } .weekly-menu-status { display: none; } .weekly-menu-sidebar { grid-template-columns: 1fr; } .weekly-menu-sidebar > .rounded-lg { grid-column: auto; } .weekly-day-strip { display: flex; overflow-x: auto; padding-bottom: 4px; } .weekly-day-strip button { min-width: 75px; } .weekly-nutrient-item { margin-bottom: 4px; } .weekly-day-heading h4 { font-size: 16px; } }

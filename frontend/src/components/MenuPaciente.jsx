@@ -8,9 +8,10 @@ import FormularioAjustarComida from "./FormularioAjustarComida";
 import EfectividadMenu from "./EfectividadMenu";
 import ListaAlimentos from "./ListaAlimentos";
 import { IconAlertTriangle } from "./Icons";
-import { ArrowLeft, ArrowRight, Check, ClipboardCheck, Loader2, Smartphone, Sparkles, UtensilsCrossed } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarDays, Check, ChevronLeft, ChevronRight, ClipboardCheck, Flame, Leaf, Loader2, Smartphone, Sparkles, UtensilsCrossed } from "lucide-react";
 import IconoMomento from "./IconoMomento";
 import { cantidadLegible } from "../utils/cantidad";
+import menuFoodHero from "../assets/menu-food-hero.png";
 
 // Pasos que sigue el backend al generar el menú (se muestran mientras espera)
 const PASOS_GENERACION = [
@@ -103,6 +104,7 @@ function MenuPaciente({ idPaciente, paciente, presupuesto, onSeguimiento, onAcce
   const [menu, setMenu] = useState(null);
   const [cantidadAlimentos, setCantidadAlimentos] = useState(0);
   const [vista, setVista] = useState("resumen");
+  const [diaSeleccionado, setDiaSeleccionado] = useState(1);
   const [cargando, setCargando] = useState(true);
   const [generando, setGenerando] = useState(false);
   const [error, setError] = useState("");
@@ -206,22 +208,26 @@ function MenuPaciente({ idPaciente, paciente, presupuesto, onSeguimiento, onAcce
   const puedeGenerar = catalogoPreparadoParaMenu(cobertura, cantidadAlimentos);
   const coberturaInsuficiente = faltanAlimentos(cobertura?.suficiencia);
   const etapaActual = menu ? 3 : puedeGenerar ? 2 : 1;
+  const diasMenu = menu?.dias || [];
+  const diaActivo = diasMenu.find((dia) => dia.numeroDia === diaSeleccionado) || diasMenu[0];
 
   return (
     <div className="menu-flow">
-      <div className="menu-flow-heading">
-        <span className="menu-flow-kicker">PLANIFICACIÓN CLÍNICA</span>
-        <h3>Un menú construido en orden</h3>
-        <p>Primero los alimentos disponibles; después la propuesta semanal y tu revisión profesional.</p>
-      </div>
-      <ol className="menu-flow-steps" aria-label="Pasos del menú semanal">
-        {["Alimentos", "Generar", "Revisar y aprobar"].map((nombre, indice) => (
-          <li key={nombre} className={indice + 1 === etapaActual ? "active" : indice + 1 < etapaActual ? "done" : ""} aria-current={indice + 1 === etapaActual ? "step" : undefined}>
-            <span>{indice + 1 < etapaActual ? <Check size={14} strokeWidth={2.8} aria-hidden="true" /> : indice + 1}</span>
-            {nombre}
-          </li>
-        ))}
-      </ol>
+      {!menu && <>
+        <div className="menu-flow-heading">
+          <span className="menu-flow-kicker">PLANIFICACIÓN CLÍNICA</span>
+          <h3>Un menú construido en orden</h3>
+          <p>Primero los alimentos disponibles; después la propuesta semanal y tu revisión profesional.</p>
+        </div>
+        <ol className="menu-flow-steps" aria-label="Pasos del menú semanal">
+          {["Alimentos", "Generar", "Revisar y aprobar"].map((nombre, indice) => (
+            <li key={nombre} className={indice + 1 === etapaActual ? "active" : indice + 1 < etapaActual ? "done" : ""} aria-current={indice + 1 === etapaActual ? "step" : undefined}>
+              <span>{indice + 1 < etapaActual ? <Check size={14} strokeWidth={2.8} aria-hidden="true" /> : indice + 1}</span>
+              {nombre}
+            </li>
+          ))}
+        </ol>
+      </>}
       {error && (
         <p role="alert" className="menu-flow-error">
           {error}
@@ -267,122 +273,22 @@ function MenuPaciente({ idPaciente, paciente, presupuesto, onSeguimiento, onAcce
           <EsqueletoMenu />
         </>
       ) : menu ? (
-        <div>
-          <div className="menu-flow-result-intro">
-            <div><span className="menu-flow-kicker">03 · REVISIÓN</span><p>Revisa porciones, nutrientes y presupuesto antes de aprobar el menú.</p></div>
-            <button type="button" onClick={() => setVista("alimentos")}>Revisar alimentos</button>
-          </div>
-          <div className="flex items-center gap-3 mb-4">
-            <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold ${
-                menu.estado === "aprobado"
-                  ? "bg-nutri-green/15 text-nutri-green"
-                  : "bg-nutri-orange/15 text-nutri-orange"
-              }`}
-            >
-              <span
-                className={`w-2 h-2 rounded-full ${
-                  menu.estado === "aprobado" ? "bg-nutri-green" : "bg-nutri-orange"
-                }`}
-              />
-              {menu.estado === "aprobado" ? "Aprobado" : "Generado · pendiente de aprobar"}
-            </span>
-            {menu.estado === "generado" && (
-              <button
-                onClick={handleAprobar}
-                className="bg-nutri-brand text-white px-3.5 py-1.5 rounded-lg text-sm font-medium hover:bg-nutri-ink transition-colors"
-              >
-                Aprobar menú
-              </button>
-            )}
-            <button type="button" className="menu-flow-new-version" onClick={handleGenerar} disabled={!puedeGenerar}>Generar nueva versión</button>
-          </div>
-
-          {menu.estado === "aprobado" && (
-            <div className="menu-flow-next">
-              <span className="menu-flow-card-icon"><ClipboardCheck size={19} aria-hidden="true" /></span>
-              <div><strong>Siguiente: acompañar al paciente</strong><p>Consulta su evolución o prepara su acceso a la app.</p></div>
-              <button type="button" onClick={onSeguimiento}>Seguimiento</button>
-              <button type="button" onClick={onAcceso}><Smartphone size={15} aria-hidden="true" /> Acceso a la app</button>
-            </div>
-          )}
-
-          <EfectividadMenu idPaciente={idPaciente} idMenu={menu.id} />
-
-          {presupuesto !== undefined && (
-            <ResumenPresupuesto dias={menu.dias || []} presupuesto={presupuesto} />
-          )}
-
-          {menu.resumenNutricionalSemanal && (
-            <ResumenNutricional resumen={menu.resumenNutricionalSemanal} />
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {(menu.dias || []).map((dia, indiceDia) => (
-              <div
-                key={dia.id}
-                className="border rounded-lg shadow-sm overflow-hidden animate-fade-in-up"
-                style={{ animationDelay: `${indiceDia * 60}ms` }}
-              >
-                <div className="bg-nutri-brand text-white px-4 py-2.5 flex justify-between items-center">
-                  <span className="font-semibold">Día {dia.numeroDia}</span>
-                  <span className="text-xs opacity-90">{Number(dia.costoTotalDia || 0).toFixed(2)}$</span>
-                </div>
-                <NutrientesDelDia
-                  dia={dia}
-                  metaCalorias={cobertura?.suficiencia?.calorias?.requeridoDia}
-                  metaProteinas={cobertura?.suficiencia?.proteinas?.requeridoDia}
-                />
-                <div className="divide-y">
-                  {(dia.comidas || []).map((comida) => (
-                    <div key={comida.id} className="p-4 hover:bg-gray-50 transition-colors">
-                      <div className="flex justify-between items-start gap-3">
-                        <div className="min-w-0">
-                          <p className="flex items-center gap-2 text-xs font-semibold text-nutri-brand">
-                            <IconoMomento tipoComida={comida.tipoComida} />
-                            {comida.tipoComida}
-                          </p>
-                          <p className="font-semibold leading-snug mt-1.5">{comida.nombrePlato}</p>
-                        </div>
-                        <div className="text-xs text-gray-500 whitespace-nowrap text-right shrink-0">
-                          <span className="inline-flex items-center gap-1">
-                            {comida.nutrientes?.completo === false && (
-                              <span
-                                title="Faltan calorías o macronutrientes de algún alimento: el valor es estimado"
-                                className="inline-flex text-nutri-orange"
-                              >
-                                <IconAlertTriangle className="w-3.5 h-3.5" />
-                              </span>
-                            )}
-                            {Math.round(Number(comida.calorias) || 0)} kcal
-                          </span>
-                          <br />
-                          {Number(comida.costoTotal || 0).toFixed(2)}$
-                        </div>
-                      </div>
-                      {comida.descripcion && (
-                        <p className="text-sm text-gray-600 mt-1.5 leading-relaxed">{comida.descripcion}</p>
-                      )}
-                      <p className="text-xs text-gray-500 mt-2">
-                        {(comida.detalles || [])
-                          .map((d) => `${d.nombreAlimento} ${cantidadLegible(d.cantidadUtilizada, d.unidadMedida)}`)
-                          .join(" · ")}
-                      </p>
-                      {menu.estado === "generado" && (
-                        <button
-                          onClick={() => setComidaEditar(comida)}
-                          className="text-nutri-brand text-xs font-medium underline underline-offset-2 mt-2 cursor-pointer"
-                        >
-                          Ajustar
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <MenuSemanalVista
+          menu={menu}
+          paciente={paciente}
+          idPaciente={idPaciente}
+          presupuesto={presupuesto}
+          cobertura={cobertura}
+          puedeGenerar={puedeGenerar}
+          diaActivo={diaActivo}
+          onSeleccionarDia={setDiaSeleccionado}
+          onAprobar={handleAprobar}
+          onGenerar={handleGenerar}
+          onRevisarAlimentos={() => setVista("alimentos")}
+          onSeguimiento={onSeguimiento}
+          onAcceso={onAcceso}
+          onAjustarComida={setComidaEditar}
+        />
       ) : null}
 
       <Modal
@@ -400,6 +306,112 @@ function MenuPaciente({ idPaciente, paciente, presupuesto, onSeguimiento, onAcce
           />
         )}
       </Modal>
+    </div>
+  );
+}
+
+function fechaDelPlan(fechaInicio, numeroDia, opciones) {
+  if (!fechaInicio) return null;
+  const fecha = new Date(fechaInicio);
+  if (Number.isNaN(fecha.getTime())) return null;
+  fecha.setUTCDate(fecha.getUTCDate() + numeroDia - 1);
+  const texto = new Intl.DateTimeFormat("es-EC", { timeZone: "America/Guayaquil", ...opciones }).format(fecha);
+  return texto.charAt(0).toLocaleUpperCase("es-EC") + texto.slice(1);
+}
+
+function MenuSemanalVista({ menu, paciente, idPaciente, presupuesto, cobertura, puedeGenerar, diaActivo, onSeleccionarDia, onAprobar, onGenerar, onRevisarAlimentos, onSeguimiento, onAcceso, onAjustarComida }) {
+  const dias = [...(menu.dias || [])].sort((a, b) => a.numeroDia - b.numeroDia);
+  const indiceActivo = Math.max(0, dias.findIndex((dia) => dia.id === diaActivo?.id));
+  const aprobado = menu.estado === "aprobado";
+  const objetivo = paciente?.objetivo || "Plan personalizado";
+
+  return (
+    <div className="weekly-menu">
+      <header className="weekly-menu-hero" style={{ backgroundImage: `url(${menuFoodHero})` }}>
+        <span className="menu-flow-kicker">PLANIFICACIÓN CLÍNICA</span>
+        <div className="weekly-menu-title"><h3>Tu menú semanal</h3><span><Sparkles size={15} aria-hidden="true" /> Generado con IA</span></div>
+        <p>Una propuesta para {objetivo.toLowerCase()}, lista para tu revisión profesional.</p>
+      </header>
+
+      <div className="weekly-menu-toolbar">
+        <div className="weekly-menu-week"><CalendarDays size={17} aria-hidden="true" /> Semana 1</div>
+        <div className="weekly-menu-actions">
+          <span className={`weekly-menu-status ${aprobado ? "approved" : "pending"}`}><Check size={15} aria-hidden="true" /> {aprobado ? "Aprobado" : "Pendiente de aprobación"}</span>
+          {!aprobado && <button type="button" className="weekly-menu-approve" onClick={onAprobar}><Check size={17} aria-hidden="true" /> Aprobar menú</button>}
+          <details className="weekly-menu-more">
+            <summary aria-label="Más opciones del menú">···</summary>
+            <div>
+              <button type="button" onClick={onRevisarAlimentos}>Revisar alimentos</button>
+              <button type="button" onClick={onGenerar} disabled={!puedeGenerar}>Generar nueva versión</button>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      {aprobado && <div className="menu-flow-next weekly-menu-next">
+        <span className="menu-flow-card-icon"><ClipboardCheck size={19} aria-hidden="true" /></span>
+        <div><strong>Siguiente: acompañar al paciente</strong><p>Consulta su evolución o prepara su acceso a la app.</p></div>
+        <button type="button" onClick={onSeguimiento}>Seguimiento</button>
+        <button type="button" onClick={onAcceso}><Smartphone size={15} aria-hidden="true" /> Acceso a la app</button>
+      </div>}
+
+      <div className="weekly-menu-layout">
+        <aside className="weekly-menu-sidebar" aria-label="Resumen del plan">
+          <section className="weekly-side-card weekly-goal">
+            <div className="weekly-side-heading"><span className="weekly-side-icon"><Leaf size={18} aria-hidden="true" /></span><strong>Objetivo del plan</strong></div>
+            <b>{objetivo}</b>
+            {paciente?.preferencias && <p>{paciente.preferencias}</p>}
+          </section>
+          {menu.resumenNutricionalSemanal && <ResumenNutricional resumen={menu.resumenNutricionalSemanal} />}
+          {presupuesto !== undefined && <ResumenPresupuesto dias={dias} presupuesto={presupuesto} />}
+          <EfectividadMenu idPaciente={idPaciente} idMenu={menu.id} />
+        </aside>
+
+        <section className="weekly-menu-content" aria-label="Días y comidas del menú">
+          {dias.length > 0 && <div className="weekly-day-nav" role="group" aria-label="Elegir día">
+            <button type="button" onClick={() => onSeleccionarDia(dias[Math.max(0, indiceActivo - 1)].numeroDia)} disabled={indiceActivo === 0} aria-label="Día anterior"><ChevronLeft size={19} /></button>
+            <span>{fechaDelPlan(menu.fechaInicio, diaActivo?.numeroDia || 1, { weekday: "long" }) || `Día ${diaActivo?.numeroDia}`}</span>
+            <button type="button" onClick={() => onSeleccionarDia(dias[Math.min(dias.length - 1, indiceActivo + 1)].numeroDia)} disabled={indiceActivo === dias.length - 1} aria-label="Día siguiente"><ChevronRight size={19} /></button>
+          </div>}
+          <div className="weekly-day-strip" role="tablist" aria-label="Días del menú">
+            {dias.map((dia) => <button
+              type="button"
+              role="tab"
+              aria-selected={dia.id === diaActivo?.id}
+              key={dia.id}
+              className={dia.id === diaActivo?.id ? "selected" : ""}
+              onClick={() => onSeleccionarDia(dia.numeroDia)}
+            >
+              <strong>{fechaDelPlan(menu.fechaInicio, dia.numeroDia, { weekday: "short" }) || `Día ${dia.numeroDia}`}</strong>
+              <span>{fechaDelPlan(menu.fechaInicio, dia.numeroDia, { day: "numeric", month: "short" }) || `Día ${dia.numeroDia}`}</span>
+              <small>{Math.round(Number(dia.caloriasTotales) || 0)} kcal</small>
+            </button>)}
+          </div>
+
+          {diaActivo && <article className="weekly-day-detail" role="tabpanel">
+            <div className="weekly-day-heading">
+              <h4><CalendarDays size={19} aria-hidden="true" /> {fechaDelPlan(menu.fechaInicio, diaActivo.numeroDia, { weekday: "long", day: "numeric", month: "long" }) || `Día ${diaActivo.numeroDia}`}</h4>
+              <span className="weekly-day-calories"><Flame size={16} aria-hidden="true" /> {Math.round(Number(diaActivo.caloriasTotales) || 0)} kcal</span>
+            </div>
+            <NutrientesDelDia dia={diaActivo} metaCalorias={cobertura?.suficiencia?.calorias?.requeridoDia} metaProteinas={cobertura?.suficiencia?.proteinas?.requeridoDia} />
+            <div className="weekly-meals">
+              {(diaActivo.comidas || []).map((comida) => <details key={comida.id} className="weekly-meal">
+                <summary>
+                  <span className="weekly-meal-icon"><IconoMomento tipoComida={comida.tipoComida} /></span>
+                  <span className="weekly-meal-copy"><strong>{comida.tipoComida}</strong><span>{comida.nombrePlato}</span></span>
+                  <b className="weekly-meal-calories" title={comida.nutrientes?.completo === false ? "Valor estimado: faltan nutrientes de algún alimento" : undefined}>{comida.nutrientes?.completo === false && <IconAlertTriangle style={{ width: 12, height: 12 }} />} {Math.round(Number(comida.calorias) || 0)} kcal</b>
+                  <ChevronRight className="weekly-meal-chevron" size={17} aria-hidden="true" />
+                </summary>
+                <div className="weekly-meal-details">
+                  {comida.descripcion && <p>{comida.descripcion}</p>}
+                  <p>{(comida.detalles || []).map((d) => `${d.nombreAlimento} ${cantidadLegible(d.cantidadUtilizada, d.unidadMedida)}`).join(" · ")}</p>
+                  <div><span>Costo estimado: ${Number(comida.costoTotal || 0).toFixed(2)}</span>{!aprobado && <button type="button" onClick={() => onAjustarComida(comida)}>Ajustar comida <ArrowRight size={14} aria-hidden="true" /></button>}</div>
+                </div>
+              </details>)}
+            </div>
+          </article>}
+        </section>
+      </div>
     </div>
   );
 }
@@ -495,58 +507,40 @@ function NutrientesDelDia({ dia, metaCalorias, metaProteinas }) {
   const micros = MICROS_DIA.filter((m) => n[m.campo] !== undefined);
 
   return (
-    <div className="px-4 py-3 bg-nutri-brand/5 border-b">
-      <div className="flex items-baseline justify-between">
-        <span className="text-2xl font-semibold text-nutri-ink tabular">
-          {calorias} <span className="text-sm font-normal text-gray-500">kcal</span>
-        </span>
-        {metaCalorias && (
-          <span className="text-xs text-gray-500 tabular">
-            meta {metaCalorias} kcal ·{" "}
-            {pctCalorias >= 100 ? "meta cumplida ✓" : `${pctCalorias}%`}
-          </span>
-        )}
+    <div className="weekly-nutrients">
+      <div className="weekly-nutrient-meta">
+        <span>Información nutricional del día</span>
+        {metaCalorias && <small>{calorias} de {Math.round(metaCalorias)} kcal objetivo · {pctCalorias}%</small>}
       </div>
-      {metaCalorias && (
-        <div className="h-1.5 w-full rounded-full bg-white overflow-hidden mt-1.5">
-          <div
-            className={`h-full rounded-full ${pctCalorias >= 90 && pctCalorias <= 110 ? "bg-nutri-green" : "bg-nutri-orange"}`}
-            style={{ width: `${Math.min(100, pctCalorias)}%` }}
-          />
-        </div>
-      )}
-      <div className="grid grid-cols-4 gap-1.5 mt-3">
+      <div className="weekly-nutrient-list">
         {MACROS_DIA.map((m) => (
-          <div key={m.campo} className="rounded-md bg-white px-1.5 py-1.5 text-center">
-            <p className="text-[10px] text-gray-500 leading-tight">{m.label}</p>
-            <p className="text-sm font-semibold text-nutri-ink tabular">{formatoNutriente(n[m.campo], m.unidad)}</p>
-            {m.meta && metas[m.meta] && n[m.campo] !== undefined && (
-              <p className="text-[10px] text-gray-400 tabular">de {metas[m.meta]} g</p>
-            )}
+          <div key={m.campo} className="weekly-nutrient-item">
+            <span>{m.label}</span>
+            <strong>{formatoNutriente(n[m.campo], m.unidad)}</strong>
+            {m.meta && metas[m.meta] && n[m.campo] !== undefined && <small>de {Math.round(metas[m.meta])} g</small>}
           </div>
         ))}
       </div>
       {micros.length > 0 && (
-        <>
+        <div className="weekly-micros">
           <button
             type="button"
             onClick={() => setVerMas((v) => !v)}
-            className="mt-2 text-xs font-medium text-nutri-brand cursor-pointer"
             aria-expanded={verMas}
           >
             {verMas ? "Ocultar minerales y vitaminas" : "Ver minerales y vitaminas"}
           </button>
           {verMas && (
-            <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+            <dl className="weekly-micros-list">
               {micros.map((m) => (
-                <div key={m.campo} className="flex justify-between border-b border-dashed border-gray-200 py-0.5">
-                  <dt className="text-gray-500">{m.label}</dt>
-                  <dd className="font-medium text-nutri-ink tabular">{formatoNutriente(n[m.campo], m.unidad)}</dd>
+                <div key={m.campo}>
+                  <dt>{m.label}</dt>
+                  <dd>{formatoNutriente(n[m.campo], m.unidad)}</dd>
                 </div>
               ))}
             </dl>
           )}
-        </>
+        </div>
       )}
     </div>
   );
@@ -561,9 +555,11 @@ function ResumenNutricional({ resumen }) {
     { label: "Calorías", valor: n.calorias, unidad: "kcal" },
     { label: "Proteínas", valor: n.proteinas, unidad: "g" },
     { label: "Carbohidratos", valor: n.carbohidratos, unidad: "g" },
-    { label: "Grasas totales", valor: n.grasasTotales, unidad: "g" },
-    { label: "Grasas saturadas", valor: n.grasasSaturadas, unidad: "g" },
+    { label: "Grasas", valor: n.grasasTotales, unidad: "g" },
     { label: "Fibra", valor: n.fibra, unidad: "g" },
+  ];
+  const extras = [
+    { label: "Grasas saturadas", valor: n.grasasSaturadas, unidad: "g" },
     { label: "Azúcares", valor: n.azucares, unidad: "g" },
     { label: "Sodio", valor: n.sodio, unidad: "mg" },
     { label: "Potasio", valor: n.potasio, unidad: "mg" },
@@ -575,31 +571,22 @@ function ResumenNutricional({ resumen }) {
   if (items.every((i) => i.valor === undefined)) return null;
 
   return (
-    <div className="rounded-lg p-3 mb-4 border bg-nutri-brand/10 border-nutri-brand/30">
-      <div className="flex justify-between items-baseline text-sm mb-2">
-        <span className="font-medium text-nutri-ink">
-          Resumen nutricional semanal
-        </span>
-        {!resumen.completo && (
-          <span className="text-xs text-nutri-orange">
-            Datos incompletos (faltan valores en algunos alimentos)
-          </span>
-        )}
-      </div>
-      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2 text-center">
+    <section className="weekly-side-card weekly-average">
+      <div className="weekly-side-heading"><span className="weekly-side-icon"><Flame size={18} aria-hidden="true" /></span><strong>Promedio diario</strong></div>
+      {!resumen.completo && <p className="weekly-average-warning">Estimado: faltan valores de algunos alimentos.</p>}
+      <dl>
         {items.map((i) => (
-          <div key={i.label} className="bg-white rounded-lg py-2 px-1">
-            <p className="text-[11px] text-gray-500 leading-tight">{i.label}</p>
-            <p className="text-sm font-semibold text-nutri-ink">
-              {i.valor !== undefined ? `${Math.round(i.valor)} ${i.unidad}` : "—"}
-            </p>
-            {i.valor !== undefined && (
-              <p className="text-[10px] text-gray-400">≈ {formatoNutriente(i.valor / 7, i.unidad)}/día</p>
-            )}
+          <div key={i.label}>
+            <dt>{i.label}</dt>
+            <dd>{i.valor !== undefined ? formatoNutriente(Number(i.valor) / 7, i.unidad) : "—"}</dd>
           </div>
         ))}
-      </div>
-    </div>
+      </dl>
+      {extras.some((i) => i.valor !== undefined) && <details className="weekly-average-extra">
+        <summary>Más nutrientes</summary>
+        <dl>{extras.filter((i) => i.valor !== undefined).map((i) => <div key={i.label}><dt>{i.label}</dt><dd>{formatoNutriente(Number(i.valor) / 7, i.unidad)}</dd></div>)}</dl>
+      </details>}
+    </section>
   );
 }
 
