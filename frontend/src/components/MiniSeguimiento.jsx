@@ -47,7 +47,7 @@ function MiniSeguimiento({ idPaciente, version, pesoFicha, nivelActividad, objet
   const fechaTexto = (valor) => new Date(valor).toLocaleDateString("es-EC", { day: "numeric", month: "short", timeZone: "UTC" });
   const porcentaje = delta !== null ? delta / Number(primero.peso) * 100 : null;
   const pesoMostrado = ultimo?.peso ?? pesoFicha;
-  const adherencia = { bien: "Buena", regular: "Parcial", mal: "Baja" }[ultimo?.nivelCumplimiento];
+  const cumplimiento = { bien: "Buena", regular: "Parcial", mal: "Baja" }[ultimo?.nivelCumplimiento];
   return (
     <div ref={ref} className="patient-trend" aria-label="Resumen de seguimiento del paciente">
       <div className="patient-vitals">
@@ -61,7 +61,7 @@ function MiniSeguimiento({ idPaciente, version, pesoFicha, nivelActividad, objet
           {delta !== null ? <>
             <div className="patient-trend-change"><strong className="patient-trend-result" aria-label={`Cambio desde el primer control: ${pesoTexto(delta)} kilogramos`}>{delta > 0 ? "+" : ""}{pesoTexto(delta)} kg</strong><span className="patient-trend-percent">{porcentaje < 0 ? "↓ " : porcentaje > 0 ? "↑ +" : ""}{pesoTexto(porcentaje)} %</span></div>
             <p className="patient-trend-comparison">Inicial: <b>{pesoTexto(primero.peso)} kg</b><span aria-hidden="true"> | </span>Actual: <b>{pesoTexto(ultimo.peso)} kg</b></p>
-            <div className="patient-trend-meta"><span><CalendarDays size={13} aria-hidden="true" />{fechaTexto(primero.fecha)} – {fechaTexto(ultimo.fecha)}</span>{adherencia && <span className="patient-trend-adherence"><CheckCircle2 size={13} aria-hidden="true" />Cumplimiento: {adherencia}</span>}</div>
+            <div className="patient-trend-meta"><span><CalendarDays size={13} aria-hidden="true" />{fechaTexto(primero.fecha)} – {fechaTexto(ultimo.fecha)}</span>{cumplimiento && <span className={`patient-trend-adherence patient-trend-adherence--${ultimo.nivelCumplimiento}`}><CheckCircle2 size={13} aria-hidden="true" />Cumplimiento: {cumplimiento}</span>}</div>
           </> : <div className="patient-trend-no-data"><strong>{error ? "Seguimiento no disponible" : registros === null ? "Cargando controles…" : "Aún no hay tendencia"}</strong><span>{ultimo ? "Se necesitan controles de peso en dos fechas distintas." : "Registra controles para ver cómo evoluciona el peso."}</span></div>}
         </div>
         {delta !== null && <PesoTrendChart registros={todosLosPesos} id={`mini-${idPaciente}`} compacto />}

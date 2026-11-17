@@ -12,9 +12,9 @@ import { ordenarControles } from "../utils/ordenarControles";
 import { AlertTriangle, CalendarDays, ClipboardCheck, NotebookPen, Scale } from "lucide-react";
 
 const ESTILOS_NIVEL = {
-  bien: { label: "Buena", clase: "bg-nutri-green/15 text-nutri-green" },
-  regular: { label: "Parcial", clase: "bg-nutri-orange/15 text-nutri-orange" },
-  mal: { label: "Baja", clase: "bg-nutri-pink/15 text-nutri-pink" },
+  bien: { label: "Buena", clase: "bg-nutri-green/15 text-nutri-green ring-1 ring-nutri-green/30" },
+  regular: { label: "Parcial", clase: "bg-nutri-orange/15 text-nutri-orange ring-1 ring-nutri-orange/30" },
+  mal: { label: "Baja", clase: "bg-nutri-pink/15 text-nutri-pink ring-1 ring-nutri-pink/30" },
 };
 
 function hoyISO() {
@@ -252,7 +252,7 @@ function FormularioSeguimiento({ idPaciente, ultimoPeso, onSuccess, onCancel }) 
         </div>
         <div>
           <label htmlFor={`followup-adherence-${idPaciente}`} className={labelClass}><ClipboardCheck size={13} aria-hidden="true" />Cumplimiento *</label>
-          <select id={`followup-adherence-${idPaciente}`} name="nivelCumplimiento" value={form.nivelCumplimiento} onChange={handleChange} required className={inputClass}>
+          <select id={`followup-adherence-${idPaciente}`} name="nivelCumplimiento" value={form.nivelCumplimiento} onChange={handleChange} required className={`${inputClass} ${ESTILOS_NIVEL[form.nivelCumplimiento]?.clase || ""}`}>
             <option value="" disabled>Selecciona</option>
             <option value="bien">Buena</option>
             <option value="regular">Parcial</option>

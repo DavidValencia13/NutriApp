@@ -993,7 +993,10 @@ h1, h2, h3, h4, h5, .font-display {
 .patient-trend-copy p b { color: #1a4a3e; }
 .patient-trend-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 7px; color: #52778a; font-size: 9px; }
 .patient-trend-meta > span { display: inline-flex; align-items: center; gap: 3px; }
-.patient-trend-adherence { padding: 3px 6px; border-radius: 12px; background: #d9f8e5; color: #076845; font-weight: 700; }
+.patient-trend-adherence { padding: 3px 6px; border: 1px solid transparent; border-radius: 12px; font-weight: 700; }
+.patient-trend-adherence--bien { border-color: #2e8b5750; background: #e1f4e8; color: #17603f; }
+.patient-trend-adherence--regular { border-color: #b7791f50; background: #fff1d9; color: #8a5512; }
+.patient-trend-adherence--mal { border-color: #c0392b50; background: #fce8e5; color: #a32c21; }
 .patient-trend-detail .weight-chart-frame { min-width: 0; margin: 0; padding: 2px 5px 0; border-color: #d5ebf8; border-radius: 9px; background: linear-gradient(130deg, #fff, #e8f5ff); }
 .patient-trend-pending { display: grid; align-content: center; justify-items: center; gap: 5px; min-height: 95px; border: 1px dashed #b9d9d5; border-radius: 9px; background: rgb(247 254 253 / .65); color: #6c9488; text-align: center; font-size: 10px; }
 .patient-trend-pending svg { width: 22px; height: 22px; color: #65bda4; }
