@@ -95,6 +95,7 @@ function SeguimientoPaciente({ idPaciente }) {
     .filter((r) => Number.isFinite(Number(r.peso)) && Number(r.peso) > 0)
     .sort(ordenarControles);
   const diasConPeso = new Set(pesos.map((r) => new Date(r.fecha).toISOString().slice(0, 10))).size;
+  const mismoDia = pesos.length >= 2 && diasConPeso === 1;
   const primero = pesos[0];
   const ultimo = pesos.at(-1);
   const cambio = pesos.length >= 2 ? Number(ultimo.peso) - Number(primero.peso) : null;
@@ -116,10 +117,9 @@ function SeguimientoPaciente({ idPaciente }) {
             <div><span>Último control</span><strong>{formatoPeso(ultimo.peso)} kg</strong><small>{formatoFecha(ultimo.fecha)}</small></div>
             <div><span>Cambio entre controles</span><strong>{cambio === null ? "Por calcular" : Math.abs(cambio) < 0.05 ? "Sin variación" : `${cambio < 0 ? "Bajó" : "Subió"} ${formatoPeso(Math.abs(cambio))} kg`}</strong><small>{cambio === null ? "Se necesitan dos controles" : "Comparado con el primer control"}</small></div>
           </div>
-          {diasConPeso >= 2 && <><p className="followup-chart-context"><Scale size={14} aria-hidden="true" />Peso medido (kg) · último control de cada fecha</p><PesoTrendChart registros={pesos} id={`detalle-${idPaciente}`} /></>}
-          {pesos.length >= 2 && diasConPeso < 2 && <p className="followup-overview-empty">Hay varios controles en la misma fecha. Registra un peso en otra fecha para ver la tendencia.</p>}
+          {pesos.length >= 2 && <><p className="followup-chart-context"><Scale size={14} aria-hidden="true" />{mismoDia ? "Peso medido (kg) · controles del mismo día en orden de registro" : "Peso medido (kg) · último control de cada fecha"}</p><PesoTrendChart registros={pesos} id={`detalle-${idPaciente}`} /></>}
         </> : <p className="followup-overview-empty">Todavía no hay controles con peso. Registra uno para iniciar el seguimiento.</p>}
-        <p className="followup-overview-note">La línea muestra únicamente peso. La alimentación registrada por el paciente aparece más abajo y no modifica esta gráfica.</p>
+        <p className="followup-overview-note">La línea muestra únicamente peso.{mismoDia ? " Estos controles son del mismo día; aún no muestran una tendencia entre fechas." : ""} La alimentación registrada por el paciente aparece más abajo y no modifica esta gráfica.</p>
       </section>
 
       <div className="followup-entry-section">

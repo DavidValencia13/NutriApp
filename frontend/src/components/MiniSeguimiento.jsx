@@ -42,7 +42,8 @@ function MiniSeguimiento({ idPaciente, version, pesoFicha, nivelActividad, objet
   const primero = todosLosPesos[0];
   const ultimo = todosLosPesos.at(-1);
   const diasConPeso = new Set(todosLosPesos.map((r) => new Date(r.fecha).toISOString().slice(0, 10))).size;
-  const delta = diasConPeso >= 2 ? Number(ultimo.peso) - Number(primero.peso) : null;
+  const mismoDia = todosLosPesos.length >= 2 && diasConPeso === 1;
+  const delta = todosLosPesos.length >= 2 ? Number(ultimo.peso) - Number(primero.peso) : null;
   const pesoTexto = (valor) => Number(valor).toFixed(1).replace(".", ",");
   const fechaTexto = (valor) => new Date(valor).toLocaleDateString("es-EC", { day: "numeric", month: "short", timeZone: "UTC" });
   const porcentaje = delta !== null ? delta / Number(primero.peso) * 100 : null;
@@ -57,12 +58,12 @@ function MiniSeguimiento({ idPaciente, version, pesoFicha, nivelActividad, objet
       </div>
       <div className="patient-trend-detail">
         <div className="patient-trend-copy">
-          <span className="patient-trend-kicker"><TrendingUp size={15} aria-hidden="true" />Progreso de peso</span>
+          <span className="patient-trend-kicker"><TrendingUp size={15} aria-hidden="true" />{mismoDia ? "Cambio entre controles" : "Progreso de peso"}</span>
           {delta !== null ? <>
             <div className="patient-trend-change"><strong className="patient-trend-result" aria-label={`Cambio desde el primer control: ${pesoTexto(delta)} kilogramos`}>{delta > 0 ? "+" : ""}{pesoTexto(delta)} kg</strong><span className="patient-trend-percent">{porcentaje < 0 ? "↓ " : porcentaje > 0 ? "↑ +" : ""}{pesoTexto(porcentaje)} %</span></div>
             <p className="patient-trend-comparison">Inicial: <b>{pesoTexto(primero.peso)} kg</b><span aria-hidden="true"> | </span>Actual: <b>{pesoTexto(ultimo.peso)} kg</b></p>
-            <div className="patient-trend-meta"><span><CalendarDays size={13} aria-hidden="true" />{fechaTexto(primero.fecha)} – {fechaTexto(ultimo.fecha)}</span>{cumplimiento && <span className={`patient-trend-adherence patient-trend-adherence--${ultimo.nivelCumplimiento}`}><CheckCircle2 size={13} aria-hidden="true" />Cumplimiento: {cumplimiento}</span>}</div>
-          </> : <div className="patient-trend-no-data"><strong>{error ? "Seguimiento no disponible" : registros === null ? "Cargando controles…" : "Aún no hay tendencia"}</strong><span>{ultimo ? "Se necesitan controles de peso en dos fechas distintas." : "Registra controles para ver cómo evoluciona el peso."}</span></div>}
+            <div className="patient-trend-meta"><span><CalendarDays size={13} aria-hidden="true" />{mismoDia ? `${todosLosPesos.length} controles el ${fechaTexto(ultimo.fecha)}` : `${fechaTexto(primero.fecha)} – ${fechaTexto(ultimo.fecha)}`}</span>{cumplimiento && <span className={`patient-trend-adherence patient-trend-adherence--${ultimo.nivelCumplimiento}`}><CheckCircle2 size={13} aria-hidden="true" />Cumplimiento: {cumplimiento}</span>}</div>
+          </> : <div className="patient-trend-no-data"><strong>{error ? "Seguimiento no disponible" : registros === null ? "Cargando controles…" : "Aún no hay cambio entre controles"}</strong><span>{ultimo ? "Registra otro control de peso para compararlos." : "Registra controles para ver cómo evoluciona el peso."}</span></div>}
         </div>
         {delta !== null && <PesoTrendChart registros={todosLosPesos} id={`mini-${idPaciente}`} compacto />}
         {delta === null && <div className="patient-trend-pending"><TrendingUp size={29} aria-hidden="true" /><span>La gráfica aparecerá con pesos en dos fechas distintas.</span></div>}

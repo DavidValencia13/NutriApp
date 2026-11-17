@@ -18,7 +18,8 @@ export default function PesoTrendChart({ registros, id, compacto = false }) {
   for (const control of controles) {
     ultimoPorDia.set(new Date(control.fecha).toISOString().slice(0, 10), control);
   }
-  const datos = [...ultimoPorDia.values()];
+  const mismoDia = ultimoPorDia.size === 1;
+  const datos = mismoDia ? controles : [...ultimoPorDia.values()];
 
   if (datos.length < 2) return null;
 
@@ -30,7 +31,7 @@ export default function PesoTrendChart({ registros, id, compacto = false }) {
   const tiempos = datos.map((dato) => new Date(dato.fecha).getTime());
   const duracion = tiempos.at(-1) - tiempos[0];
   const puntos = datos.map((dato, indice) => ({
-    x: 38 + (duracion > 0 ? (tiempos[indice] - tiempos[0]) / duracion : indice / (datos.length - 1)) * 266,
+    x: 38 + (!mismoDia && duracion > 0 ? (tiempos[indice] - tiempos[0]) / duracion : indice / (datos.length - 1)) * 266,
     y: 83 - ((Number(dato.peso) - inferior) / (superior - inferior)) * 66,
   }));
   const indicesFecha = datos.length <= 4
@@ -43,7 +44,9 @@ export default function PesoTrendChart({ registros, id, compacto = false }) {
   return (
     <div className={`weight-chart-frame${compacto ? " weight-chart-frame-compact" : ""}`}>
       <svg className="weight-chart" viewBox="0 0 320 118" role="img"
-        aria-label={`Evolución del peso: ${pesoTexto(datos[0].peso)} kg el ${fechaCorta(datos[0].fecha)}; ${pesoTexto(datos.at(-1).peso)} kg el ${fechaCorta(datos.at(-1).fecha)}`}>
+        aria-label={mismoDia
+          ? `Cambio entre ${datos.length} controles del ${fechaCorta(datos[0].fecha)}: ${pesoTexto(datos[0].peso)} kg al inicio y ${pesoTexto(datos.at(-1).peso)} kg al final`
+          : `Evolución del peso: ${pesoTexto(datos[0].peso)} kg el ${fechaCorta(datos[0].fecha)}; ${pesoTexto(datos.at(-1).peso)} kg el ${fechaCorta(datos.at(-1).fecha)}`}>
         <defs>
           <linearGradient id={gradiente} x1="0" y1="0" x2="0" y2="1">
             <stop stopColor="#46cfa3" stopOpacity=".28" />
@@ -62,11 +65,11 @@ export default function PesoTrendChart({ registros, id, compacto = false }) {
         <circle className="weight-chart-current-halo" cx={puntos.at(-1).x} cy={puntos.at(-1).y} r="8" fill="#70cde9" fillOpacity=".25" />
         {puntos.map((punto, indice) => <circle key={`${datos[indice].fecha}-${indice}`} cx={punto.x} cy={punto.y}
           r={indice === puntos.length - 1 ? "4.6" : "3.5"} fill="#fff" stroke={indice === puntos.length - 1 ? "#328fd6" : "#0fae81"} strokeWidth="2">
-          <title>{fechaCorta(datos[indice].fecha)} · {pesoTexto(datos[indice].peso)} kg</title>
+          <title>{`${fechaCorta(datos[indice].fecha)} · ${mismoDia ? `control ${indice + 1} · ` : ""}${pesoTexto(datos[indice].peso)} kg`}</title>
         </circle>)}
         {indicesFecha.map((indice) => <text key={indice} x={puntos[indice].x} y="110"
           textAnchor={indice === 0 ? "start" : indice === datos.length - 1 ? "end" : "middle"}
-          className="weight-chart-date">{fechaCorta(datos[indice].fecha)}</text>)}
+          className="weight-chart-date">{mismoDia ? `Control ${indice + 1}` : fechaCorta(datos[indice].fecha)}</text>)}
       </svg>
     </div>
   );
