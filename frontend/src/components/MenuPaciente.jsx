@@ -104,14 +104,14 @@ function EsqueletoMenu() {
   );
 }
 
-function MenuPaciente({ idPaciente, paciente, presupuesto, onSeguimiento, onAcceso }) {
+function MenuPaciente({ idPaciente, paciente, presupuesto, vistaInicial = "resumen", onSeguimiento, onAcceso }) {
   const [menu, setMenu] = useState(null);
   const [historial, setHistorial] = useState([]);
   const [versionVista, setVersionVista] = useState(null);
   const [mostrarHistorial, setMostrarHistorial] = useState(false);
   const [confirmarNuevaVersion, setConfirmarNuevaVersion] = useState(false);
   const [cantidadAlimentos, setCantidadAlimentos] = useState(0);
-  const [vista, setVista] = useState("resumen");
+  const [vista, setVista] = useState(vistaInicial);
   const [diaSeleccionado, setDiaSeleccionado] = useState(1);
   const [cargando, setCargando] = useState(true);
   const [generando, setGenerando] = useState(false);

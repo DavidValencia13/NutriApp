@@ -46,7 +46,7 @@ export const PASOS_GUIA_NUTRICIONISTA = [
     selector: "paciente-mas",
     titulo: "Sigue su avance",
     texto:
-      "Aquí ves el cumplimiento del menú comida por comida, la evolución de su peso y los comentarios que deja el paciente.",
+      "Aquí ves el cumplimiento comida por comida, la evolución de su peso y los comentarios que deja el paciente.",
   },
   {
     selector: "ver-guia",

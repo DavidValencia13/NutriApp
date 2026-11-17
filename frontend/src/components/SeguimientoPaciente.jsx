@@ -159,7 +159,7 @@ function SeguimientoPaciente({ idPaciente }) {
                       {formatoFecha(r.fecha)}
                       {r.peso != null && <span>· Peso: {formatoPeso(r.peso)} kg</span>}
                       <span className={`px-2 py-0.5 rounded-full font-medium ${estilo.clase}`}>
-                        Adherencia: {estilo.label}
+                        Cumplimiento: {estilo.label}
                       </span>
                     </p>
                     {r.observaciones && (
@@ -238,7 +238,7 @@ function FormularioSeguimiento({ idPaciente, ultimoPeso, onSuccess, onCancel }) 
 
   return (
     <form onSubmit={handleSubmit} className="followup-entry-form mt-3 border border-gray-200 rounded-lg p-3 bg-gray-50">
-      <div className="followup-form-heading"><Scale size={19} aria-hidden="true" /><div><strong>Nuevo control de peso</strong><p>Registra el peso total y valora la adherencia. Los alimentos se anotan por separado en la app del paciente.</p></div></div>
+      <div className="followup-form-heading"><Scale size={19} aria-hidden="true" /><div><strong>Nuevo control de peso</strong><p>Registra el peso total y valora el cumplimiento. Los alimentos se anotan por separado en la app del paciente.</p></div></div>
       {error && <p className="bg-red-100 text-red-700 text-xs p-2 rounded mb-2">{error}</p>}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2">
@@ -251,7 +251,7 @@ function FormularioSeguimiento({ idPaciente, ultimoPeso, onSuccess, onCancel }) 
           <input id={`followup-weight-${idPaciente}`} type="number" step="any" min="0.1" inputMode="decimal" placeholder="Ej. 68.5" name="peso" value={form.peso} onChange={handleChange} required className={inputClass} />
         </div>
         <div>
-          <label htmlFor={`followup-adherence-${idPaciente}`} className={labelClass}><ClipboardCheck size={13} aria-hidden="true" />Adherencia valorada *</label>
+          <label htmlFor={`followup-adherence-${idPaciente}`} className={labelClass}><ClipboardCheck size={13} aria-hidden="true" />Cumplimiento *</label>
           <select id={`followup-adherence-${idPaciente}`} name="nivelCumplimiento" value={form.nivelCumplimiento} onChange={handleChange} required className={inputClass}>
             <option value="" disabled>Selecciona</option>
             <option value="bien">Buena</option>

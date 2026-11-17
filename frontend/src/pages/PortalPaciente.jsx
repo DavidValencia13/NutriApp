@@ -556,7 +556,7 @@ function SeccionProgreso({ perfil }) {
           detalle={pesos.length >= 2 ? `Registro inicial: ${inicial} kg` : "Registra dos pesos para comparar"}
         />
         <Tarjeta
-          titulo="Cumplimiento del menú"
+          titulo="Cumplimiento"
           valor={cumplimiento === null || cumplimiento === undefined ? "—" : `${cumplimiento}%`}
           detalle={
             datos.cumplimiento

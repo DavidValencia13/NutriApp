@@ -46,7 +46,7 @@ function CumplimientoMenu({ idPaciente, version }) {
     <section className="rounded-xl border border-line p-4 mb-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs text-gray-500">Cumplimiento del menú aprobado (lo marca el paciente)</p>
+          <p className="text-xs text-gray-500">Cumplimiento (lo marca el paciente)</p>
           <p className={`text-2xl font-semibold tabular mt-0.5 ${color?.texto || "text-gray-400"}`}>
             {r.porcentaje === null ? "Sin registros aún" : `${r.porcentaje}%`}
           </p>

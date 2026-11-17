@@ -180,7 +180,7 @@ function FloatingAssistant({ pacientes, hidden = false, onAbrirMenu }) {
             {pacientes.map((p) => <option value={p.id} key={p.id}>{p.nombre}</option>)}
           </select>
           <AsistenteChat key={selectedPatient ? selectedId : "general"} paciente={selectedPatient} onStateChange={setStatus}
-            onAbrirMenu={(paciente) => { setOpen(false); onAbrirMenu?.(paciente); }} />
+            onAbrirMenu={(paciente, vista) => { setOpen(false); onAbrirMenu?.(paciente, vista); }} />
         </div>
       </section>
     </div>

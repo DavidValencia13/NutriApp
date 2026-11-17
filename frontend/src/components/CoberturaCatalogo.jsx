@@ -19,15 +19,17 @@ function CoberturaCatalogo({ cobertura, cargando, bloqueaMenu, onAgregarGrupo, o
   const grupos = (gruposAusentes.length ? gruposAusentes : gruposSugeridos).slice(0, 3);
   const faltanCantidades = (cobertura.suficiencia?.calorias?.porcentaje ?? 100) < 95 ||
     (cobertura.suficiencia?.proteinas?.porcentaje ?? 100) < 95;
+  const gruposPresentesCompletos = cobertura.resumen?.esencialesTotal > 0 &&
+    cobertura.resumen.esencialesCubiertos === cobertura.resumen.esencialesTotal;
 
   if (!incompatibilidad && !datosIncompletos && grupos.length === 0 && !faltanCantidades && cobertura.listoParaMenu) return null;
 
   return <section className={`food-selection-alert ${alergia ? "is-danger" : ""}`} aria-label={alergia ? "Alerta de alergia alimentaria" : "Alimentos que conviene revisar"} role={alergia ? "alert" : "status"}>
     <AlertTriangle size={18} aria-hidden="true" />
     <div>
-      <strong>{alergia ? "Posible alimento incompatible con una alergia" : restriccion ? "Revisa una restricción alimentaria" : datosIncompletos ? "Completa datos nutricionales" : grupos.length ? bloqueaMenu ? "Faltan alimentos para preparar el menú" : "Mejora la variedad del menú" : "Revisa cantidades"}</strong>
+      <strong>{alergia ? "Posible alimento incompatible con una alergia" : restriccion ? "Revisa una restricción alimentaria" : datosIncompletos ? "Completa datos nutricionales" : grupos.length ? bloqueaMenu ? "Completa variedad y nutrientes para el menú" : "Mejora la variedad del menú" : "Revisa cantidades"}</strong>
       <p>{incompatibilidad?.mensaje || (datosIncompletos ? sinPeso ? "Abre la ficha y confirma el peso por unidad de los alimentos indicados." : "Abre la ficha de los alimentos sin nutrientes para consultar y confirmar su fuente." : grupos.length
-        ? `${gruposAusentes.length ? "Agrega" : "Revisa"} ${grupos.map(labelGrupoAlimenticio).join(", ")}${gruposAusentes.length > grupos.length ? " y otros grupos" : ""} para planificar comidas variadas y suficientes.`
+        ? `${gruposPresentesCompletos ? `Los ${cobertura.resumen.esencialesTotal} grupos están presentes, pero aún pueden faltar cantidades, variedad o nutrientes. ` : ""}${gruposAusentes.length ? "Agrega" : "Revisa"} ${grupos.map(labelGrupoAlimenticio).join(", ")}${gruposAusentes.length > grupos.length ? " y otros grupos" : ""} para planificar comidas variadas y suficientes.`
         : "La cantidad disponible podría no alcanzar para siete días.")}</p>
     </div>
     <div className="food-selection-actions">

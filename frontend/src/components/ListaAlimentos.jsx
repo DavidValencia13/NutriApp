@@ -219,7 +219,7 @@ function ListaAlimentos({ idPaciente, paciente, onContinue }) {
       <div className="food-overview" aria-label="Resumen de alimentos para el menú">
         <div><Target size={21} aria-hidden="true" /><span>Objetivo<strong>{paciente?.objetivo || "Sin registrar"}</strong></span></div>
         <div><Layers3 size={21} aria-hidden="true" /><span>Guardados<strong>{alimentos.length} alimentos</strong></span></div>
-        <div><Sprout size={21} aria-hidden="true" /><span>Grupos cubiertos<strong>{cobertura?.resumen?.esencialesCubiertos ?? "—"} / {cobertura?.resumen?.esencialesTotal ?? "—"}</strong></span></div>
+        <div><Sprout size={21} aria-hidden="true" /><span>Grupos presentes<strong>{cobertura?.resumen?.esencialesCubiertos ?? "—"} / {cobertura?.resumen?.esencialesTotal ?? "—"}</strong></span></div>
         <div><Wallet2 size={21} aria-hidden="true" /><span>Presupuesto semanal<strong>$${costoCatalogo.toFixed(2)} / $${Number(paciente?.presupuesto || 0).toFixed(2)}</strong></span></div>
         {onContinue && <button type="button" className="food-overview-next" onClick={onContinue} disabled={!puedeContinuar} title={puedeContinuar ? "Revisar la propuesta de menú" : "Completa los alimentos y sus datos nutricionales para continuar"}>Continuar al menú <span aria-hidden="true">→</span></button>}
       </div>

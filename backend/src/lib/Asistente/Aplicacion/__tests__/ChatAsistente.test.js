@@ -5,7 +5,12 @@ const ChatAsistente = require("../ChatAsistente");
 function crearCaso({ idNutriologo = 7, menu = null, aprobado = null } = {}) {
   const llamadas = [];
   const chat = new ChatAsistente({
-    pacienteRepo: { findById: async () => ({ id: 3, idNutriologo, nombre: "Ana", peso: 68.5, pesoInicial: 70.4, altura: 1.64, objetivo: "Perder peso", nivelActividad: "moderado", numeroComidas: 4, presupuesto: 60, tiempoParaCocinar: 30 }) },
+    pacienteRepo: {
+      findById: async () => ({ id: 3, idNutriologo, nombre: "Ana", peso: 68.5, pesoInicial: 70.4, altura: 1.64, objetivo: "Perder peso", nivelActividad: "moderado", numeroComidas: 4, presupuesto: 60, tiempoParaCocinar: 30 }),
+      findAllByNutriologo: async (id) => id === 7
+        ? [{ nombre: "Ana", enfermedades: ["dato clínico privado"] }, { nombre: "Luis" }]
+        : [],
+    },
     resumenPaciente14Dias: { ejecutar: async () => ({
       desde: "2026-11-03",
       controles: [{ fecha: "2026-11-16", peso: 68.5, nivelCumplimiento: "buena" }],
@@ -65,4 +70,16 @@ test("una pregunta sobre generar menú no crea una acción", async () => {
   assert.equal(resultado.accion, undefined);
   const segunda = await chat.ejecutar({ idPaciente: 3, idNutriologo: 7, mensaje: "¿Cómo se crea un menú?" });
   assert.equal(segunda.accion, undefined);
+});
+
+test("la consulta general conoce solo el total y los nombres de los pacientes propios", async () => {
+  const { chat, llamadas } = crearCaso();
+  await chat.ejecutar({ idNutriologo: 7, mensaje: "¿Qué pacientes tenemos?" });
+  assert.match(llamadas[0].systemPrompt, /Total: 2/);
+  assert.match(llamadas[0].systemPrompt, /Ana/);
+  assert.match(llamadas[0].systemPrompt, /Luis/);
+  assert.doesNotMatch(llamadas[0].systemPrompt, /dato clínico privado/);
+  await chat.ejecutar({ idNutriologo: 8, mensaje: "¿Qué pacientes tenemos?" });
+  assert.match(llamadas[1].systemPrompt, /Total: 0/);
+  assert.doesNotMatch(llamadas[1].systemPrompt, /Ana/);
 });

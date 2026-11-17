@@ -350,6 +350,7 @@ function Pacientes() {
             idPaciente={modal.paciente.id}
             paciente={modal.paciente}
             presupuesto={modal.paciente.presupuesto}
+            vistaInicial={modal.vistaInicial || "resumen"}
             onSeguimiento={() => setModal({ tipo: "seguimiento", paciente: modal.paciente })}
             onAcceso={() => setModal({ tipo: "acceso", paciente: modal.paciente })}
           />
@@ -376,7 +377,7 @@ function Pacientes() {
         )}
       </Modal>
       <FloatingAssistant pacientes={pacientes} hidden={modal.tipo !== null}
-        onAbrirMenu={(paciente) => setModal({ tipo: "menu", paciente })} />
+        onAbrirMenu={(paciente, vistaInicial = "resumen") => setModal({ tipo: "menu", paciente, vistaInicial })} />
     </div>
   );
 }
