@@ -63,10 +63,9 @@ function MiniSeguimiento({ idPaciente, version, pesoFicha, nivelActividad, objet
             <div className="patient-trend-change"><strong className="patient-trend-result" aria-label={`Cambio desde el primer control: ${pesoTexto(delta)} kilogramos`}>{delta > 0 ? "+" : ""}{pesoTexto(delta)} kg</strong><span className="patient-trend-percent">{porcentaje < 0 ? "↓ " : porcentaje > 0 ? "↑ +" : ""}{pesoTexto(porcentaje)} %</span></div>
             <p className="patient-trend-comparison">Inicial: <b>{pesoTexto(primero.peso)} kg</b><span aria-hidden="true"> | </span>Actual: <b>{pesoTexto(ultimo.peso)} kg</b></p>
             <div className="patient-trend-meta"><span><CalendarDays size={13} aria-hidden="true" />{mismoDia ? `${todosLosPesos.length} controles el ${fechaTexto(ultimo.fecha)}` : `${fechaTexto(primero.fecha)} – ${fechaTexto(ultimo.fecha)}`}</span>{cumplimiento && <span className={`patient-trend-adherence patient-trend-adherence--${ultimo.nivelCumplimiento}`}><CheckCircle2 size={13} aria-hidden="true" />Cumplimiento: {cumplimiento}</span>}</div>
-          </> : <div className="patient-trend-no-data"><strong>{error ? "Seguimiento no disponible" : registros === null ? "Cargando controles…" : "Aún no hay cambio entre controles"}</strong><span>{ultimo ? "Registra otro control de peso para compararlos." : "Registra controles para ver cómo evoluciona el peso."}</span></div>}
+          </> : <div className="patient-trend-no-data"><strong>{error ? "Seguimiento no disponible" : registros === null ? "Cargando controles…" : ultimo ? "Primer peso registrado" : "Aún no hay controles de peso"}</strong><span>{ultimo ? "El punto ya aparece; registra un peso en otra fecha para ver la tendencia." : "Registra un peso para iniciar la gráfica."}</span></div>}
         </div>
-        {delta !== null && <PesoTrendChart registros={todosLosPesos} id={`mini-${idPaciente}`} compacto />}
-        {delta === null && <div className="patient-trend-pending"><TrendingUp size={29} aria-hidden="true" /><span>La gráfica aparecerá con pesos en dos fechas distintas.</span></div>}
+        {ultimo ? <PesoTrendChart registros={todosLosPesos} id={`mini-${idPaciente}`} compacto /> : <div className="patient-trend-pending"><TrendingUp size={29} aria-hidden="true" /><span>La gráfica aparecerá al registrar el primer peso.</span></div>}
       </div>
     </div>
   );

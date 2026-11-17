@@ -6,6 +6,7 @@ import IconoMomento from "../components/IconoMomento";
 import DiarioAlimentario from "../components/DiarioAlimentario";
 import AsistenteChat from "../components/AsistenteChat";
 import { cantidadLegible } from "../utils/cantidad";
+import { ordenarControles } from "../utils/ordenarControles";
 import {
   obtenerPerfilPortal,
   obtenerMenuPortal,
@@ -538,7 +539,7 @@ function SeccionProgreso({ perfil }) {
     }
   }
 
-  const pesos = useMemo(() => (datos?.registros || []).filter((r) => r.peso), [datos]);
+  const pesos = useMemo(() => (datos?.registros || []).filter((r) => r.peso).sort(ordenarControles), [datos]);
   if (!datos) return <div className="esqueleto h-64 rounded-xl" />;
 
   const ultimo = pesos.at(-1)?.peso ?? perfil?.peso;
@@ -605,10 +606,10 @@ function SeccionProgreso({ perfil }) {
 
       <div className="bg-white rounded-xl border border-line p-5">
         <h2 className="font-semibold mb-3">Mi peso en el tiempo</h2>
-        {pesos.length < 2 ? (
-          <p className="text-sm text-gray-500">Con dos registros o más verás aquí tu evolución.</p>
+        {pesos.length === 0 ? (
+          <p className="text-sm text-gray-500">Registra tu primer peso para verlo aquí.</p>
         ) : (
-          <GraficaPeso registros={pesos} />
+          <><GraficaPeso registros={pesos} />{new Set(pesos.map((r) => new Date(r.fecha).toISOString().slice(0, 10))).size === 1 && <p className="text-xs text-gray-500 mt-2">Se muestra el último peso del día. Registra otro día para ver la tendencia.</p>}</>
         )}
       </div>
     </div>
@@ -629,17 +630,22 @@ function GraficaPeso({ registros }) {
   const ancho = 600;
   const alto = 180;
   const margen = 28;
-  const valores = registros.map((r) => r.peso);
+  const ultimoPorDia = new Map();
+  for (const registro of registros) {
+    ultimoPorDia.set(new Date(registro.fecha).toISOString().slice(0, 10), registro);
+  }
+  const datos = [...ultimoPorDia.values()];
+  const valores = datos.map((r) => r.peso);
   const min = Math.min(...valores) - 1;
   const max = Math.max(...valores) + 1;
-  const x = (i) => margen + (i * (ancho - 2 * margen)) / (registros.length - 1);
+  const x = (i) => datos.length === 1 ? ancho / 2 : margen + (i * (ancho - 2 * margen)) / (datos.length - 1);
   const y = (v) => alto - margen - ((v - min) * (alto - 2 * margen)) / (max - min);
-  const puntos = registros.map((r, i) => `${x(i)},${y(r.peso)}`).join(" ");
+  const puntos = datos.map((r, i) => `${x(i)},${y(r.peso)}`).join(" ");
 
   return (
     <svg viewBox={`0 0 ${ancho} ${alto}`} className="w-full h-auto" role="img" aria-label={`Peso: ${valores.join(", ")} kg`}>
-      <polyline points={puntos} fill="none" stroke="var(--color-nutri-brand)" strokeWidth="2.5" strokeLinejoin="round" />
-      {registros.map((r, i) => (
+      {datos.length > 1 && <polyline points={puntos} fill="none" stroke="var(--color-nutri-brand)" strokeWidth="2.5" strokeLinejoin="round" />}
+      {datos.map((r, i) => (
         <g key={r.id}>
           <circle cx={x(i)} cy={y(r.peso)} r="4" fill="white" stroke="var(--color-nutri-brand)" strokeWidth="2" />
           <text x={x(i)} y={y(r.peso) - 10} textAnchor="middle" fontSize="11" fill="var(--color-gray-600)">

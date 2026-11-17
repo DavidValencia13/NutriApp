@@ -384,7 +384,7 @@ function ResumenSeguimientoMenu({ idPaciente }) {
   const pesos = registros
     .filter((registro) => Number.isFinite(Number(registro.peso)) && Number(registro.peso) > 0)
     .sort(ordenarControles);
-  if (pesos.length < 2) return null;
+  if (pesos.length === 0) return null;
 
   const inicial = Number(pesos[0].peso);
   const actual = Number(pesos.at(-1).peso);
@@ -392,12 +392,13 @@ function ResumenSeguimientoMenu({ idPaciente }) {
   const magnitud = Math.abs(diferencia).toFixed(1).replace(".", ",");
   const porcentaje = Math.abs((diferencia / inicial) * 100).toFixed(1).replace(".", ",");
   const tendencia = diferencia < -0.05 ? "bajo" : diferencia > 0.05 ? "subio" : "estable";
+  const diasConPeso = new Set(pesos.map((registro) => new Date(registro.fecha).toISOString().slice(0, 10))).size;
 
   return <section className="weekly-side-card weekly-progress">
     <div className="weekly-side-heading"><span className="weekly-side-icon"><NutriIcon name="objetivo" size={22} /></span><strong>Progreso del peso</strong></div>
-    <div className="weekly-progress-change" data-trend={tendencia}>{tendencia === "estable" ? "Sin cambio" : `${tendencia === "bajo" ? "Bajó" : "Subió"} ${magnitud} kg`}</div>
+    <div className="weekly-progress-change" data-trend={tendencia}>{pesos.length === 1 ? `${actual.toFixed(1).replace(".", ",")} kg` : tendencia === "estable" ? "Sin cambio" : `${tendencia === "bajo" ? "Bajó" : "Subió"} ${magnitud} kg`}</div>
     <p>Registro inicial: {inicial.toFixed(1).replace(".", ",")} kg · Actual: {actual.toFixed(1).replace(".", ",")} kg</p>
-    <small>{porcentaje}% respecto al registro inicial</small>
+    <small>{diasConPeso === 1 ? "La gráfica muestra el último peso del día; falta otra fecha para ver la tendencia." : `${porcentaje}% respecto al registro inicial`}</small>
     <PesoTrendChart registros={pesos} id={`menu-${idPaciente}`} compacto />
   </section>;
 }
