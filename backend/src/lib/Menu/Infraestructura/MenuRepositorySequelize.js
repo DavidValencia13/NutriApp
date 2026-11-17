@@ -16,6 +16,32 @@ class MenuRepositorySequelize {
     return await sequelize.transaction(fn);
   }
 
+  async bloquearPaciente(idPaciente, { contextoPersistencia }) {
+    await PacienteModel.findByPk(idPaciente, {
+      attributes: ["id"],
+      transaction: contextoPersistencia,
+      lock: contextoPersistencia.LOCK.UPDATE,
+    });
+  }
+
+  async obtenerUltimaVersionResumen(idPaciente, { contextoPersistencia } = {}) {
+    return await MenuModel.findOne({
+      where: { idPaciente },
+      attributes: ["id", "idPaciente", "estado"],
+      order: [["fechaGeneracion", "DESC"], ["id", "DESC"]],
+      transaction: contextoPersistencia,
+    });
+  }
+
+  async listarVersionesPorPaciente(idPaciente) {
+    return await MenuModel.findAll({
+      where: { idPaciente },
+      attributes: ["id", "estado", "fechaGeneracion", "fechaInicio", "fechaFin"],
+      order: [["fechaGeneracion", "DESC"], ["id", "DESC"]],
+      raw: true,
+    });
+  }
+
   async crear({ idPaciente, estado }, dias, { contextoPersistencia }) {
     const fechaGeneracion = new Date();
     const fechaInicio = fechaGeneracion;
@@ -197,7 +223,11 @@ class MenuRepositorySequelize {
         transaction,
       });
       if (!comida) throw new NotFoundError("Comida no encontrada");
-      if (comida.dia.menu.estado !== "generado")
+      await this.bloquearPaciente(comida.dia.menu.idPaciente, { contextoPersistencia: transaction });
+      const ultimaVersion = await this.obtenerUltimaVersionResumen(comida.dia.menu.idPaciente, { contextoPersistencia: transaction });
+      if (Number(ultimaVersion?.id) !== Number(comida.dia.menu.id))
+        throw new ConflictError("Esta propuesta ya no es la más reciente. Abre el menú actual antes de editar.");
+      if (ultimaVersion.estado !== "generado")
         throw new ConflictError("No se puede ajustar un menú ya aprobado");
 
       await DetalleComidaAlimentoModel.destroy({
@@ -255,17 +285,17 @@ class MenuRepositorySequelize {
     });
   }
 
-  async aprobar(idMenu) {
+  async aprobar(idMenu, { contextoPersistencia } = {}) {
     const [filasAfectadas] = await MenuModel.update(
       { estado: "aprobado" },
-      { where: { id: idMenu, estado: "generado" } },
+      { where: { id: idMenu, estado: "generado" }, transaction: contextoPersistencia },
     );
     if (filasAfectadas === 0) return null;
-    return await this._obtenerPorId(idMenu);
+    return await this._obtenerPorId(idMenu, { contextoPersistencia });
   }
 
-  async _obtenerPorId(idMenu) {
-    const doc = await MenuModel.findByPk(idMenu);
+  async _obtenerPorId(idMenu, { contextoPersistencia } = {}) {
+    const doc = await MenuModel.findByPk(idMenu, { transaction: contextoPersistencia });
     if (!doc) return null;
     return this._toEntity(doc);
   }

@@ -12,7 +12,10 @@ class MenuController {
 
   generar = async (req, res, next) => {
     try {
-      const menu = await this.generarMenuSemanal.ejecutar(req.idPaciente, req.nutriologo.id);
+      const menu = await this.generarMenuSemanal.ejecutar(req.idPaciente, req.nutriologo.id, {
+        confirmarNuevaVersion: req.body?.confirmarNuevaVersion === true,
+        idVersionActual: req.body?.idVersionActual ?? null,
+      });
       res.status(201).json(menu);
     } catch (error) {
       this._manejarError(error, res, next);
@@ -23,18 +26,34 @@ class MenuController {
     try {
       const menu = await this.obtenerMenuPorPaciente.ejecutar(req.idPaciente, req.nutriologo.id);
       if (!menu) return res.json(menu);
-
-      // Semana/dieta completa no se persiste aparte: se deriva sumando los
-      // nutrientes de los 7 días ya cargados en el árbol.
-      const menuPlano = menu.toJSON();
-      menuPlano.resumenNutricionalSemanal = sumarNutrientes(
-        (menuPlano.dias || []).map((d) => d.nutrientes),
-      );
-      res.json(menuPlano);
+      res.json(this._conResumenNutricional(menu));
     } catch (error) {
       this._manejarError(error, res, next);
     }
   };
+
+  historial = async (req, res, next) => {
+    try {
+      res.json(await this.obtenerMenuPorPaciente.listarHistorial(req.idPaciente, req.nutriologo.id));
+    } catch (error) {
+      this._manejarError(error, res, next);
+    }
+  };
+
+  obtenerVersion = async (req, res, next) => {
+    try {
+      const menu = await this.obtenerMenuPorPaciente.obtenerVersion(req.idPaciente, req.params.idMenu, req.nutriologo.id);
+      res.json(this._conResumenNutricional(menu));
+    } catch (error) {
+      this._manejarError(error, res, next);
+    }
+  };
+
+  _conResumenNutricional(menu) {
+    const menuPlano = menu.toJSON();
+    menuPlano.resumenNutricionalSemanal = sumarNutrientes((menuPlano.dias || []).map((dia) => dia.nutrientes));
+    return menuPlano;
+  }
 
   ajustar = async (req, res, next) => {
     try {

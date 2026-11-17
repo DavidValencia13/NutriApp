@@ -2,7 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 
 const GenerarMenuSemanal = require("../GenerarMenuSemanal");
-const { ValidationError, ServicioExternoError } = require("../../Dominio/Errores");
+const { ValidationError, ConflictError, ServicioExternoError } = require("../../Dominio/Errores");
 
 const paciente = { id: 1, idNutriologo: 10, numeroComidas: 1 };
 const alimento = {
@@ -22,9 +22,15 @@ function resultadoIAValido() {
   };
 }
 
-function crearDependencias({ resultadoIA, alimentosDisponibles = [alimento], generadorFalla } = {}) {
+function crearDependencias({ resultadoIA, alimentosDisponibles = [alimento], generadorFalla, versionAnterior = null, versionDurantePersistencia = versionAnterior } = {}) {
   const menuRepository = {
     llamadasCrear: [],
+    consultasVersion: 0,
+    async obtenerUltimaVersionResumen() {
+      this.consultasVersion++;
+      return this.consultasVersion === 1 ? versionAnterior : versionDurantePersistencia;
+    },
+    async bloquearPaciente() {},
     async ejecutarEnTransaccion(fn) {
       return await fn("tx-falsa");
     },
@@ -58,6 +64,37 @@ function crearDependencias({ resultadoIA, alimentosDisponibles = [alimento], gen
     registrarRecomendacion,
   };
 }
+
+test("un menú previo exige confirmación antes de llamar a la IA", async () => {
+  const deps = crearDependencias({ versionAnterior: { id: 8, estado: "aprobado" } });
+  await assert.rejects(() => new GenerarMenuSemanal(deps).ejecutar(1, 10), ConflictError);
+  assert.equal(deps.generadorMenuIA.llamadas.length, 0);
+  assert.equal(deps.menuRepository.llamadasCrear.length, 0);
+});
+
+test("con confirmación crea una propuesta y conserva la versión anterior", async () => {
+  const anterior = { id: 8, estado: "aprobado" };
+  const deps = crearDependencias({ versionAnterior: anterior });
+  await new GenerarMenuSemanal(deps).ejecutar(1, 10, { confirmarNuevaVersion: true, idVersionActual: 8 });
+  assert.equal(deps.menuRepository.llamadasCrear.length, 1);
+  assert.equal(deps.menuRepository.llamadasCrear[0].menu.estado, "generado");
+  assert.equal(anterior.estado, "aprobado");
+});
+
+test("rechaza una confirmación hecha sobre una versión ya reemplazada", async () => {
+  const deps = crearDependencias({ versionAnterior: { id: 9, estado: "generado" } });
+  await assert.rejects(() => new GenerarMenuSemanal(deps).ejecutar(1, 10, {
+    confirmarNuevaVersion: true,
+    idVersionActual: 8,
+  }), ConflictError);
+  assert.equal(deps.generadorMenuIA.llamadas.length, 0);
+});
+
+test("si apareció otra versión durante la generación evita persistir una propuesta obsoleta", async () => {
+  const deps = crearDependencias({ versionAnterior: { id: 8 }, versionDurantePersistencia: { id: 9 } });
+  await assert.rejects(() => new GenerarMenuSemanal(deps).ejecutar(1, 10, { confirmarNuevaVersion: true, idVersionActual: 8 }), ConflictError);
+  assert.equal(deps.menuRepository.llamadasCrear.length, 0);
+});
 
 test("lanza error si el paciente no existe", async () => {
   const deps = crearDependencias();

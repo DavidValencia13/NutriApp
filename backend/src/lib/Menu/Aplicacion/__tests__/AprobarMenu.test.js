@@ -2,11 +2,14 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 
 const AprobarMenu = require("../AprobarMenu");
-const { NotFoundError } = require("../../Dominio/Errores");
+const { NotFoundError, ConflictError } = require("../../Dominio/Errores");
 
-function crearDependencias({ menu, aprobarResultado } = {}) {
+function crearDependencias({ menu, aprobarResultado, ultimaVersionId = menu?.id } = {}) {
   const menuRepository = {
     llamadasAprobar: 0,
+    async ejecutarEnTransaccion(fn) { return await fn("tx-falsa"); },
+    async bloquearPaciente() {},
+    async obtenerUltimaVersionResumen() { return { id: ultimaVersionId }; },
     async obtenerMenuConPropietario() {
       return this.llamadasAprobar === 0 ? menu : (aprobarResultado ?? { ...menu, estado: "aprobado" });
     },
@@ -23,6 +26,12 @@ test("lanza NotFoundError si el menú no existe o no es del nutriólogo", async 
   const deps = crearDependencias({ menu: null });
   const caso = new AprobarMenu(deps);
   await assert.rejects(() => caso.ejecutar(1, 10), NotFoundError);
+});
+
+test("rechaza aprobar un borrador histórico si ya existe otra versión", async () => {
+  const deps = crearDependencias({ menu: { id: 1, idPaciente: 7, estado: "generado" }, ultimaVersionId: 2 });
+  await assert.rejects(() => new AprobarMenu(deps).ejecutar(1, 10), ConflictError);
+  assert.equal(deps.menuRepository.llamadasAprobar, 0);
 });
 
 test("si ya está aprobado, es no-op (no llama a aprobar)", async () => {

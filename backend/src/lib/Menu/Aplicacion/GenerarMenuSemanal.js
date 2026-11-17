@@ -1,4 +1,4 @@
-const { NotFoundError, ValidationError, ServicioExternoError } = require("../Dominio/Errores");
+const { NotFoundError, ValidationError, ConflictError, ServicioExternoError } = require("../Dominio/Errores");
 const {
   calcularNutrientesDetalle,
   sumarNutrientes,
@@ -22,10 +22,18 @@ class GenerarMenuSemanal {
     this.menuRepository = menuRepository;
   }
 
-  async ejecutar(idPaciente, idNutriologo) {
+  async ejecutar(idPaciente, idNutriologo, { confirmarNuevaVersion = false, idVersionActual = null } = {}) {
     const paciente = await this.pacienteRepository.findById(idPaciente);
     if (!paciente) throw new NotFoundError("Paciente no encontrado");
     if (paciente.idNutriologo !== idNutriologo) throw new NotFoundError("Paciente no encontrado");
+
+    const versionAnterior = await this.menuRepository.obtenerUltimaVersionResumen(idPaciente);
+    if (versionAnterior && !confirmarNuevaVersion) {
+      throw new ConflictError("Ya existe un menú para este paciente. Revisa la versión actual y confirma la creación de una nueva propuesta.");
+    }
+    if (versionAnterior && Number(idVersionActual) !== Number(versionAnterior.id)) {
+      throw new ConflictError("El menú cambió desde que abriste la confirmación. Actualiza la vista antes de crear otra propuesta.");
+    }
 
     const alimentosDisponibles = await this.listarAlimentosPorPaciente.ejecutar(idPaciente);
     if (alimentosDisponibles.length === 0)
@@ -54,6 +62,11 @@ class GenerarMenuSemanal {
     );
 
     const menu = await this.menuRepository.ejecutarEnTransaccion(async (contextoPersistencia) => {
+      await this.menuRepository.bloquearPaciente(idPaciente, { contextoPersistencia });
+      const versionActual = await this.menuRepository.obtenerUltimaVersionResumen(idPaciente, { contextoPersistencia });
+      if (Number(versionActual?.id ?? 0) !== Number(versionAnterior?.id ?? 0)) {
+        throw new ConflictError("El menú cambió mientras se generaba la propuesta. Actualiza la vista antes de intentarlo de nuevo.");
+      }
       const menuCreado = await this.menuRepository.crear(
         { idPaciente, estado: "generado" },
         diasPersistibles,

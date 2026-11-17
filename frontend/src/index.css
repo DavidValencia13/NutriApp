@@ -1044,6 +1044,23 @@ h1, h2, h3, h4, h5, .font-display {
 .weekly-menu-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 14px 0; }
 .weekly-menu-week { display: inline-flex; align-items: center; gap: 7px; padding: 8px 12px; border: 1px solid #dce9f0; border-radius: 12px; color: #123b45; background: #fff; font-size: 13px; font-weight: 800; white-space: nowrap; }
 .weekly-menu-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+.weekly-menu-history-button { display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; border: 1px solid #cce5df; border-radius: 9px; background: #fff; color: #126c58; font-size: 11px; font-weight: 750; cursor: pointer; }
+.weekly-menu-history-button:hover { background: #effbf6; }
+.weekly-menu-patient-note { margin: -4px 0 13px; padding: 9px 11px; border: 1px solid #bee5da; border-radius: 10px; background: #f0fbf7; color: #23624f; font-size: 12px; }
+.weekly-menu-history { margin: 0 0 13px; padding: 12px; border: 1px solid #d1e8e2; border-radius: 13px; background: #f8fcfb; }
+.weekly-menu-history-heading { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; margin-bottom: 10px; }
+.weekly-menu-history-heading strong { font-size: 13px; }
+.weekly-menu-history-heading span { color: #66817a; font-size: 11px; }
+.weekly-menu-history-list { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; }
+.weekly-menu-history-list button { display: grid; gap: 2px; min-width: 170px; padding: 9px 11px; border: 1px solid #d9eae4; border-radius: 10px; background: #fff; color: #21483d; text-align: left; cursor: pointer; }
+.weekly-menu-history-list button.selected { border-color: #0ba67a; background: #e9fbf4; }
+.weekly-menu-history-list button strong { font-size: 12px; }
+.weekly-menu-history-list button span, .weekly-menu-history-list button em { font-size: 10px; font-style: normal; }
+.weekly-menu-history-list button em { color: #087c5d; font-weight: 750; }
+.menu-version-confirm { display: grid; gap: 12px; color: #244b40; font-size: 14px; line-height: 1.55; }
+.menu-version-confirm p { margin: 0; }
+.menu-version-confirm > div { display: flex; justify-content: flex-end; gap: 9px; margin-top: 4px; }
+.menu-version-confirm > div button:first-child { padding: 8px 12px; border: 1px solid #d0e1da; border-radius: 9px; background: #fff; cursor: pointer; }
 .weekly-menu-status { display: inline-flex; align-items: center; gap: 5px; padding: 7px 9px; border: 1px solid #b8e6d6; border-radius: 999px; color: #077354; background: #effcf7; font-size: 11px; font-weight: 750; }
 .weekly-menu-status.approved { background: #dcfce9; }
 .weekly-menu-approve { display: inline-flex; align-items: center; gap: 5px; padding: 8px 12px; border: 0; border-radius: 10px; color: white; background: linear-gradient(125deg, #007d60, #06aa78); box-shadow: 0 5px 14px #008d6330; font-size: 12px; font-weight: 800; cursor: pointer; }

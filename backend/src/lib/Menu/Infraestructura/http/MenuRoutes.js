@@ -5,6 +5,8 @@ module.exports = (controller, { limiteGeneracion } = {}) => {
   // limiteGeneracion: middleware que corta si ya generó demasiados menús hoy
   router.post("/generar", ...(limiteGeneracion ? [limiteGeneracion] : []), controller.generar); // RF-008
   router.get("/", controller.obtener); // RF-009 / RF-0010
+  router.get("/historial", controller.historial);
+  router.get("/historial/:idMenu", controller.obtenerVersion);
   router.put("/comida/:idComidaMenu", controller.ajustar); // RF-0011
   router.post("/:idMenu/preview-nutrientes", controller.previewNutrientes); // feedback en vivo
   router.post("/:idMenu/aprobar", controller.aprobar);
