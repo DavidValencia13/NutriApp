@@ -12,6 +12,13 @@ export function faltanAlimentos(suficiencia) {
 
 export function catalogoPreparadoParaMenu(cobertura, cantidadAlimentos) {
   if (!cobertura || cantidadAlimentos < 1 || !cobertura.listoParaMenu) return false;
+  const { esencialesCubiertos, esencialesTotal } = cobertura.resumen || {};
+  if (!Number.isInteger(esencialesCubiertos) || !Number.isInteger(esencialesTotal) ||
+      esencialesTotal < 1 || esencialesCubiertos !== esencialesTotal) return false;
+  // La cobertura también recomienda alimentos cuando están presentes los seis
+  // grupos, pero faltan fuentes de nutrientes o variedad dentro de ellos.
+  if (cobertura.alertas?.some((alerta) =>
+    alerta.grupoSugerido || alerta.gruposSugeridos?.length > 0)) return false;
   const suficiencia = cobertura.suficiencia;
   return !faltanAlimentos(suficiencia) &&
     !suficiencia?.alimentosSinDatos?.length &&

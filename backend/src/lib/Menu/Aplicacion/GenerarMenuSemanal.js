@@ -8,6 +8,7 @@ const {
   LIMITE_CANTIDAD_POR_UNIDAD,
 } = require("../Dominio/Servicios/CalculadoraNutricional");
 const { requerimientoCalorico } = require("../Dominio/Servicios/RequerimientoCalorico");
+const { evaluar: evaluarCoberturaCatalogo } = require("../../Alimento/Dominio/Servicios/EvaluadorCoberturaCatalogo");
 
 class GenerarMenuSemanal {
   constructor({
@@ -15,11 +16,15 @@ class GenerarMenuSemanal {
     listarAlimentosPorPaciente,
     generadorMenuIA,
     menuRepository,
+    evaluarCobertura = evaluarCoberturaCatalogo,
+    resumenPaciente14Dias = null,
   }) {
     this.pacienteRepository = pacienteRepository;
     this.listarAlimentosPorPaciente = listarAlimentosPorPaciente;
     this.generadorMenuIA = generadorMenuIA;
     this.menuRepository = menuRepository;
+    this.evaluarCobertura = evaluarCobertura;
+    this.resumenPaciente14Dias = resumenPaciente14Dias;
   }
 
   async ejecutar(idPaciente, idNutriologo, { confirmarNuevaVersion = false, idVersionActual = null } = {}) {
@@ -38,6 +43,18 @@ class GenerarMenuSemanal {
     const alimentosDisponibles = await this.listarAlimentosPorPaciente.ejecutar(idPaciente);
     if (alimentosDisponibles.length === 0)
       throw new ValidationError("El paciente no tiene alimentos registrados");
+    const cobertura = this.evaluarCobertura({ paciente, alimentos: alimentosDisponibles });
+    const resumen = cobertura.resumen || {};
+    const faltanGrupos = !Number.isInteger(resumen.esencialesCubiertos) ||
+      !Number.isInteger(resumen.esencialesTotal) || resumen.esencialesTotal < 1 ||
+      resumen.esencialesCubiertos !== resumen.esencialesTotal;
+    const hayRecomendacionesPendientes = cobertura.alertas?.some((alerta) =>
+      alerta.grupoSugerido || alerta.gruposSugeridos?.length > 0);
+    const suficiencia = cobertura.suficiencia;
+    const faltanDatos = suficiencia?.alimentosSinDatos?.length || suficiencia?.alimentosSinPeso?.length;
+    if (!cobertura.listoParaMenu || faltanGrupos || hayRecomendacionesPendientes || faltanDatos) {
+      throw new ValidationError("Completa los alimentos y sus datos nutricionales antes de generar el menú");
+    }
     this._validarCostoCatalogo(alimentosDisponibles, paciente);
 
     const perfilParaIA = {
@@ -54,6 +71,9 @@ class GenerarMenuSemanal {
       // ella la IA elegía porciones demasiado pequeñas
       caloriasObjetivoDia: requerimientoCalorico(paciente),
     };
+    if (this.resumenPaciente14Dias) {
+      perfilParaIA.resumenUltimos14Dias = await this.resumenPaciente14Dias.ejecutar(idPaciente);
+    }
 
     const { diasPersistibles } = await this._generarConReintentos(
       perfilParaIA,

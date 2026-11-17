@@ -1,5 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { chatAsistente, chatAsistentePaciente } from "../services/asistenteService";
+import { generarMenu, obtenerMenu } from "../services/menuService";
+import { listarAlimentos, obtenerCoberturaCatalogo } from "../services/alimentoService";
+import { catalogoPreparadoParaMenu } from "../utils/suficiencia";
 
 function LogoLeaf() {
   return (
@@ -63,11 +66,13 @@ function saludoInicial(paciente) {
   };
 }
 
-function AsistenteChat({ paciente, onStateChange, modoPaciente = false }) {
+function AsistenteChat({ paciente, onStateChange, onAbrirMenu, modoPaciente = false }) {
   const [historial, setHistorial] = useState(() => [saludoInicial(paciente)]);
   const [input, setInput]         = useState("");
   const [cargando, setCargando]   = useState(false);
   const [error, setError]         = useState("");
+  const [accionPendiente, setAccionPendiente] = useState(null);
+  const [revisionPendiente, setRevisionPendiente] = useState(false);
   const listRef  = useRef(null);
   const inputRef = useRef(null);
 
@@ -92,12 +97,34 @@ function AsistenteChat({ paciente, onStateChange, modoPaciente = false }) {
     onStateChange?.("thinking");
 
     try {
-      const { respuesta } = await (modoPaciente ? chatAsistentePaciente : chatAsistente)({
+      const { respuesta, accion } = await (modoPaciente ? chatAsistentePaciente : chatAsistente)({
         idPaciente: paciente?.id ?? null,
         mensaje: texto,
         historial: historial.slice(1),
       });
-      setHistorial((prev) => [...prev, { rol: "asistente", contenido: respuesta }]);
+      if (!modoPaciente && paciente && accion?.tipo === "crear_borrador_menu") {
+        const [cobertura, alimentos] = await Promise.all([
+          obtenerCoberturaCatalogo(paciente.id),
+          listarAlimentos(paciente.id),
+        ]);
+        if (!catalogoPreparadoParaMenu(cobertura, alimentos.length)) {
+          const motivos = (cobertura.alertas || []).filter((alerta) => alerta.grupoSugerido || alerta.gruposSugeridos?.length)
+            .slice(0, 3).map((alerta) => alerta.mensaje).filter(Boolean);
+          setHistorial((prev) => [...prev, { rol: "asistente", contenido: `Todavía no puedo generar el borrador: revisa los alimentos del paciente. ${motivos.join(" ") || "Completa los grupos, las cantidades y las fichas nutricionales pendientes."}` }]);
+          setAccionPendiente(null);
+          setRevisionPendiente(true);
+          onStateChange?.("ready");
+          return;
+        }
+        const versionActual = await obtenerMenu(paciente.id);
+        setHistorial((prev) => [...prev, { rol: "asistente", contenido: respuesta }]);
+        setAccionPendiente({ idVersionActual: versionActual?.id ?? null });
+        setRevisionPendiente(false);
+      } else {
+        setHistorial((prev) => [...prev, { rol: "asistente", contenido: respuesta }]);
+        setAccionPendiente(null);
+        setRevisionPendiente(false);
+      }
       onStateChange?.("ready");
     } catch (err) {
       setError(err.message || "Error al contactar el asistente");
@@ -108,9 +135,33 @@ function AsistenteChat({ paciente, onStateChange, modoPaciente = false }) {
     }
   }
 
+  async function handleGenerarMenu() {
+    if (!paciente || !accionPendiente || cargando) return;
+    setCargando(true);
+    setError("");
+    onStateChange?.("thinking");
+    try {
+      await generarMenu(paciente.id, {
+        confirmarNuevaVersion: accionPendiente.idVersionActual !== null,
+        idVersionActual: accionPendiente.idVersionActual,
+      });
+      setAccionPendiente(null);
+      setHistorial((prev) => [...prev, { rol: "asistente", contenido: "Borrador creado. Revísalo y apruébalo cuando esté listo para el paciente." }]);
+      onStateChange?.("ready");
+      onAbrirMenu?.(paciente);
+    } catch (err) {
+      setError(err.message || "No se pudo generar el menú");
+      onStateChange?.("error");
+    } finally {
+      setCargando(false);
+    }
+  }
+
   function handleLimpiar() {
     setHistorial([saludoInicial(paciente)]);
     setError("");
+    setAccionPendiente(null);
+    setRevisionPendiente(false);
     onStateChange?.("idle");
   }
 
@@ -140,6 +191,24 @@ function AsistenteChat({ paciente, onStateChange, modoPaciente = false }) {
           <BurbujaMensaje key={i} mensaje={m} />
         ))}
         {cargando && <IndicadorEscribiendo />}
+
+        {accionPendiente && !cargando && (
+          <div className="ml-10 mb-3 rounded-xl border border-nutri-brand/30 bg-white p-3 text-xs text-nutri-ink">
+            <p className="mb-2">{accionPendiente.idVersionActual
+              ? "Se creará una nueva versión como borrador. El menú actual seguirá disponible hasta que apruebes la propuesta."
+              : "Se creará un borrador de menú semanal para este paciente."}</p>
+            <div className="flex gap-2">
+              <button type="button" onClick={handleGenerarMenu} className="rounded-lg bg-nutri-ink px-3 py-2 text-white">Confirmar y generar borrador</button>
+              <button type="button" onClick={() => setAccionPendiente(null)} className="rounded-lg border border-line px-3 py-2">Cancelar</button>
+            </div>
+          </div>
+        )}
+
+        {revisionPendiente && !cargando && (
+          <div className="ml-10 mb-3 rounded-xl border border-nutri-brand/30 bg-white p-3 text-xs text-nutri-ink">
+            <button type="button" onClick={() => onAbrirMenu?.(paciente)} className="rounded-lg bg-nutri-ink px-3 py-2 text-white">Revisar alimentos del paciente</button>
+          </div>
+        )}
 
         {historial.length > 1 && !cargando && (
           <div className="mt-1 text-center">

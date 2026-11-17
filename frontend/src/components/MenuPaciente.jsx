@@ -298,10 +298,7 @@ function MenuPaciente({ idPaciente, paciente, presupuesto, onSeguimiento, onAcce
       )}
 
       {generando ? (
-        <>
-          <PanelGenerando paso={paso} segundos={segundos} />
-          <EsqueletoMenu />
-        </>
+        <PanelGenerando paso={paso} segundos={segundos} />
       ) : menu ? (
         <MenuSemanalVista
           menu={menuMostrado}

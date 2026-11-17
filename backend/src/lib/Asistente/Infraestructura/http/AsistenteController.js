@@ -38,14 +38,14 @@ class AsistenteController {
           .json({ message: `El mensaje no puede superar ${MAX_LARGO_MENSAJE} caracteres` });
       }
 
-      const { respuesta, proveedor } = await this.chatAsistente.ejecutar({
+      const { respuesta, proveedor, accion } = await this.chatAsistente.ejecutar({
         idPaciente: idPaciente ? Number(idPaciente) : null,
         mensaje: mensaje.trim(),
         historial: sanitizarHistorial(historial),
         idNutriologo,
       });
 
-      res.json({ respuesta, proveedor });
+      res.json({ respuesta, proveedor, ...(accion && { accion }) });
     } catch (error) {
       next(error);
     }

@@ -1,10 +1,11 @@
 // Controller HTTP del Nutriólogo
 // Recibe peticiones y las delega a los casos de uso
 class NutriologoController {
-  constructor({ registrarNutriologo, loginNutriologo, obtenerNutriologo, crearPacienteDemo }) {
+  constructor({ registrarNutriologo, loginNutriologo, obtenerNutriologo, actualizarWhatsappNutriologo, crearPacienteDemo }) {
     this.registrarNutriologo = registrarNutriologo;
     this.loginNutriologo = loginNutriologo;
     this.obtenerNutriologo = obtenerNutriologo;
+    this.actualizarWhatsappNutriologo = actualizarWhatsappNutriologo;
     this.crearPacienteDemo = crearPacienteDemo;
   }
 
@@ -46,6 +47,24 @@ class NutriologoController {
       res.json(this._aPublico(nutriologo));
     } catch (error) {
       res.status(404).json({ message: error.message });
+    }
+  };
+
+  obtenerWhatsapp = async (req, res, next) => {
+    try {
+      const nutriologo = await this.obtenerNutriologo.ejecutar(req.nutriologo.id);
+      res.json({ numero: nutriologo.whatsappNumero || null });
+    } catch (error) {
+      if (error.message === "Nutriólogo no encontrado") error.statusCode = 404;
+      next(error);
+    }
+  };
+
+  actualizarWhatsapp = async (req, res, next) => {
+    try {
+      res.json(await this.actualizarWhatsappNutriologo.ejecutar(req.nutriologo.id, req.body?.numero));
+    } catch (error) {
+      next(error);
     }
   };
 

@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { listarPacientes, eliminarPaciente, crearPacienteDemo } from "../services/pacienteService";
+import { obtenerWhatsappNutriologo, guardarWhatsappNutriologo } from "../services/authService";
 import { obtenerCoberturaCatalogo } from "../services/alimentoService";
+import { obtenerMenu } from "../services/menuService";
 import { faltanAlimentos } from "../utils/suficiencia";
 import Modal from "../components/Modal";
 import FormularioPaciente from "../components/FormularioPaciente";
@@ -9,7 +11,7 @@ import SeguimientoPaciente from "../components/SeguimientoPaciente";
 import FloatingAssistant from "../components/FloatingAssistant";
 import MiniSeguimiento from "../components/MiniSeguimiento";
 import AccesoPaciente from "../components/AccesoPaciente";
-import { CalendarCheck2, Ellipsis, HeartPulse, Ruler, ShieldAlert, Smartphone, UserRound, UtensilsCrossed } from "lucide-react";
+import { BrainCircuit, CalendarCheck2, Ellipsis, HeartPulse, MessageCircle, Phone, Ruler, ShieldAlert, Smartphone, UserRound, UtensilsCrossed } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { Logo } from "../components/Logo";
 import HeroCarousel from "../components/HeroCarousel";
@@ -61,6 +63,7 @@ function Pacientes() {
   const [busqueda, setBusqueda]     = useState("");
   const [modal, setModal]           = useState({ tipo: null, paciente: null });
   const [coberturas, setCoberturas] = useState({});
+  const [estadosMenu, setEstadosMenu] = useState({});
   const [filtro, setFiltro]         = useState("todos");
   const [seccionActiva, setSeccionActiva] = useState(() => window.location.hash === "#listado-pacientes" ? "pacientes" : "inicio");
   const claveGuia = `guia-vista-${nutriologo?.id}`;
@@ -69,6 +72,10 @@ function Pacientes() {
     catch { return true; }
   });
   const [guiaManual, setGuiaManual] = useState(false);
+  const [whatsappNumero, setWhatsappNumero] = useState(null);
+  const [whatsappBorrador, setWhatsappBorrador] = useState("");
+  const [whatsappError, setWhatsappError] = useState("");
+  const [whatsappGuardando, setWhatsappGuardando] = useState(false);
   function cerrarGuia() {
     setGuiaManual(false);
     setGuiaVista(true);
@@ -76,6 +83,34 @@ function Pacientes() {
   }
 
   useEffect(() => { cargarPacientes(); }, []);
+  useEffect(() => {
+    let vigente = true;
+    obtenerWhatsappNutriologo()
+      .then(({ numero }) => { if (vigente) setWhatsappNumero(numero); })
+      .catch(() => { if (vigente) setWhatsappError("No se pudo cargar el número de WhatsApp."); });
+    return () => { vigente = false; };
+  }, [nutriologo?.id]);
+
+  function abrirConfiguracionWhatsapp() {
+    setWhatsappBorrador(whatsappNumero ? `+${whatsappNumero}` : "");
+    setWhatsappError("");
+    setModal({ tipo: "whatsapp", paciente: null });
+  }
+
+  async function handleGuardarWhatsapp(event) {
+    event.preventDefault();
+    setWhatsappError("");
+    setWhatsappGuardando(true);
+    try {
+      const { numero } = await guardarWhatsappNutriologo(whatsappBorrador);
+      setWhatsappNumero(numero);
+      setModal({ tipo: null, paciente: null });
+    } catch (err) {
+      setWhatsappError(err.message || "No se pudo guardar el número.");
+    } finally {
+      setWhatsappGuardando(false);
+    }
+  }
   useEffect(() => {
     const actualizarSeccion = () => setSeccionActiva(window.location.hash === "#listado-pacientes" ? "pacientes" : "inicio");
     window.addEventListener("hashchange", actualizarSeccion);
@@ -86,6 +121,7 @@ function Pacientes() {
     setCargando(true);
     setError("");
     setCoberturas({});
+    setEstadosMenu({});
     try {
       const data = await listarPacientes();
       setPacientes(data);
@@ -111,11 +147,18 @@ function Pacientes() {
   const [versionCobertura, setVersionCobertura] = useState(0);
   useEffect(() => {
     let vigente = true;
-    Promise.allSettled(pacientes.map((p) => obtenerCoberturaCatalogo(p.id))).then((resultados) => {
+    Promise.all([
+      Promise.allSettled(pacientes.map((p) => obtenerCoberturaCatalogo(p.id))),
+      Promise.allSettled(pacientes.map((p) => obtenerMenu(p.id))),
+    ]).then(([coberturasResultado, menusResultado]) => {
       if (!vigente) return;
-      setCoberturas(Object.fromEntries(resultados.map((resultado, index) => [
+      setCoberturas(Object.fromEntries(coberturasResultado.map((resultado, index) => [
         pacientes[index].id,
         resultado.status === "fulfilled" ? resultado.value?.suficiencia || null : null,
+      ])));
+      setEstadosMenu(Object.fromEntries(menusResultado.map((resultado, index) => [
+        pacientes[index].id,
+        resultado.status === "fulfilled" ? resultado.value?.estado || null : undefined,
       ])));
     });
     return () => { vigente = false; };
@@ -132,15 +175,17 @@ function Pacientes() {
     coberturas[p.id]?.calorias?.porcentaje,
     coberturas[p.id]?.proteinas?.porcentaje,
   ].every(Number.isFinite));
-  const idsConCobertura = new Set(conCobertura.map((p) => p.id));
   const conAlerta = conCobertura.filter((p) => faltanAlimentos(coberturas[p.id])).length;
   const conCatalogoSuficiente = conCobertura.length - conAlerta;
+  const menusEnElaboracion = pacientes.filter((p) => Object.hasOwn(estadosMenu, p.id) && estadosMenu[p.id] !== undefined && estadosMenu[p.id] !== "aprobado").length;
+  const menusTerminados = pacientes.filter((p) => estadosMenu[p.id] === "aprobado").length;
+  const resumenMenusDisponible = pacientes.every((p) => Object.hasOwn(estadosMenu, p.id) && estadosMenu[p.id] !== undefined);
   const coberturaLista = pacientes.length === 0 || pacientes.every((p) => Object.hasOwn(coberturas, p.id));
   const resumenCoberturaDisponible = coberturaLista && conCobertura.length === pacientes.length;
   const pacientesFiltrados = pacientes.filter((p) => {
     const coincide = p.nombre.toLowerCase().includes(busqueda.trim().toLowerCase());
-    if (filtro === "alertas") return coincide && faltanAlimentos(coberturas[p.id]);
-    if (filtro === "suficientes") return coincide && idsConCobertura.has(p.id) && !faltanAlimentos(coberturas[p.id]);
+    if (filtro === "alertas") return coincide && Object.hasOwn(estadosMenu, p.id) && estadosMenu[p.id] !== undefined && estadosMenu[p.id] !== "aprobado";
+    if (filtro === "suficientes") return coincide && estadosMenu[p.id] === "aprobado";
     return coincide;
   });
 
@@ -153,7 +198,11 @@ function Pacientes() {
             ? `Seguimiento — ${modal.paciente?.nombre}`
             : modal.tipo === "acceso"
               ? `Acceso a la app — ${modal.paciente?.nombre}`
-              : "";
+              : modal.tipo === "whatsapp"
+                ? "Tu número de WhatsApp"
+                : "";
+
+  const numeroWhatsappValido = /^[1-9]\d{7,14}$/.test(whatsappNumero || "") ? whatsappNumero : null;
 
   const conteo = busqueda.trim() || filtro !== "todos"
     ? `${pacientesFiltrados.length} resultado${pacientesFiltrados.length !== 1 ? "s" : ""}`
@@ -167,7 +216,22 @@ function Pacientes() {
             <a href="#resumen" aria-current={seccionActiva === "inicio" ? "page" : undefined} onClick={() => setSeccionActiva("inicio")}><InicioNavIcon /> <span>Inicio</span></a>
             <a href="#listado-pacientes" aria-current={seccionActiva === "pacientes" ? "page" : undefined} onClick={() => setSeccionActiva("pacientes")}><ExpedientesNavIcon /> <span>Pacientes</span></a>
           </nav>
-          <button type="button" className="rail-guide-link" data-tour="ver-guia" onClick={() => setGuiaManual(true)}>Cómo funciona NutriApp</button>
+          <div className="rail-whatsapp-area">
+            {numeroWhatsappValido ? (
+              <a className="rail-guide-link rail-whatsapp-link" href={`https://wa.me/${numeroWhatsappValido}`}
+                target="_blank" rel="noopener noreferrer" aria-label="WhatsApp (abre otra pestaña)">
+                <span className="rail-whatsapp-mark" aria-hidden="true"><MessageCircle size={23} strokeWidth={2} /><Phone size={11} strokeWidth={2.5} /></span>
+                <span className="rail-whatsapp-text">WhatsApp</span>
+              </a>
+            ) : (
+              <button type="button" className="rail-guide-link rail-whatsapp-link" onClick={abrirConfiguracionWhatsapp} aria-label="Configurar WhatsApp">
+                <span className="rail-whatsapp-mark" aria-hidden="true"><MessageCircle size={23} strokeWidth={2} /><Phone size={11} strokeWidth={2.5} /></span>
+                <span className="rail-whatsapp-text">Configurar WhatsApp</span>
+              </button>
+            )}
+            <button type="button" className="rail-whatsapp-edit" onClick={abrirConfiguracionWhatsapp}
+              aria-label="Editar número de WhatsApp" title="Editar número de WhatsApp"><IconPencil /></button>
+          </div>
       </aside>
       <div className="dashboard-main">
         <div className="dashboard-stage-main">
@@ -178,7 +242,7 @@ function Pacientes() {
             </div>
             <div className="topbar-note"><span className="topbar-note-icon"><IconLeaf /></span><span>Tu consulta, <strong>con claridad.</strong></span></div>
             <div className="topbar-actions">
-              <button type="button" className="topbar-guide-link" onClick={() => setGuiaManual(true)}>Guía</button>
+              <button type="button" className="topbar-guide-link" data-tour="ver-guia" onClick={() => setGuiaManual(true)}>Guía</button>
               <button type="button" className="primary-button" data-tour="nuevo-paciente" onClick={() => setModal({ tipo: "paciente", paciente: null })}>
                 <IconPlus /> Nuevo paciente
               </button>
@@ -204,8 +268,8 @@ function Pacientes() {
           <div className="patient-toolbar">
             <div className="patient-filters" role="group" aria-label="Filtrar pacientes">
               <button type="button" aria-pressed={filtro === "todos"} className={filtro === "todos" ? "active" : ""} onClick={() => setFiltro("todos")}>Todos <span>{pacientes.length}</span></button>
-              <button type="button" aria-pressed={filtro === "alertas"} className={filtro === "alertas" ? "active" : ""} onClick={() => setFiltro("alertas")}>Requieren alimentos <span>{resumenCoberturaDisponible ? conAlerta : "—"}</span></button>
-              <button type="button" aria-pressed={filtro === "suficientes"} className={filtro === "suficientes" ? "active" : ""} onClick={() => setFiltro("suficientes")}>Catálogo suficiente <span>{resumenCoberturaDisponible ? conCatalogoSuficiente : "—"}</span></button>
+              <button type="button" aria-pressed={filtro === "alertas"} className={filtro === "alertas" ? "active" : ""} onClick={() => setFiltro("alertas")}><BrainCircuit size={15} strokeWidth={1.9} aria-hidden="true" />Menú en elaboración <span>{resumenMenusDisponible ? menusEnElaboracion : "—"}</span></button>
+              <button type="button" aria-pressed={filtro === "suficientes"} className={filtro === "suficientes" ? "active" : ""} onClick={() => setFiltro("suficientes")}><UtensilsCrossed size={15} strokeWidth={1.9} aria-hidden="true" />Menú terminado <span>{resumenMenusDisponible ? menusTerminados : "—"}</span></button>
             </div>
             <label className="topbar-search patient-search" htmlFor="buscar-pacientes">
               <IconSearch style={{ width: 17, height: 17 }} />
@@ -296,8 +360,23 @@ function Pacientes() {
         {modal.tipo === "acceso" && modal.paciente && (
           <AccesoPaciente paciente={modal.paciente} />
         )}
+        {modal.tipo === "whatsapp" && (
+          <form onSubmit={handleGuardarWhatsapp} className="space-y-4">
+            <p className="text-sm text-gray-600">Este número se usa en el botón de WhatsApp de tu cuenta. Puedes cambiarlo cuando quieras.</p>
+            <label className="block text-sm font-semibold text-nutri-ink" htmlFor="whatsapp-numero">Número con código de país</label>
+            <input id="whatsapp-numero" type="tel" inputMode="tel" autoComplete="tel" maxLength={24}
+              value={whatsappBorrador} onChange={(event) => setWhatsappBorrador(event.target.value)}
+              placeholder="09… o +593…" className="w-full rounded-lg border border-line px-3 py-2.5 text-nutri-ink outline-none focus:border-nutri-brand" />
+            <p className="text-xs text-gray-500">Para Ecuador puedes escribir 09…; se guardará con +593. Deja el campo vacío si quieres quitar el enlace.</p>
+            {whatsappError && <p role="alert" className="text-sm text-red-700">{whatsappError}</p>}
+            <button type="submit" disabled={whatsappGuardando} className="primary-button disabled:opacity-50">
+              {whatsappGuardando ? "Guardando…" : "Guardar número"}
+            </button>
+          </form>
+        )}
       </Modal>
-      <FloatingAssistant pacientes={pacientes} hidden={modal.tipo !== null} />
+      <FloatingAssistant pacientes={pacientes} hidden={modal.tipo !== null}
+        onAbrirMenu={(paciente) => setModal({ tipo: "menu", paciente })} />
     </div>
   );
 }

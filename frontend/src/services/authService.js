@@ -21,3 +21,14 @@ export async function registrarNutriologo(datos) {
     body: JSON.stringify(datos),
   });
 }
+
+export async function obtenerWhatsappNutriologo() {
+  return apiFetch("/nutriologo/me/whatsapp");
+}
+
+export async function guardarWhatsappNutriologo(numero) {
+  return apiFetch("/nutriologo/me/whatsapp", {
+    method: "PUT",
+    body: JSON.stringify({ numero }),
+  });
+}

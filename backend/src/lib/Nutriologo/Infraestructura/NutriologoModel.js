@@ -28,6 +28,10 @@ const NutriologoModel = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    whatsappNumero: {
+      type: DataTypes.STRING(15),
+      allowNull: true,
+    },
   },
   {
     timestamps: true, // agrega createdAt y updatedAt automáticamente

@@ -1,7 +1,7 @@
 // Entidad principal del dominio Nutriólogo
 // Contiene las validaciones de negocio
 class Nutriologo {
-  constructor({ id, nombre, apellido, email, password }) {
+  constructor({ id, nombre, apellido, email, password, whatsappNumero = null }) {
     // Validaciones
     if (!nombre || nombre.trim().length === 0)
       throw new Error("El nombre es requerido");
@@ -21,6 +21,7 @@ class Nutriologo {
     this.apellido = apellido.trim();
     this.email = email.toLowerCase().trim();
     this.password = password;
+    this.whatsappNumero = whatsappNumero;
   }
 }
 

@@ -39,3 +39,13 @@ test("el profesional rechaza id de paciente no válido", async () => {
   await controller.chat({ nutriologo: { id: 7 }, body: { idPaciente: -1, mensaje: "hola" } }, res, (error) => { throw error; });
   assert.equal(res.statusCode, 400);
 });
+
+test("el profesional recibe la propuesta de crear borrador", async () => {
+  const controller = new AsistenteController({ chatAsistente: { ejecutar: async () => ({
+    respuesta: "Confirma la acción", proveedor: "groq", accion: { tipo: "crear_borrador_menu" },
+  }) } });
+  const res = respuesta();
+  await controller.chat({ nutriologo: { id: 7 }, body: { idPaciente: 3, mensaje: "Genera un menú" } }, res, (error) => { throw error; });
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(res.body.accion, { tipo: "crear_borrador_menu" });
+});

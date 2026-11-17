@@ -7,6 +7,9 @@ module.exports = (controller) => {
   router.post("/registrar", controller.registrar);
   router.post("/login", controller.login);
 
+  router.get("/me/whatsapp", authMiddleware, controller.obtenerWhatsapp);
+  router.put("/me/whatsapp", authMiddleware, controller.actualizarWhatsapp);
+
   // Ruta protegida: Express ejecuta authMiddleware primero,
   // y solo si llama a next() pasa al controller.obtener
   router.get("/:id", authMiddleware, controller.obtener);

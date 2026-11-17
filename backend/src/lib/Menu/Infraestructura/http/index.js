@@ -16,6 +16,10 @@ const verificarPropietarioPaciente = require("../../../Alimento/Infraestructura/
 const PacienteRepositorySequelize = require("../../../Paciente/Infraestructura/PacienteRepositorySequelize");
 const AlimentoRepositoryMongo = require("../../../Alimento/Infraestructura/AlimentoRepositoryMongo");
 const ListarAlimentosPorPaciente = require("../../../Alimento/Aplicacion/ListarAlimentosPorPaciente");
+const ResumenPaciente14Dias = require("../../../Asistente/Aplicacion/ResumenPaciente14Dias");
+const SeguimientoRepositorySequelize = require("../../../Seguimiento/Infraestructura/SeguimientoRepositorySequelize");
+const RegistroIngestaRepositorySequelize = require("../../../Portal/Infraestructura/RegistroIngestaRepositorySequelize");
+const { MarcaComidaRepositorySequelize } = require("../../../Portal/Infraestructura/repositorios");
 
 module.exports = function registerMenuModule(app) {
   const menuRepo = new MenuRepositorySequelize();
@@ -23,6 +27,12 @@ module.exports = function registerMenuModule(app) {
   const alimentoRepo = new AlimentoRepositoryMongo();
   const listarAlimentosPorPaciente = new ListarAlimentosPorPaciente(alimentoRepo);
   const generadorMenuIA = new GeneradorMenuIA(pedirCompletion);
+  const resumenPaciente14Dias = new ResumenPaciente14Dias({
+    seguimientoRepo: new SeguimientoRepositorySequelize(),
+    menuRepo,
+    ingestaRepo: new RegistroIngestaRepositorySequelize(),
+    marcaRepo: new MarcaComidaRepositorySequelize(),
+  });
 
   const controller = new MenuController({
     generarMenuSemanal: new GenerarMenuSemanal({
@@ -30,6 +40,7 @@ module.exports = function registerMenuModule(app) {
       listarAlimentosPorPaciente,
       generadorMenuIA,
       menuRepository: menuRepo,
+      resumenPaciente14Dias,
     }),
     obtenerMenuPorPaciente: new ObtenerMenuPorPaciente(pacienteRepo, menuRepo),
     ajustarComidaMenu: new AjustarComidaMenu({ menuRepository: menuRepo, listarAlimentosPorPaciente }),

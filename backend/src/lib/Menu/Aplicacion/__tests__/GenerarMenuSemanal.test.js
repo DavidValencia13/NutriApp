@@ -22,7 +22,7 @@ function resultadoIAValido() {
   };
 }
 
-function crearDependencias({ resultadoIA, alimentosDisponibles = [alimento], generadorFalla, versionAnterior = null, versionDurantePersistencia = versionAnterior } = {}) {
+function crearDependencias({ resultadoIA, alimentosDisponibles = [alimento], generadorFalla, versionAnterior = null, versionDurantePersistencia = versionAnterior, cobertura = { listoParaMenu: true, resumen: { esencialesCubiertos: 6, esencialesTotal: 6 }, alertas: [] } } = {}) {
   const menuRepository = {
     llamadasCrear: [],
     consultasVersion: 0,
@@ -59,6 +59,7 @@ function crearDependencias({ resultadoIA, alimentosDisponibles = [alimento], gen
   return {
     pacienteRepository: { async findById() { return paciente; } },
     listarAlimentosPorPaciente: { async ejecutar() { return alimentosDisponibles; } },
+    evaluarCobertura: () => cobertura,
     generadorMenuIA,
     menuRepository,
     registrarRecomendacion,
@@ -79,6 +80,13 @@ test("con confirmación crea una propuesta y conserva la versión anterior", asy
   assert.equal(deps.menuRepository.llamadasCrear.length, 1);
   assert.equal(deps.menuRepository.llamadasCrear[0].menu.estado, "generado");
   assert.equal(anterior.estado, "aprobado");
+});
+
+test("la propuesta recibe el contexto reciente del paciente", async () => {
+  const deps = crearDependencias();
+  deps.resumenPaciente14Dias = { ejecutar: async () => ({ desde: "2026-11-03", controles: [{ peso: 68 }], menus: [], ingestas: [] }) };
+  await new GenerarMenuSemanal(deps).ejecutar(1, 10);
+  assert.equal(deps.generadorMenuIA.llamadas[0].perfilPaciente.resumenUltimos14Dias.desde, "2026-11-03");
 });
 
 test("rechaza una confirmación hecha sobre una versión ya reemplazada", async () => {
@@ -107,6 +115,19 @@ test("lanza ValidationError si el paciente no tiene alimentos", async () => {
   const deps = crearDependencias({ alimentosDisponibles: [] });
   const caso = new GenerarMenuSemanal(deps);
   await assert.rejects(() => caso.ejecutar(1, 10), ValidationError);
+});
+
+test("no llama a la IA si faltan grupos o recomendaciones de alimentos", async () => {
+  for (const cobertura of [
+    { listoParaMenu: true, resumen: { esencialesCubiertos: 5, esencialesTotal: 6 }, alertas: [] },
+    { listoParaMenu: true, resumen: { esencialesCubiertos: 6, esencialesTotal: 6 }, alertas: [
+      { tipo: "sin_fuente_calcio", gruposSugeridos: ["lacteos"] },
+    ] },
+  ]) {
+    const deps = crearDependencias({ cobertura });
+    await assert.rejects(() => new GenerarMenuSemanal(deps).ejecutar(1, 10), ValidationError);
+    assert.equal(deps.generadorMenuIA.llamadas.length, 0);
+  }
 });
 
 test("propaga el error del generador de IA sin persistir nada", async () => {

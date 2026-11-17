@@ -41,7 +41,7 @@ const statusLabels = {
   error: "Revisa la conexión",
 };
 
-function FloatingAssistant({ pacientes, hidden = false }) {
+function FloatingAssistant({ pacientes, hidden = false, onAbrirMenu }) {
   const [viewport, setViewport] = useState(() => ({ width: window.innerWidth, height: window.innerHeight }));
   const [position, setPosition] = useState(initialPosition);
   const [open, setOpen] = useState(false);
@@ -146,13 +146,13 @@ function FloatingAssistant({ pacientes, hidden = false }) {
         <img src={avatar} alt="" draggable="false" />
         <span className="assistant-avatar-badge" aria-hidden="true">
           <svg viewBox="0 0 48 48" fill="none">
-            <defs><linearGradient id="assistant-star-gradient" x1="9" y1="7" x2="39" y2="40" gradientUnits="userSpaceOnUse"><stop stopColor="#D2F2D5" /><stop offset=".46" stopColor="#47C693" /><stop offset="1" stopColor="#08735D" /></linearGradient></defs>
+            <defs><linearGradient id="assistant-star-gradient" x1="9" y1="7" x2="39" y2="40" gradientUnits="userSpaceOnUse"><stop stopColor="#F4FBD8" /><stop offset=".5" stopColor="#D8F8EA" /><stop offset="1" stopColor="#8EE5BA" /></linearGradient></defs>
             <g className="assistant-spark-main">
-              <path d="M22 5 26 18 39 22 26 26 22 39 18 26 5 22 18 18 22 5Z" fill="url(#assistant-star-gradient)" stroke="#0D785F" strokeWidth="1.2" strokeLinejoin="round" />
-              <path d="M21.4 10.5 23.6 19.6 31.7 22" stroke="#E7FAE9" strokeOpacity=".82" strokeWidth="1" strokeLinecap="round" />
+              <path d="M22 5 26 18 39 22 26 26 22 39 18 26 5 22 18 18 22 5Z" fill="url(#assistant-star-gradient)" stroke="#63CFA4" strokeWidth="0.9" strokeLinejoin="round" />
+              <path d="M21.4 10.5 23.6 19.6 31.7 22" stroke="#FFFFFF" strokeOpacity=".9" strokeWidth="1" strokeLinecap="round" />
             </g>
-            <path className="assistant-spark-small assistant-spark-top" d="M40 2 41.4 7.6 47 9 41.4 10.4 40 16 38.6 10.4 33 9 38.6 7.6 40 2Z" fill="#79CDA3" />
-            <path className="assistant-spark-small assistant-spark-bottom" d="M8 33 9.1 37.9 14 39 9.1 40.1 8 45 6.9 40.1 2 39 6.9 37.9 8 33Z" fill="#2E9B81" />
+            <path className="assistant-spark-small assistant-spark-top" d="M36 0 38.4 6.6 45 9 38.4 11.4 36 18 33.6 11.4 27 9 33.6 6.6 36 0Z" fill="#F4FBD8" stroke="#63CFA4" strokeWidth="0.9" strokeLinejoin="round" />
+            <path className="assistant-spark-small assistant-spark-bottom" d="M8 29 10.4 35.6 17 38 10.4 40.4 8 47 5.6 40.4 -1 38 5.6 35.6 8 29Z" fill="#D8F8EA" stroke="#3EBF94" strokeWidth="0.9" strokeLinejoin="round" />
           </svg>
           <strong>IA</strong>
         </span>
@@ -179,7 +179,8 @@ function FloatingAssistant({ pacientes, hidden = false }) {
             <option value="">Consulta general</option>
             {pacientes.map((p) => <option value={p.id} key={p.id}>{p.nombre}</option>)}
           </select>
-          <AsistenteChat key={selectedPatient ? selectedId : "general"} paciente={selectedPatient} onStateChange={setStatus} />
+          <AsistenteChat key={selectedPatient ? selectedId : "general"} paciente={selectedPatient} onStateChange={setStatus}
+            onAbrirMenu={(paciente) => { setOpen(false); onAbrirMenu?.(paciente); }} />
         </div>
       </section>
     </div>

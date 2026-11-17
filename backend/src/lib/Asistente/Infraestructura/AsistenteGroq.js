@@ -7,16 +7,21 @@ const {
 const { ServicioExternoError } = require("./Errores");
 
 class AsistenteGroq extends IAsistenteIA {
+  constructor(completion = pedirCompletion) {
+    super();
+    this.completion = completion;
+  }
+
   async chat({ historial, systemPrompt }) {
     // Groq usa el rol "system" como primer mensaje del array
     const messages = [
-      { role: "system", content: systemPrompt },
+      { role: "system", content: `${systemPrompt}\nResponde exclusivamente con un objeto JSON cuya clave "respuesta" contenga el texto para el usuario.` },
       ...historial,
     ];
 
     let respuesta;
     try {
-      respuesta = await pedirCompletion(messages);
+      respuesta = await this.completion(messages);
     } catch (error) {
       console.error("Error al llamar a Groq (asistente):", error.message);
 
@@ -32,7 +37,13 @@ class AsistenteGroq extends IAsistenteIA {
       throw new ServicioExternoError("El asistente no está disponible en este momento", 502);
     }
 
-    return respuesta;
+    try {
+      const contenido = JSON.parse(respuesta).respuesta;
+      if (typeof contenido === "string" && contenido.trim()) return contenido.trim();
+    } catch {
+      // El proveedor devolvió un JSON inválido.
+    }
+    throw new ServicioExternoError("El asistente devolvió una respuesta inválida", 502);
   }
 }
 
