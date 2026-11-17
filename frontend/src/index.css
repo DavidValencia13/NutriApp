@@ -1063,6 +1063,11 @@ h1, h2, h3, h4, h5, .font-display {
 .weekly-side-icon { display: grid; place-items: center; width: 30px; height: 30px; flex: none; border-radius: 10px; color: #07876a; background: #ddf9ed; }
 .weekly-goal b { display: block; font-size: 16px; line-height: 1.2; }
 .weekly-goal p { margin: 5px 0 0; color: #398467; font-size: 11px; }
+.weekly-progress-change { color: #15795a; font-size: 20px; font-weight: 850; line-height: 1.1; }
+.weekly-progress-change[data-trend="subio"] { color: #b06b2b; }
+.weekly-progress p { margin: 5px 0 0; color: #54736c; font-size: 10px; line-height: 1.3; }
+.weekly-progress > small { display: block; margin-top: 3px; color: #62867d; font-size: 10px; }
+.weekly-progress .weight-chart-frame { margin-top: 8px; border: 0; background: transparent; padding: 0; }
 .weekly-average dl { margin: 0; }
 .weekly-average dl > div { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; padding: 5px 0; border-bottom: 1px solid #e5eff0; font-size: 11px; }
 .weekly-average dt { color: #587571; }
@@ -1073,12 +1078,14 @@ h1, h2, h3, h4, h5, .font-display {
 .weekly-menu-content { min-width: 0; }
 .weekly-day-nav { display: none; }
 .weekly-day-strip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin-bottom: 12px; }
-.weekly-day-strip button { min-width: 0; min-height: 70px; padding: 8px 3px; border: 1px solid #deedf0; border-radius: 13px; background: #fff; color: #173a43; text-align: center; cursor: pointer; transition: transform .18s, border-color .18s, box-shadow .18s; }
+.weekly-day-strip button { min-width: 0; min-height: 94px; padding: 7px 3px; border: 1px solid #deedf0; border-radius: 13px; background: #fff; color: #173a43; text-align: center; cursor: pointer; transition: transform .18s, border-color .18s, box-shadow .18s; }
 .weekly-day-strip button:hover { transform: translateY(-2px); border-color: #78d8b6; }
 .weekly-day-strip button.selected { border: 2px solid #13b878; background: linear-gradient(160deg, #e4ffe9, #f5fffd); box-shadow: 0 5px 16px #1caf7430; }
 .weekly-day-strip strong, .weekly-day-strip span, .weekly-day-strip small { display: block; }
 .weekly-day-strip strong { font-size: 13px; line-height: 1.1; }
-.weekly-day-strip span { margin: 3px 0 6px; color: #60817c; font-size: 10px; }
+.weekly-day-strip span { margin: 2px 0 3px; color: #60817c; font-size: 10px; }
+.weekly-day-strip .weekly-day-art { display: grid; place-items: center; height: 27px; margin: 0 auto 3px; }
+.weekly-day-art svg { filter: drop-shadow(0 2px 2px #057a5925); }
 .weekly-day-strip small { color: #183b3d; font-size: 10px; font-weight: 750; white-space: nowrap; }
 .weekly-day-detail { padding: 13px; border: 1px solid #d7edf2; border-radius: 17px; background: linear-gradient(145deg, #fff, #f3fcff); box-shadow: 0 10px 24px #19536312; }
 .weekly-day-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }

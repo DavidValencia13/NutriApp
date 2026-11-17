@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { generarMenu, obtenerMenu, aprobarMenu } from "../services/menuService";
+import { listarSeguimiento } from "../services/seguimientoService";
 import { listarAlimentos, obtenerCoberturaCatalogo } from "../services/alimentoService";
 import SuficienciaAlimentos from "./SuficienciaAlimentos";
 import { catalogoPreparadoParaMenu, faltanAlimentos } from "../utils/suficiencia";
@@ -11,6 +12,8 @@ import { IconAlertTriangle } from "./Icons";
 import { ArrowLeft, ArrowRight, CalendarDays, Check, ChevronLeft, ChevronRight, ClipboardCheck, Loader2, Smartphone, Sparkles, UtensilsCrossed } from "lucide-react";
 import IconoMomento from "./IconoMomento";
 import NutriIcon from "./NutriIcon";
+import PesoTrendChart from "./PesoTrendChart";
+import { ordenarControles } from "../utils/ordenarControles";
 import { cantidadLegible } from "../utils/cantidad";
 import menuFoodHero from "../assets/menu-food-hero.png";
 
@@ -320,6 +323,41 @@ function fechaDelPlan(fechaInicio, numeroDia, opciones) {
   return texto.charAt(0).toLocaleUpperCase("es-EC") + texto.slice(1);
 }
 
+// Ilustraciones decorativas del selector, siguiendo la secuencia visual del plan semanal.
+const ICONOS_DIAS = ["presentacion", "ensalada", "proteinas", "sopa", "carne", "fibra", "merienda"];
+
+function ResumenSeguimientoMenu({ idPaciente }) {
+  const [registros, setRegistros] = useState([]);
+
+  useEffect(() => {
+    let vigente = true;
+    listarSeguimiento(idPaciente)
+      .then((datos) => { if (vigente) setRegistros(Array.isArray(datos) ? datos : []); })
+      .catch(() => { if (vigente) setRegistros([]); });
+    return () => { vigente = false; };
+  }, [idPaciente]);
+
+  const pesos = registros
+    .filter((registro) => Number.isFinite(Number(registro.peso)) && Number(registro.peso) > 0)
+    .sort(ordenarControles);
+  if (pesos.length < 2) return null;
+
+  const inicial = Number(pesos[0].peso);
+  const actual = Number(pesos.at(-1).peso);
+  const diferencia = actual - inicial;
+  const magnitud = Math.abs(diferencia).toFixed(1).replace(".", ",");
+  const porcentaje = Math.abs((diferencia / inicial) * 100).toFixed(1).replace(".", ",");
+  const tendencia = diferencia < -0.05 ? "bajo" : diferencia > 0.05 ? "subio" : "estable";
+
+  return <section className="weekly-side-card weekly-progress">
+    <div className="weekly-side-heading"><span className="weekly-side-icon"><NutriIcon name="objetivo" size={22} /></span><strong>Progreso del peso</strong></div>
+    <div className="weekly-progress-change" data-trend={tendencia}>{tendencia === "estable" ? "Sin cambio" : `${tendencia === "bajo" ? "Bajó" : "Subió"} ${magnitud} kg`}</div>
+    <p>Registro inicial: {inicial.toFixed(1).replace(".", ",")} kg · Actual: {actual.toFixed(1).replace(".", ",")} kg</p>
+    <small>{porcentaje}% respecto al registro inicial</small>
+    <PesoTrendChart registros={pesos} id={`menu-${idPaciente}`} compacto />
+  </section>;
+}
+
 function MenuSemanalVista({ menu, paciente, idPaciente, presupuesto, cobertura, puedeGenerar, diaActivo, onSeleccionarDia, onAprobar, onGenerar, onRevisarAlimentos, onSeguimiento, onAcceso, onAjustarComida }) {
   const dias = [...(menu.dias || [])].sort((a, b) => a.numeroDia - b.numeroDia);
   const indiceActivo = Math.max(0, dias.findIndex((dia) => dia.id === diaActivo?.id));
@@ -363,6 +401,7 @@ function MenuSemanalVista({ menu, paciente, idPaciente, presupuesto, cobertura, 
             <b>{objetivo}</b>
             {paciente?.preferencias && <p>{paciente.preferencias}</p>}
           </section>
+          <ResumenSeguimientoMenu idPaciente={idPaciente} />
           {menu.resumenNutricionalSemanal && <ResumenNutricional resumen={menu.resumenNutricionalSemanal} />}
           {presupuesto !== undefined && <ResumenPresupuesto dias={dias} presupuesto={presupuesto} />}
           <EfectividadMenu idPaciente={idPaciente} idMenu={menu.id} />
@@ -385,6 +424,7 @@ function MenuSemanalVista({ menu, paciente, idPaciente, presupuesto, cobertura, 
             >
               <strong>{fechaDelPlan(menu.fechaInicio, dia.numeroDia, { weekday: "short" }) || `Día ${dia.numeroDia}`}</strong>
               <span>{fechaDelPlan(menu.fechaInicio, dia.numeroDia, { day: "numeric", month: "short" }) || `Día ${dia.numeroDia}`}</span>
+              <span className="weekly-day-art"><NutriIcon name={ICONOS_DIAS[(dia.numeroDia - 1) % ICONOS_DIAS.length]} size={25} /></span>
               <small>{Math.round(Number(dia.caloriasTotales) || 0)} kcal</small>
             </button>)}
           </div>

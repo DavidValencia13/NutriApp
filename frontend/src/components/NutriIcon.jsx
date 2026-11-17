@@ -59,6 +59,30 @@ const dibujo = {
     <circle cx="16" cy="16" r="6.5" fill="#fff" stroke="#07836a" strokeWidth="1.2" />
     <path d="M16 18c-2.2-3.5-1.3-5.2 1-6.7 2.8 2.4 3 4.4-1 6.7Z" fill="#7be0a2" stroke="#07836a" strokeWidth="1.2" />
   </>,
+  presentacion: <>
+    <path d="M5 22h22M7 20c.3-7.7 3.5-11.5 9-11.5S24.7 12.3 25 20H7Z" fill="#a9f3d8" stroke="#07886d" />
+    <path d="M4 23h24M13.5 7.5a2.5 2.5 0 0 1 5 0" stroke="#07886d" strokeWidth="1.8" />
+    <path d="m24 4 .6 1.8 1.8.6-1.8.6-.6 1.8-.6-1.8-1.8-.6 1.8-.6L24 4Z" fill="#f4d96b" stroke="none" />
+  </>,
+  ensalada: <>
+    <path d="M5 18h22c-.7 6.5-4.4 9-11 9S5.7 24.5 5 18Z" fill="#a4e9e1" stroke="#07866c" />
+    <path d="M4 18h24" stroke="#07866c" strokeWidth="2" />
+    <path d="M10 17c-2.8-4-2.2-6.8-.6-8.2 2.7.8 4.1 3.3 3.5 8.2Zm7-1c-.2-6.8 2.7-10.3 5-10.8 1.4 3.6-.3 7.4-5 10.8Z" fill="#83df89" stroke="#2c9d5d" />
+    <path d="M15 17c-2.9-5-2.5-8.6 0-11 2.5 2.4 3 6.1 0 11Z" fill="#b5ef80" stroke="#4ba550" />
+    <circle cx="22" cy="16" r="2.5" fill="#ff806d" stroke="#d45349" strokeWidth="1" />
+  </>,
+  sopa: <>
+    <path d="M8 4c-2 2 2 3.5 0 5.5m7-6c-2 2 2 3.5 0 5.5m7-5c-2 2 2 3.5 0 5.5" stroke="#60a7b3" strokeWidth="1.4" />
+    <path d="M5 15h22c-.7 7.3-4 11-11 11S5.7 22.3 5 15Z" fill="#d8f8ed" stroke="#087e69" />
+    <path d="M4 15h24M8 18c4 2 12 2 16 0" stroke="#087e69" />
+    <circle cx="11" cy="15" r="2" fill="#f6aa50" stroke="none" />
+    <circle cx="20" cy="16" r="1.8" fill="#7ecf69" stroke="none" />
+  </>,
+  carne: <>
+    <path d="M6 14C6 8.3 11 5 18.2 6.2c5 .8 8.5 4.1 8 8.5-.3 3.4-3 6.1-6.3 7.6-2.6 1.2-4.1 4.9-8 4.5C6 26.2 3.3 20 6 14Z" fill="#ff9f88" stroke="#c65349" />
+    <path d="M9 14c.8-3.6 4.3-5.7 8.6-5 5.3.8 7.2 5.3 4.7 8.3-1.7 2-5.2 2.8-7.6 4.6" stroke="#ffe7d5" strokeWidth="2" />
+    <path d="M8 19c1.4 2.5 3.7 3.9 6.3 4.2" stroke="#d16a55" strokeWidth="1.3" />
+  </>,
 };
 
 export default function NutriIcon({ name, size = 20, className = "" }) {
