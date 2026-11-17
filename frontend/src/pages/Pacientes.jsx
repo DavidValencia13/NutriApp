@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { listarPacientes, eliminarPaciente, crearPacienteDemo } from "../services/pacienteService";
-import { obtenerWhatsappNutriologo, guardarWhatsappNutriologo } from "../services/authService";
 import { obtenerCoberturaCatalogo } from "../services/alimentoService";
 import { obtenerMenu } from "../services/menuService";
 import { faltanAlimentos } from "../utils/suficiencia";
@@ -11,7 +10,7 @@ import SeguimientoPaciente from "../components/SeguimientoPaciente";
 import FloatingAssistant from "../components/FloatingAssistant";
 import MiniSeguimiento from "../components/MiniSeguimiento";
 import AccesoPaciente from "../components/AccesoPaciente";
-import { BrainCircuit, CalendarCheck2, Ellipsis, HeartPulse, MessageCircle, Phone, Ruler, ShieldAlert, Smartphone, UserRound, UtensilsCrossed } from "lucide-react";
+import { BrainCircuit, CalendarCheck2, Ellipsis, HeartPulse, Ruler, ShieldAlert, Smartphone, UserRound, UtensilsCrossed } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { Logo } from "../components/Logo";
 import HeroCarousel from "../components/HeroCarousel";
@@ -72,10 +71,6 @@ function Pacientes() {
     catch { return true; }
   });
   const [guiaManual, setGuiaManual] = useState(false);
-  const [whatsappNumero, setWhatsappNumero] = useState(null);
-  const [whatsappBorrador, setWhatsappBorrador] = useState("");
-  const [whatsappError, setWhatsappError] = useState("");
-  const [whatsappGuardando, setWhatsappGuardando] = useState(false);
   function cerrarGuia() {
     setGuiaManual(false);
     setGuiaVista(true);
@@ -83,34 +78,6 @@ function Pacientes() {
   }
 
   useEffect(() => { cargarPacientes(); }, []);
-  useEffect(() => {
-    let vigente = true;
-    obtenerWhatsappNutriologo()
-      .then(({ numero }) => { if (vigente) setWhatsappNumero(numero); })
-      .catch(() => { if (vigente) setWhatsappError("No se pudo cargar el número de WhatsApp."); });
-    return () => { vigente = false; };
-  }, [nutriologo?.id]);
-
-  function abrirConfiguracionWhatsapp() {
-    setWhatsappBorrador(whatsappNumero ? `+${whatsappNumero}` : "");
-    setWhatsappError("");
-    setModal({ tipo: "whatsapp", paciente: null });
-  }
-
-  async function handleGuardarWhatsapp(event) {
-    event.preventDefault();
-    setWhatsappError("");
-    setWhatsappGuardando(true);
-    try {
-      const { numero } = await guardarWhatsappNutriologo(whatsappBorrador);
-      setWhatsappNumero(numero);
-      setModal({ tipo: null, paciente: null });
-    } catch (err) {
-      setWhatsappError(err.message || "No se pudo guardar el número.");
-    } finally {
-      setWhatsappGuardando(false);
-    }
-  }
   useEffect(() => {
     const actualizarSeccion = () => setSeccionActiva(window.location.hash === "#listado-pacientes" ? "pacientes" : "inicio");
     window.addEventListener("hashchange", actualizarSeccion);
@@ -198,11 +165,7 @@ function Pacientes() {
             ? `Seguimiento — ${modal.paciente?.nombre}`
             : modal.tipo === "acceso"
               ? `Acceso a la app — ${modal.paciente?.nombre}`
-              : modal.tipo === "whatsapp"
-                ? "Tu número de WhatsApp"
-                : "";
-
-  const numeroWhatsappValido = /^[1-9]\d{7,14}$/.test(whatsappNumero || "") ? whatsappNumero : null;
+              : "";
 
   const conteo = busqueda.trim() || filtro !== "todos"
     ? `${pacientesFiltrados.length} resultado${pacientesFiltrados.length !== 1 ? "s" : ""}`
@@ -216,22 +179,6 @@ function Pacientes() {
             <a href="#resumen" aria-current={seccionActiva === "inicio" ? "page" : undefined} onClick={() => setSeccionActiva("inicio")}><InicioNavIcon /> <span>Inicio</span></a>
             <a href="#listado-pacientes" aria-current={seccionActiva === "pacientes" ? "page" : undefined} onClick={() => setSeccionActiva("pacientes")}><ExpedientesNavIcon /> <span>Pacientes</span></a>
           </nav>
-          <div className="rail-whatsapp-area">
-            {numeroWhatsappValido ? (
-              <a className="rail-guide-link rail-whatsapp-link" href={`https://wa.me/${numeroWhatsappValido}`}
-                target="_blank" rel="noopener noreferrer" aria-label="WhatsApp (abre otra pestaña)">
-                <span className="rail-whatsapp-mark" aria-hidden="true"><MessageCircle size={23} strokeWidth={2} /><Phone size={11} strokeWidth={2.5} /></span>
-                <span className="rail-whatsapp-text">WhatsApp</span>
-              </a>
-            ) : (
-              <button type="button" className="rail-guide-link rail-whatsapp-link" onClick={abrirConfiguracionWhatsapp} aria-label="Configurar WhatsApp">
-                <span className="rail-whatsapp-mark" aria-hidden="true"><MessageCircle size={23} strokeWidth={2} /><Phone size={11} strokeWidth={2.5} /></span>
-                <span className="rail-whatsapp-text">Configurar WhatsApp</span>
-              </button>
-            )}
-            <button type="button" className="rail-whatsapp-edit" onClick={abrirConfiguracionWhatsapp}
-              aria-label="Editar número de WhatsApp" title="Editar número de WhatsApp"><IconPencil /></button>
-          </div>
       </aside>
       <div className="dashboard-main">
         <div className="dashboard-stage-main">
@@ -360,20 +307,6 @@ function Pacientes() {
         )}
         {modal.tipo === "acceso" && modal.paciente && (
           <AccesoPaciente paciente={modal.paciente} />
-        )}
-        {modal.tipo === "whatsapp" && (
-          <form onSubmit={handleGuardarWhatsapp} className="space-y-4">
-            <p className="text-sm text-gray-600">Este número se usa en el botón de WhatsApp de tu cuenta. Puedes cambiarlo cuando quieras.</p>
-            <label className="block text-sm font-semibold text-nutri-ink" htmlFor="whatsapp-numero">Número con código de país</label>
-            <input id="whatsapp-numero" type="tel" inputMode="tel" autoComplete="tel" maxLength={24}
-              value={whatsappBorrador} onChange={(event) => setWhatsappBorrador(event.target.value)}
-              placeholder="09… o +593…" className="w-full rounded-lg border border-line px-3 py-2.5 text-nutri-ink outline-none focus:border-nutri-brand" />
-            <p className="text-xs text-gray-500">Para Ecuador puedes escribir 09…; se guardará con +593. Deja el campo vacío si quieres quitar el enlace.</p>
-            {whatsappError && <p role="alert" className="text-sm text-red-700">{whatsappError}</p>}
-            <button type="submit" disabled={whatsappGuardando} className="primary-button disabled:opacity-50">
-              {whatsappGuardando ? "Guardando…" : "Guardar número"}
-            </button>
-          </form>
         )}
       </Modal>
       <FloatingAssistant pacientes={pacientes} hidden={modal.tipo !== null}

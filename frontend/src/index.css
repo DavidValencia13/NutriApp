@@ -709,21 +709,6 @@ h1, h2, h3, h4, h5, .font-display {
 .food-list-item-nutrients p { color: #597e70; font-size: 10px; line-height: 1.3; }
 @media (max-width: 760px) { .food-list-item { grid-template-columns: 44px minmax(0, 1fr) auto; gap: 8px; } .food-list-photo, .food-list-item-icon { width: 44px; height: 44px; } .food-list-item-nutrients { grid-column: 2 / 4; grid-row: 2; padding: 6px 9px; } .food-list-item-actions { grid-column: 3; grid-row: 1; } }
 @media (max-width: 760px) { .food-overview { grid-template-columns: repeat(2, minmax(0, 1fr)); } .food-overview > div:nth-child(3) { border-left: 0; border-top: 1px solid #dbece4; } .food-overview > div:nth-child(4) { border-top: 1px solid #dbece4; } }
-.rail-guide-link { margin: auto 14px 18px; padding: 10px 12px; border: 1px solid rgb(151 226 187 / .26); border-radius: 12px; color: #a2e7c2; font-size: 12px; text-align: left; transition: background .2s ease; }
-.rail-guide-link:hover { background: rgb(105 213 159 / .12); }
-.rail-whatsapp-area { position: relative; z-index: 1; display: flex; align-items: center; gap: 6px; margin: auto 14px 18px; }
-.rail-whatsapp-area .rail-whatsapp-link { flex: 1 1 auto; width: auto; margin: 0; }
-.rail-whatsapp-edit { display: grid; place-items: center; flex: 0 0 31px; width: 31px; height: 31px; border: 1px solid rgb(137 255 192 / .18); border-radius: 9px; background: rgb(255 255 255 / .07); color: #e8f4ec; cursor: pointer; }
-.rail-whatsapp-edit:hover { background: rgb(255 255 255 / .13); }
-.rail-whatsapp-edit svg { width: 14px; height: 14px; }
-.rail-whatsapp-link { display: flex; align-items: center; gap: 10px; width: calc(100% - 28px); min-height: 52px; border-color: rgb(137 255 192 / .16); background: linear-gradient(115deg, #073b33, #0a4b3c); color: #f0f7f2; font-weight: 750; line-height: 1.25; box-shadow: 0 2px 7px rgb(0 0 0 / .18); cursor: pointer; }
-.rail-whatsapp-link:hover { background: linear-gradient(115deg, #0a4a3b, #0b5543); box-shadow: 0 3px 9px rgb(0 0 0 / .2); transform: translateY(-1px); }
-.rail-whatsapp-link:focus-visible { outline: 2px solid #d7ffdf; outline-offset: 3px; }
-.rail-whatsapp-mark { position: relative; display: grid; place-items: center; flex: 0 0 32px; width: 32px; height: 32px; border-radius: 10px; background: rgb(255 255 255 / .07); }
-.rail-whatsapp-mark svg:last-child { position: absolute; top: 9px; left: 11px; transform: rotate(-17deg); }
-@media (max-width: 760px) { .rail-whatsapp-area { margin: 0; } .rail-whatsapp-link { width: auto; min-height: 40px; margin: 0; padding: 5px 8px; font-size: 11px; } .rail-whatsapp-mark { flex-basis: 27px; width: 27px; height: 27px; } .rail-whatsapp-mark svg:last-child { top: 7px; left: 9px; } }
-@media (max-width: 480px) { .rail-whatsapp-area .rail-whatsapp-link { flex: 0 1 auto; justify-content: center; padding: 4px 8px; } }
-@media (prefers-reduced-motion: reduce) { .rail-whatsapp-link { transition: none; } }
 .topbar-guide-link { padding: 9px 14px; border: 1px solid #d3e8dd; border-radius: 10px; color: #147258; font-size: 12px; font-weight: 700; }
 .topbar-guide-link:hover { background: #eaf8f0; }
 .food-list-item:hover { transform: translateX(2px); border-color: #a9ddc4; box-shadow: 0 7px 18px rgb(14 97 62 / .06); }
