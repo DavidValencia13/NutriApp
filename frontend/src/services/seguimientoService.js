@@ -13,6 +13,13 @@ export async function registrarSeguimiento(idPaciente, datos) {
   });
 }
 
+export async function actualizarSeguimiento(idPaciente, idRegistro, datos) {
+  return await apiFetch(`/paciente/${idPaciente}/seguimiento/${idRegistro}`, {
+    method: "PUT",
+    body: JSON.stringify(datos),
+  });
+}
+
 // Elimina un registro de seguimiento (ej. se capturó mal)
 export async function eliminarSeguimiento(idPaciente, idRegistro) {
   return await apiFetch(`/paciente/${idPaciente}/seguimiento/${idRegistro}`, {

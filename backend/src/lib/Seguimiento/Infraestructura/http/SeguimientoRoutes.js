@@ -5,6 +5,7 @@ const router = express.Router({ mergeParams: true });
 module.exports = (controller) => {
   router.post("/", controller.registrar);
   router.get("/", controller.listar);
+  router.put("/:id", controller.actualizar);
   router.delete("/:id", controller.eliminar);
 
   return router;

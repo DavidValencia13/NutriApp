@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import {
   listarSeguimiento,
   registrarSeguimiento,
+  actualizarSeguimiento,
   eliminarSeguimiento,
 } from "../services/seguimientoService";
 import { IconTrash } from "./Icons";
@@ -9,7 +10,7 @@ import CumplimientoMenu from "./CumplimientoMenu";
 import DiarioAlimentario from "./DiarioAlimentario";
 import PesoTrendChart from "./PesoTrendChart";
 import { ordenarControles } from "../utils/ordenarControles";
-import { AlertTriangle, CalendarDays, ClipboardCheck, NotebookPen, Scale } from "lucide-react";
+import { AlertTriangle, CalendarDays, ClipboardCheck, NotebookPen, Pencil, Scale } from "lucide-react";
 
 const ESTILOS_NIVEL = {
   bien: { label: "Buena", clase: "bg-nutri-green/15 text-nutri-green ring-1 ring-nutri-green/30" },
@@ -24,6 +25,23 @@ function hoyISO() {
 
 function formatoPeso(valor) {
   return Number(valor).toFixed(1).replace(".", ",");
+}
+
+function fechaControl(valor) {
+  return new Date(valor).toISOString().slice(0, 10);
+}
+
+function registroEnFecha(registros, fecha) {
+  return [...registros].sort(ordenarControles).reverse().find((registro) => fechaControl(registro.fecha) === fecha);
+}
+
+function datosFormulario(registro, fecha) {
+  return {
+    fecha,
+    peso: registro?.peso != null ? String(registro.peso) : "",
+    nivelCumplimiento: registro?.nivelCumplimiento || "",
+    observaciones: registro?.observaciones || "",
+  };
 }
 
 function controlesDudososMismoDia(pesos) {
@@ -51,6 +69,7 @@ function SeguimientoPaciente({ idPaciente }) {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [registroEdicion, setRegistroEdicion] = useState(null);
 
   useEffect(() => {
     let vigente = true;
@@ -86,7 +105,13 @@ function SeguimientoPaciente({ idPaciente }) {
 
   function handleSuccessFormulario() {
     setMostrarFormulario(false);
+    setRegistroEdicion(null);
     cargar();
+  }
+
+  function abrirEdicion(registro) {
+    setRegistroEdicion(registro);
+    setMostrarFormulario(true);
   }
 
   if (cargando) return <p>Cargando seguimiento...</p>;
@@ -101,6 +126,7 @@ function SeguimientoPaciente({ idPaciente }) {
   const cambio = pesos.length >= 2 ? Number(ultimo.peso) - Number(primero.peso) : null;
   const formatoFecha = (valor) => new Date(valor).toLocaleDateString("es-EC", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
   const controlDudoso = controlesDudososMismoDia(pesos);
+  const registroHoy = registroEnFecha(registros, hoyISO());
 
   return (
     <div>
@@ -124,17 +150,19 @@ function SeguimientoPaciente({ idPaciente }) {
 
       <div className="followup-entry-section">
         <button
-          onClick={() => setMostrarFormulario((v) => !v)}
+          onClick={() => { setRegistroEdicion(null); setMostrarFormulario((v) => !v); }}
           className="followup-open-button"
         >
-          <Scale size={15} aria-hidden="true" />{mostrarFormulario ? "Cerrar formulario de peso" : "Registrar nuevo peso"}
+          <Scale size={15} aria-hidden="true" />{mostrarFormulario ? "Cerrar formulario de peso" : registroHoy ? "Editar peso de hoy" : "Registrar nuevo peso"}
         </button>
         {mostrarFormulario && (
           <FormularioSeguimiento
+            key={registroEdicion?.id ?? "nuevo"}
             idPaciente={idPaciente}
-            ultimoPeso={ultimo?.peso}
+            registros={registros}
+            registroInicial={registroEdicion}
             onSuccess={handleSuccessFormulario}
-            onCancel={() => setMostrarFormulario(false)}
+            onCancel={() => { setMostrarFormulario(false); setRegistroEdicion(null); }}
           />
         )}
       </div>
@@ -166,13 +194,18 @@ function SeguimientoPaciente({ idPaciente }) {
                       <p className="text-gray-500 mt-0.5">Obs: {r.observaciones}</p>
                     )}
                   </div>
-                  <button
-                    onClick={() => handleEliminar(r.id)}
-                    className="text-nutri-pink hover:opacity-70 shrink-0"
-                    aria-label={`Eliminar control del ${formatoFecha(r.fecha)}${r.peso != null ? ` de ${formatoPeso(r.peso)} kg` : ""}`}
-                  >
-                    <IconTrash width="14" height="14" />
-                  </button>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <button type="button" onClick={() => abrirEdicion(r)} className="text-nutri-brand hover:opacity-70" aria-label={`Editar control del ${formatoFecha(r.fecha)}`} title="Editar control">
+                      <Pencil size={15} aria-hidden="true" />
+                    </button>
+                    <button
+                      onClick={() => handleEliminar(r.id)}
+                      className="text-nutri-pink hover:opacity-70"
+                      aria-label={`Eliminar control del ${formatoFecha(r.fecha)}${r.peso != null ? ` de ${formatoPeso(r.peso)} kg` : ""}`}
+                    >
+                      <IconTrash width="14" height="14" />
+                    </button>
+                  </div>
                 </div>
               );
             })}
@@ -186,25 +219,31 @@ function SeguimientoPaciente({ idPaciente }) {
   );
 }
 
-function FormularioSeguimiento({ idPaciente, ultimoPeso, onSuccess, onCancel }) {
-  const [form, setForm] = useState({
-    fecha: hoyISO(),
-    peso: "",
-    nivelCumplimiento: "",
-    observaciones: "",
+function FormularioSeguimiento({ idPaciente, registros, registroInicial, onSuccess, onCancel }) {
+  const [form, setForm] = useState(() => {
+    const fecha = registroInicial ? fechaControl(registroInicial.fecha) : hoyISO();
+    return datosFormulario(registroInicial || registroEnFecha(registros, fecha), fecha);
   });
   const [error, setError] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [pesoConfirmado, setPesoConfirmado] = useState(false);
+  const registroObjetivo = registroInicial || registroEnFecha(registros, form.fecha);
   const pesoIngresado = form.peso === "" ? null : Number(form.peso);
-  const pesoAnterior = Number(ultimoPeso);
+  const pesoAnterior = Number([...registros].filter((registro) =>
+    registro.id !== registroObjetivo?.id && Number(registro.peso) > 0 &&
+    (registroObjetivo ? ordenarControles(registro, registroObjetivo) < 0 : fechaControl(registro.fecha) <= form.fecha)
+  ).sort(ordenarControles).at(-1)?.peso);
   const diferencia = pesoIngresado > 0 && pesoAnterior > 0 ? pesoIngresado - pesoAnterior : null;
   const cambioInusual = diferencia !== null && Math.abs(diferencia) >= pesoAnterior * 0.25;
 
   function handleChange(e) {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-    if (name === "peso") setPesoConfirmado(false);
+    if (name === "fecha") {
+      setForm(datosFormulario(registroEnFecha(registros, value), value));
+    } else {
+      setForm((prev) => ({ ...prev, [name]: value }));
+    }
+    if (name === "peso" || name === "fecha") setPesoConfirmado(false);
   }
 
   async function handleSubmit(e) {
@@ -224,7 +263,11 @@ function FormularioSeguimiento({ idPaciente, ultimoPeso, onSuccess, onCancel }) 
         nivelCumplimiento: form.nivelCumplimiento,
         observaciones: form.observaciones || undefined,
       };
-      await registrarSeguimiento(idPaciente, datos);
+      if (registroObjetivo) {
+        await actualizarSeguimiento(idPaciente, registroObjetivo.id, datos);
+      } else {
+        await registrarSeguimiento(idPaciente, datos);
+      }
       onSuccess();
     } catch (err) {
       setError(err.message);
@@ -238,13 +281,14 @@ function FormularioSeguimiento({ idPaciente, ultimoPeso, onSuccess, onCancel }) 
 
   return (
     <form onSubmit={handleSubmit} className="followup-entry-form mt-3 border border-gray-200 rounded-lg p-3 bg-gray-50">
-      <div className="followup-form-heading"><Scale size={19} aria-hidden="true" /><div><strong>Nuevo control de peso</strong><p>Registra el peso total y valora el cumplimiento. Los alimentos se anotan por separado en la app del paciente.</p></div></div>
+      <div className="followup-form-heading"><Scale size={19} aria-hidden="true" /><div><strong>{registroObjetivo ? "Editar control de peso" : "Nuevo control de peso"}</strong><p>Registra el peso total y valora el cumplimiento. Los alimentos se anotan por separado en la app del paciente.</p></div></div>
+      {registroObjetivo && <p className="text-xs text-nutri-brand mb-2">Ya existe un control en esta fecha. Al guardar se actualizará, sin crear otro.</p>}
       {error && <p className="bg-red-100 text-red-700 text-xs p-2 rounded mb-2">{error}</p>}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2">
         <div>
           <label htmlFor={`followup-date-${idPaciente}`} className={labelClass}><CalendarDays size={13} aria-hidden="true" />Fecha del control *</label>
-          <input id={`followup-date-${idPaciente}`} type="date" name="fecha" value={form.fecha} max={hoyISO()} onChange={handleChange} required className={inputClass} />
+          <input id={`followup-date-${idPaciente}`} type="date" name="fecha" value={form.fecha} max={hoyISO()} onChange={handleChange} disabled={Boolean(registroInicial)} required className={inputClass} />
         </div>
         <div>
           <label htmlFor={`followup-weight-${idPaciente}`} className={labelClass}><Scale size={13} aria-hidden="true" />Peso total medido (kg) *</label>
@@ -277,7 +321,7 @@ function FormularioSeguimiento({ idPaciente, ultimoPeso, onSuccess, onCancel }) 
           Cancelar
         </button>
         <button type="submit" disabled={guardando} className="px-3 py-1.5 rounded bg-nutri-brand text-white text-sm disabled:opacity-50">
-          {guardando ? "Guardando..." : "Guardar control de peso"}
+          {guardando ? "Guardando..." : registroObjetivo ? "Guardar cambios" : "Guardar control de peso"}
         </button>
       </div>
     </form>

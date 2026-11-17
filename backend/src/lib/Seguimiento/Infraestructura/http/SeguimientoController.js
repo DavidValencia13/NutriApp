@@ -1,9 +1,10 @@
 const { AppError } = require("../../Dominio/Errores");
 
 class SeguimientoController {
-  constructor({ registrarSeguimiento, listarSeguimientoPorPaciente, eliminarSeguimiento }) {
+  constructor({ registrarSeguimiento, listarSeguimientoPorPaciente, actualizarSeguimiento, eliminarSeguimiento }) {
     this.registrarSeguimiento = registrarSeguimiento;
     this.listarSeguimientoPorPaciente = listarSeguimientoPorPaciente;
+    this.actualizarSeguimiento = actualizarSeguimiento;
     this.eliminarSeguimiento = eliminarSeguimiento;
   }
 
@@ -26,6 +27,19 @@ class SeguimientoController {
     try {
       const registros = await this.listarSeguimientoPorPaciente.ejecutar(req.idPaciente);
       res.json(registros);
+    } catch (error) {
+      this._manejarError(error, res, next);
+    }
+  };
+
+  actualizar = async (req, res, next) => {
+    try {
+      const id = Number(req.params.id);
+      if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({ message: "El id del registro no es válido" });
+      }
+      const registro = await this.actualizarSeguimiento.ejecutar(id, req.idPaciente, req.body);
+      res.json(registro);
     } catch (error) {
       this._manejarError(error, res, next);
     }

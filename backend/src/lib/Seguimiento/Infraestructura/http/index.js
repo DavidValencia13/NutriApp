@@ -3,6 +3,7 @@ const SeguimientoController = require("./SeguimientoController");
 const SeguimientoRepositorySequelize = require("../SeguimientoRepositorySequelize");
 const RegistrarSeguimiento = require("../../Aplicacion/RegistrarSeguimiento");
 const ListarSeguimientoPorPaciente = require("../../Aplicacion/ListarSeguimientoPorPaciente");
+const ActualizarSeguimiento = require("../../Aplicacion/ActualizarSeguimiento");
 const EliminarSeguimiento = require("../../Aplicacion/EliminarSeguimiento");
 
 const authMiddleware = require("../../../Nutriologo/Infraestructura/http/authMiddleware");
@@ -16,6 +17,7 @@ module.exports = function registerSeguimientoModule(app) {
   const controller = new SeguimientoController({
     registrarSeguimiento: new RegistrarSeguimiento(repo),
     listarSeguimientoPorPaciente: new ListarSeguimientoPorPaciente(repo),
+    actualizarSeguimiento: new ActualizarSeguimiento(repo),
     eliminarSeguimiento: new EliminarSeguimiento(repo),
   });
 
