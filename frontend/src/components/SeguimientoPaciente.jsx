@@ -269,7 +269,9 @@ function FormularioSeguimiento({ idPaciente, registros, registroInicial, onSucce
       }
       onSuccess();
     } catch (err) {
-      setError(err.message);
+      setError(err.message === "Ruta no encontrada" && registroObjetivo
+        ? "La edición todavía no está disponible en el servidor. El control no se guardó."
+        : err.message);
     } finally {
       setGuardando(false);
     }
@@ -281,7 +283,7 @@ function FormularioSeguimiento({ idPaciente, registros, registroInicial, onSucce
   return (
     <form onSubmit={handleSubmit} className="followup-entry-form mt-3 border border-gray-200 rounded-lg p-3 bg-gray-50">
       <div className="followup-form-heading"><Scale size={19} aria-hidden="true" /><div><strong>{registroObjetivo ? "Editar control de peso" : "Nuevo control de peso"}</strong><p>Registra el peso total y valora el cumplimiento. Los alimentos se anotan por separado en la app del paciente.</p></div></div>
-      {registroObjetivo && <p className="text-xs text-nutri-brand mb-2">Ya existe un control en esta fecha. Al guardar se actualizará, sin crear otro.</p>}
+      {registroObjetivo && !error && <p className="text-xs text-nutri-brand mb-2">Ya existe un control en esta fecha. Al guardar se actualizará, sin crear otro.</p>}
       {error && <p className="bg-red-100 text-red-700 text-xs p-2 rounded mb-2">{error}</p>}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2">
