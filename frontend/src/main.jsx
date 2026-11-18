@@ -4,6 +4,9 @@ import './index.css'
 import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 import AvisoServidor from './components/AvisoServidor.jsx'
+import { iniciarTema } from './utils/tema.js'
+
+iniciarTema()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

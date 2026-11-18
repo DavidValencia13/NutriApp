@@ -1171,3 +1171,401 @@ button.boton-preparacion:active { transform: scale(.98); }
 .portal-marca .portal-rail { background: radial-gradient(circle at 20% 90%, color-mix(in srgb, var(--marca-principal) 45%, transparent), transparent 55%), linear-gradient(180deg, var(--marca-oscuro), color-mix(in srgb, var(--marca-oscuro) 80%, var(--marca-principal))); }
 .portal-marca .portal-rail nav button:hover, .portal-marca .portal-rail nav button[class*="bg-white/10"] { background: linear-gradient(100deg, color-mix(in srgb, var(--marca-principal) 85%, transparent), color-mix(in srgb, var(--marca-principal) 50%, transparent)); }
 .portal-marca .portal-header { background: var(--marca-encabezado); }
+/* ===== MODO OSCURO =====
+   Se activa con la clase tema-oscuro en <html> (botón luna/sol, se recuerda
+   en este dispositivo). Las reglas "generadas" repintan las clases propias de
+   la app; se regeneran con frontend/scripts/gen-oscuro.cjs si cambian los estilos. */
+html.tema-oscuro {
+  color-scheme: dark;
+  --oscuro-fondo: #0b1412;
+  --oscuro-tarjeta: #14201d;
+  --oscuro-tarjeta-2: #1b2a26;
+  --oscuro-borde: #293a36;
+  --oscuro-texto: #e4efeb;
+  --oscuro-texto-suave: #9db2ab;
+  --oscuro-acento: #5fd3a8;
+}
+html.tema-oscuro body { background: var(--oscuro-fondo); color: var(--oscuro-texto); }
+html.tema-oscuro .bg-white, html.tema-oscuro .bg-white\/95, html.tema-oscuro .bg-white\/90 { background-color: var(--oscuro-tarjeta); }
+html.tema-oscuro .bg-surface { background-color: var(--oscuro-fondo); }
+html.tema-oscuro .bg-gray-50, html.tema-oscuro .bg-gray-100, html.tema-oscuro .bg-gray-50\/60 { background-color: var(--oscuro-tarjeta-2); }
+html.tema-oscuro .bg-orange-50 { background-color: rgb(245 158 11 / .14); }
+html.tema-oscuro .text-nutri-ink, html.tema-oscuro .text-gray-700, html.tema-oscuro .text-gray-800, html.tema-oscuro .text-gray-900 { color: var(--oscuro-texto); }
+html.tema-oscuro .text-gray-400, html.tema-oscuro .text-gray-500, html.tema-oscuro .text-gray-600 { color: var(--oscuro-texto-suave); }
+html.tema-oscuro .text-nutri-brand { color: var(--oscuro-acento); }
+html.tema-oscuro .border-line, html.tema-oscuro .border-gray-200, html.tema-oscuro .border-gray-300 { border-color: var(--oscuro-borde); }
+html.tema-oscuro input:not([type="color"]):not([type="checkbox"]):not([type="radio"]), html.tema-oscuro textarea, html.tema-oscuro select {
+  background-color: var(--oscuro-tarjeta-2); color: var(--oscuro-texto); border-color: var(--oscuro-borde);
+}
+html.tema-oscuro input::placeholder, html.tema-oscuro textarea::placeholder { color: #6f857e; }
+html.tema-oscuro .esqueleto { background: #18261f; }
+html.tema-oscuro .esqueleto::after { opacity: .25; }
+html.tema-oscuro .modal-card { background-color: var(--oscuro-tarjeta); }
+/* generadas */
+:where(.tema-oscuro) .dashboard-page { background: var(--oscuro-fondo); }
+:where(.tema-oscuro) .dashboard-topbar { background: var(--oscuro-tarjeta); border-bottom-color: var(--oscuro-borde); }
+:where(.tema-oscuro) .topbar-eyebrow, :where(.tema-oscuro) .section-eyebrow { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .topbar-greeting h1 { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .topbar-search { color: var(--oscuro-texto-suave); background: var(--oscuro-tarjeta); border-color: var(--oscuro-borde); }
+:where(.tema-oscuro) .topbar-search input { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .topbar-search input::placeholder { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .topbar-logout { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .topbar-logout:hover { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .dashboard-stat { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .dashboard-stat > div > span { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .dashboard-stat strong { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .dashboard-stat p { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .stat-icon { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .dashboard-stat-amber { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .dashboard-stat-amber > div > span, :where(.tema-oscuro) .dashboard-stat-amber strong { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .dashboard-stat-amber .stat-icon { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patients-heading h2 { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patients-heading p { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .patients-count { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .patient-filters button { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .patient-filters button span { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-card { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .patient-card:hover { border-color: var(--oscuro-borde); }
+:where(.tema-oscuro) .patient-avatar { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); border-color: var(--oscuro-borde); }
+:where(.tema-oscuro) .patient-card:nth-child(3n + 2) .patient-avatar { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); border-color: var(--oscuro-borde); }
+:where(.tema-oscuro) .patient-card:nth-child(3n + 3) .patient-avatar { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); border-color: var(--oscuro-borde); }
+:where(.tema-oscuro) .patient-goal { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .patient-profile-hint { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .patient-profile-hint svg { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-metrics > div { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .patient-metrics > div:nth-child(2) { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .patient-metrics dt { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .patient-metrics dd { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-actions { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .patient-card-mark { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-metrics .patient-metric-icon { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-metrics > div:nth-child(2) .patient-metric-icon { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-metrics > div:nth-child(3) .patient-metric-icon { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-clinical-tags { border-top-color: var(--oscuro-borde); }
+:where(.tema-oscuro) .patient-clinical-tag { border-right-color: var(--oscuro-borde); color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .patient-clinical-alert { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-clinical-condition { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-clinical-preference { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-clinical-activity { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-trend { border-color: var(--oscuro-borde); }
+:where(.tema-oscuro) .patient-trend-kicker { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-trend-current { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-trend-current strong { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-trend-baseline { border-top-color: var(--oscuro-borde); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-trend-baseline b { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-trend-baseline strong { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-trend-empty, :where(.tema-oscuro) .patient-trend-no-data span { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .patient-trend-no-data strong { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .weight-chart-frame { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .followup-overview { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .followup-overview-heading span { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .followup-overview-heading h3 { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .followup-overview-heading small, :where(.tema-oscuro) .followup-overview-note { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .followup-overview-stats > div { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .followup-overview-stats span { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .followup-overview-stats strong { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .followup-overview-stats small { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .followup-overview-empty { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .patient-actions { border-top-color: var(--oscuro-borde); }
+:where(.tema-oscuro) .patient-plan-action { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-plan-action svg { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-more summary { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .patient-more[open] summary, :where(.tema-oscuro) .patient-more summary:hover { border-color: var(--oscuro-borde); color: var(--oscuro-acento); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .patient-more-menu { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .patient-more-menu button { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-more-menu button:hover { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .patient-more-menu .patient-more-danger { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-more-menu .patient-more-danger:hover { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .menu-flow { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .menu-flow-kicker { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .menu-flow-steps li { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .menu-flow-steps li span { background: var(--oscuro-tarjeta); color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .menu-flow-steps li.active { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .menu-flow-steps li.done { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .menu-flow-error { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .menu-flow-step-card { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .menu-flow-card-icon { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .menu-flow-step-card p { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .menu-flow-step-card > button, :where(.tema-oscuro) .menu-flow-food-return button, :where(.tema-oscuro) .menu-flow-next button { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .menu-flow-generate { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .menu-flow-generate .menu-flow-card-icon { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .menu-flow-generate > button:disabled { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .menu-flow-coverage { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .menu-flow-back { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .menu-flow-result-intro { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .menu-flow-result-intro p { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .menu-flow-result-intro button, :where(.tema-oscuro) .menu-flow-new-version { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .menu-flow-next { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .menu-flow-next p { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .food-search-combo > svg { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-search-combo input { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-search-results { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .food-search-results button { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-search-results button:hover, :where(.tema-oscuro) .food-search-results button:focus-visible { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .food-search-results small { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .food-search-results .food-search-external { border-top-color: var(--oscuro-borde); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .filter-empty { border-color: var(--oscuro-borde); color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .dashboard-page { background: var(--oscuro-fondo); }
+:where(.tema-oscuro) .dashboard-stat-green { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .dashboard-stat-violet { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .dashboard-stat-violet > div > span, :where(.tema-oscuro) .dashboard-stat-violet strong { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .dashboard-stat-violet .stat-icon { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .dashboard-stat-amber { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .patient-card:nth-child(3n + 2) { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .patient-card:nth-child(3n + 3) { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .patient-metrics dt svg { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .dashboard-main .topbar-search { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .dashboard-main .dashboard-stat-green { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .dashboard-main .dashboard-stat-violet { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .dashboard-main .dashboard-stat-amber { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .patient-create-card { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-create-icon { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-create-card > span:nth-last-child(2) { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .patient-create-action { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .dashboard-main .topbar-note { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .topbar-note strong { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .topbar-note-icon { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-toolbar .patient-search { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .food-selection-alert { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-selection-alert strong { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-selection-alert.is-danger { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-selection-alert.is-danger strong { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-selection-actions button { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-selection-actions button:hover { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .food-list-heading h2 { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-budget-inline { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .food-budget-inline strong { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-budget-inline span:last-child { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-coverage-card { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .food-coverage-visual > span { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .food-coverage-kicker { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-coverage-header h3 { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-coverage-count { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-coverage-indicator > div { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .food-coverage-indicator strong { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-coverage-track { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .food-coverage-suggestions > span { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .food-coverage-suggestions > p { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .food-coverage-suggestions button, :where(.tema-oscuro) .form-suggestion-row button { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-coverage-suggestions button { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .food-coverage-suggestions button:hover, :where(.tema-oscuro) .form-suggestion-row button:hover, :where(.tema-oscuro) .form-suggestion-row button[aria-pressed="true"] { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .food-coverage-detail { border-top-color: var(--oscuro-borde); }
+:where(.tema-oscuro) .food-coverage-detail summary { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-coverage-alert { border-bottom-color: var(--oscuro-borde); color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .food-coverage-alert span, :where(.tema-oscuro) .food-coverage-note { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .food-coverage-loading { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .food-list-item { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .food-list-more { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-list-more:hover { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .food-overview { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .food-overview > div { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-overview > div + div { border-left-color: var(--oscuro-borde); }
+:where(.tema-oscuro) .food-overview span { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .food-overview strong { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-overview-next:disabled { background: var(--oscuro-tarjeta); color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .food-coverage-unavailable { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-entry-allergy-warning { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-overview > div:nth-child(3) { border-top-color: var(--oscuro-borde); }
+:where(.tema-oscuro) .food-overview > div:nth-child(4) { border-top-color: var(--oscuro-borde); }
+:where(.tema-oscuro) .food-allergy-note { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-list-item-icon { color: var(--oscuro-acento); background: var(--oscuro-tarjeta); box-shadow: none; }
+:where(.tema-oscuro) .food-list-item { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .food-list-item-nutrients { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .food-list-item-nutrients span { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-list-item-nutrients strong { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-list-item-nutrients small { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .food-list-item-nutrients p { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .food-overview > div:nth-child(3) { border-top-color: var(--oscuro-borde); }
+:where(.tema-oscuro) .food-overview > div:nth-child(4) { border-top-color: var(--oscuro-borde); }
+:where(.tema-oscuro) .topbar-guide-link { border-color: var(--oscuro-borde); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .topbar-guide-link:hover { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .food-list-item:hover { border-color: var(--oscuro-borde); }
+:where(.tema-oscuro) .food-list-item-main > p:first-child { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-list-item-meta { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .food-list-nutrition { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-list-nutrition-pending { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-list-item-actions button { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-list-item-actions button:hover { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .food-list-item-actions button:last-child:hover { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .form-intro, :where(.tema-oscuro) .food-entry-heading { border-bottom-color: var(--oscuro-borde); }
+:where(.tema-oscuro) .form-intro h3, :where(.tema-oscuro) .food-entry-heading h3 { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .form-intro p, :where(.tema-oscuro) .food-entry-heading p { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .patient-entry-form label svg { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-entry-form .form-suggestion-row button[aria-pressed="true"] { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-nutrition-toggle { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-nutrition-preview { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-nutrition-preview > div:first-child span, :where(.tema-oscuro) .food-nutrition-preview small { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .food-nutrition-preview-values span { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-nutrition-preview-values b { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-suggestion-tile { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-suggestion-tile:hover { border-color: var(--oscuro-borde); }
+:where(.tema-oscuro) .modal-card { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .modal-card > div:first-child { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .modal-card input:not([type="checkbox"]), :where(.tema-oscuro) .modal-card select, :where(.tema-oscuro) .modal-card textarea { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .meal-preview { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .meal-food-row { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .meal-food-unit { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .meal-food-remove { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .meal-food-remove:hover { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .meal-food-add { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .followup-open-button { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .followup-data-warning { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .followup-data-warning strong { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .followup-chart-context { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .followup-entry-form { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .followup-entry-form label svg { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .followup-form-heading { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .followup-form-heading strong { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .followup-form-heading p { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .followup-weight-help { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .followup-weight-help strong { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .followup-weight-help .followup-weight-change-warning { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .followup-entry-form .followup-weight-confirm { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .followup-food-section { border-top-color: var(--oscuro-borde); }
+:where(.tema-oscuro) .food-diary { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .food-diary-icon { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-diary-heading h2 { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-diary-heading p, :where(.tema-oscuro) .food-diary-note { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .food-diary-form { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .food-diary-form label { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-diary-form label svg { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-diary-form input { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-diary-suggestions { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .food-diary-suggestions button { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-diary-suggestions button:hover { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .food-diary-suggestions small { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .food-diary-submit span { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-diary-error { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-diary-empty { border-color: var(--oscuro-borde); color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .food-diary-day { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .food-diary-day-head { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-diary-day-head span { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-diary-macros { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .food-diary-day ul { border-top-color: var(--oscuro-borde); }
+:where(.tema-oscuro) .food-diary-day li + li { border-top-color: var(--oscuro-borde); }
+:where(.tema-oscuro) .food-diary-day li > span { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-diary-day li small { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .food-diary-day li strong { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-diary-day li button { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-diary-nutrients summary { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-diary-nutrients > div span { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-diary-nutrients > div b { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-diary-trend { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .food-diary-trend strong { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .food-diary-trend span { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .login-form-panel { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .portal-root { background: var(--oscuro-fondo); }
+:where(.tema-oscuro) .meal-preview h3 { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .meal-preview-values > div { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .meal-preview-values span { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .meal-preview-values strong { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .meal-preview-values p { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .meal-calories-row button { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .meal-calories-row button:hover { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .dashboard-main .patient-card { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .dashboard-main .patient-card .patient-avatar { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .dashboard-main .patient-card h3 { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .dashboard-main .patient-card .patient-goal { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .dashboard-main .patient-card .patient-clinical-tag { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .patient-vitals { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .patient-vital { border-right-color: var(--oscuro-borde); }
+:where(.tema-oscuro) .patient-vital-goal { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .patient-vital-activity { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .patient-vital-icon { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-vital-activity .patient-vital-icon { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-vital-goal .patient-vital-icon { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-vital > div > span { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .patient-vital strong { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-trend-detail { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .patient-trend-copy .patient-trend-kicker { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-trend-kicker svg { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-trend-result { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-trend-percent { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-trend-copy p { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .patient-trend-copy p b { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-trend-meta { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-trend-adherence--bien { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-trend-adherence--regular { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-trend-adherence--mal { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-trend-detail .weight-chart-frame { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .patient-trend-pending { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .dashboard-main .patient-card .patient-actions { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .dashboard-main .patient-card .patient-plan-action { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .patient-plan-icon { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .patient-plan-copy small { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .dashboard-main .patient-card .patient-plan-arrow { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .weekly-menu { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .weekly-menu-title h3 { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .weekly-menu-title span { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .weekly-menu-week { border-color: var(--oscuro-borde); color: var(--oscuro-acento); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .weekly-menu-history-button { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .weekly-menu-history-button:hover { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .weekly-menu-patient-note { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .weekly-menu-history { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .weekly-menu-history-heading span { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .weekly-menu-history-list button { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .weekly-menu-history-list button.selected { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .weekly-menu-history-list button em { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .menu-version-confirm { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .menu-version-confirm > div button:first-child { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .weekly-menu-status { border-color: var(--oscuro-borde); color: var(--oscuro-acento); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .weekly-menu-status.approved { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .weekly-menu-more summary { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .weekly-menu-more > div { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .weekly-menu-more button { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .weekly-menu-more button:hover { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .weekly-side-card { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .weekly-side-heading { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .weekly-side-icon { color: var(--oscuro-acento); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .weekly-goal p { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .weekly-progress-change { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .weekly-progress-change[data-trend="subio"] { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .weekly-progress p { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .weekly-progress > small { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .weekly-average dl > div { border-bottom-color: var(--oscuro-borde); }
+:where(.tema-oscuro) .weekly-average dt { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .weekly-average dd { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .weekly-average-warning { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .weekly-average-extra summary { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .weekly-day-strip button { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .weekly-day-strip button:hover { border-color: var(--oscuro-borde); }
+:where(.tema-oscuro) .weekly-day-strip button.selected { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .weekly-day-strip span { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .weekly-day-strip small { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .weekly-day-detail { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .weekly-day-heading h4 { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .weekly-day-heading h4 svg { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .weekly-day-calories { background: var(--oscuro-tarjeta); color: var(--oscuro-acento); }
+:where(.tema-oscuro) .weekly-nutrients { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .weekly-nutrient-meta { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .weekly-nutrient-item { border-right-color: var(--oscuro-borde); }
+:where(.tema-oscuro) .weekly-nutrient-item span { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .weekly-nutrient-item strong { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .weekly-nutrient-item small { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .weekly-micros button { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .weekly-meal { border-color: var(--oscuro-borde); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .weekly-meal:hover { border-color: var(--oscuro-borde); }
+:where(.tema-oscuro) .weekly-meal-icon { color: var(--oscuro-acento); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .weekly-meal-copy strong { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .weekly-meal-copy > span { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .weekly-meal-calories { color: var(--oscuro-acento); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .weekly-meal-chevron { color: var(--oscuro-acento); }
+:where(.tema-oscuro) .weekly-meal-details { color: var(--oscuro-texto-suave); }
+:where(.tema-oscuro) .weekly-meal-details button { border-color: var(--oscuro-borde); color: var(--oscuro-acento); background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .nutri-moment-icon { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .nutri-moment-icon[data-kind="desayuno"] { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .nutri-moment-icon[data-kind="merienda"] { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .nutri-moment-icon[data-kind="cena"] { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .weekly-side-icon { background: var(--oscuro-tarjeta); }
+:where(.tema-oscuro) .weekly-meal-wrap:hover > .weekly-meal { background: var(--oscuro-tarjeta); }
+
+html.tema-oscuro { --logo-texto: #e4efeb; }
+
+/* "Personalizar diseño" en la pantalla del nutricionista */
+.rail-brand-propia { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.rail-brand-propia img { width: 44px; height: 44px; flex: none; border-radius: 12px; object-fit: contain; background: #fff; padding: 3px; }
+.rail-brand-propia strong { font-size: 17px; font-weight: 800; line-height: 1.15; color: #fff; }
+.dashboard-marca .dashboard-rail { background: radial-gradient(circle at -10% 90%, color-mix(in srgb, var(--marca-principal) 40%, transparent), transparent 45%), linear-gradient(155deg, var(--marca-oscuro), color-mix(in srgb, var(--marca-oscuro) 55%, var(--marca-principal)) 65%, var(--marca-principal)); }
+.dashboard-marca .rail-brand > span { color: var(--marca-claro); }
+.dashboard-marca .rail-nav a[aria-current="page"] { border-color: color-mix(in srgb, var(--marca-claro) 35%, transparent); background: linear-gradient(110deg, color-mix(in srgb, var(--marca-principal) 70%, transparent), color-mix(in srgb, var(--marca-principal) 25%, transparent)); }
+.dashboard-marca .primary-button { background: linear-gradient(120deg, var(--marca-oscuro), var(--marca-principal)); box-shadow: 0 5px 12px color-mix(in srgb, var(--marca-principal) 25%, transparent); }

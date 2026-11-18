@@ -9,6 +9,7 @@ import { cantidadLegible } from "../utils/cantidad";
 import { HojaPreparacion, MiniPasos } from "../components/PreparacionPlato";
 import { tienePreparacion, textoMinutos } from "../utils/preparacion";
 import { estiloDeMarca } from "../utils/marca";
+import BotonTema from "../components/BotonTema";
 import { ordenarControles } from "../utils/ordenarControles";
 import {
   obtenerPerfilPortal,
@@ -164,6 +165,7 @@ function PortalPaciente() {
             <p className="text-sm font-semibold truncate">{perfil?.nombre || paciente?.nombre}</p>
             <p className="text-xs text-white/50">Paciente</p>
           </div>
+          <BotonTema className="flex items-center justify-center w-8 h-8 rounded-md text-white/50 hover:text-white hover:bg-white/10 cursor-pointer" />
           <button
             onClick={logout}
             title="Cerrar sesión"
@@ -179,9 +181,12 @@ function PortalPaciente() {
         {/* Barra superior (celular) */}
         <div className="md:hidden flex items-center justify-between px-4 h-14 bg-nutri-ink text-white">
           <EncabezadoMarca marca={marca} />
-          <button onClick={logout} aria-label="Cerrar sesión" className="p-2 -mr-2 text-white/70 hover:text-white">
-            <LogOut size={18} />
-          </button>
+          <span className="flex items-center">
+            <BotonTema className="p-2 text-white/70 hover:text-white" />
+            <button onClick={logout} aria-label="Cerrar sesión" className="p-2 -mr-2 text-white/70 hover:text-white">
+              <LogOut size={18} />
+            </button>
+          </span>
         </div>
 
         {/* Saludo */}

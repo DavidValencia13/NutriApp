@@ -105,7 +105,7 @@ function VistaCelular({ marca, nombreNutricionista }) {
   );
 }
 
-function PersonalizarDiseno({ nombreNutricionista, onCerrar }) {
+function PersonalizarDiseno({ nombreNutricionista, onCerrar, onGuardado }) {
   const [marca, setMarca] = useState(VACIA);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
@@ -139,8 +139,10 @@ function PersonalizarDiseno({ nombreNutricionista, onCerrar }) {
     setError("");
     setGuardando(true);
     try {
-      setMarca(desdeServidor(await guardarMarcaNutriologo(datos)));
+      const guardada = await guardarMarcaNutriologo(datos);
+      setMarca(desdeServidor(guardada));
       setGuardado(true);
+      onGuardado?.(guardada);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -235,7 +237,7 @@ function PersonalizarDiseno({ nombreNutricionista, onCerrar }) {
           Volver al diseño de NutriApp
         </button>
         {error && <p className="w-full sm:w-auto text-sm text-nutri-pink order-first sm:order-none">{error}</p>}
-        {guardado && <span className="text-sm text-nutri-green flex items-center gap-1.5"><BadgeCheck size={16} aria-hidden="true" /> Guardado: tus pacientes ya lo ven</span>}
+        {guardado && <span className="text-sm text-nutri-green flex items-center gap-1.5"><BadgeCheck size={16} aria-hidden="true" /> Guardado: ya se ve aquí y en la app de tus pacientes</span>}
         <button type="button" onClick={onCerrar} className="px-4 py-2 rounded-lg border border-line text-sm">{guardado ? "Cerrar" : "Cancelar"}</button>
         <button type="button" disabled={guardando}
           onClick={() => guardar({ ...marca, nombreConsulta: marca.nombreConsulta.trim(), especialidad: marca.especialidad.trim(), mensajeBienvenida: marca.mensajeBienvenida.trim() })}

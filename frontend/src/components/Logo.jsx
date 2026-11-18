@@ -15,7 +15,7 @@ export function Logo({ size = 32, light = false }) {
       <LogoMark size={size} />
       <span
         className="font-bold leading-none"
-        style={{ fontSize: size * 0.56, color: light ? "#fff" : "var(--color-nutri-ink)", letterSpacing: "-0.02em" }}
+        style={{ fontSize: size * 0.56, color: light ? "#fff" : "var(--logo-texto, var(--color-nutri-ink))", letterSpacing: "-0.02em" }}
       >
         NutriApp
       </span>

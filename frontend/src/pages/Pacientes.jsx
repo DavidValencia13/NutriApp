@@ -11,6 +11,9 @@ import FloatingAssistant from "../components/FloatingAssistant";
 import MiniSeguimiento from "../components/MiniSeguimiento";
 import AccesoPaciente from "../components/AccesoPaciente";
 import PersonalizarDiseno from "../components/PersonalizarDiseno";
+import BotonTema from "../components/BotonTema";
+import { obtenerMarcaNutriologo } from "../services/authService";
+import { estiloDeMarca } from "../utils/marca";
 import { BrainCircuit, CalendarCheck2, Ellipsis, HeartPulse, Palette, Ruler, ShieldAlert, Smartphone, UserRound, UtensilsCrossed } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { Logo } from "../components/Logo";
@@ -72,6 +75,14 @@ function Pacientes() {
     catch { return true; }
   });
   const [guiaManual, setGuiaManual] = useState(false);
+  // "Personalizar diseño": también se ve en la pantalla del nutricionista
+  const [marca, setMarca] = useState(null);
+  useEffect(() => {
+    let vigente = true;
+    obtenerMarcaNutriologo().then((m) => { if (vigente) setMarca(m); }).catch(() => {});
+    return () => { vigente = false; };
+  }, []);
+  const estiloMarca = estiloDeMarca(marca);
   function cerrarGuia() {
     setGuiaManual(false);
     setGuiaVista(true);
@@ -175,9 +186,17 @@ function Pacientes() {
     : `${pacientes.length} paciente${pacientes.length !== 1 ? "s" : ""}`;
 
   return (
-    <div className="dashboard-page min-h-screen bg-surface">
+    <div className={`dashboard-page min-h-screen bg-surface ${estiloMarca ? "dashboard-marca" : ""}`} style={estiloMarca}>
       <aside className="dashboard-rail" aria-label="Navegación de NutriApp">
-          <div className="rail-brand"><Logo size={44} light /><span>CONSULTA DIGITAL</span></div>
+          <div className="rail-brand">
+            {marca?.logo || marca?.nombreConsulta ? (
+              <span className="rail-brand-propia">
+                {marca.logo && <img src={marca.logo} alt="" />}
+                {marca.nombreConsulta && <strong>{marca.nombreConsulta}</strong>}
+              </span>
+            ) : <Logo size={44} light />}
+            <span>{(marca?.especialidad || "CONSULTA DIGITAL").toUpperCase()}</span>
+          </div>
           <nav className="rail-nav" aria-label="Secciones de Pacientes">
             <a href="#resumen" aria-current={seccionActiva === "inicio" ? "page" : undefined} onClick={() => setSeccionActiva("inicio")}><InicioNavIcon /> <span>Inicio</span></a>
             <a href="#listado-pacientes" aria-current={seccionActiva === "pacientes" ? "page" : undefined} onClick={() => setSeccionActiva("pacientes")}><ExpedientesNavIcon /> <span>Pacientes</span></a>
@@ -199,6 +218,7 @@ function Pacientes() {
               <button type="button" className="primary-button" data-tour="nuevo-paciente" onClick={() => setModal({ tipo: "paciente", paciente: null })}>
                 <IconPlus /> Nuevo paciente
               </button>
+              <BotonTema className="topbar-logout" />
               <button type="button" className="topbar-logout" onClick={logout} aria-label="Cerrar sesión" title="Cerrar sesión">
                 <IconLogout />
               </button>
@@ -293,7 +313,7 @@ function Pacientes() {
         }
       >
         {modal.tipo === "diseno" && (
-          <PersonalizarDiseno nombreNutricionista={nutriologo ? `${nutriologo.nombre} ${nutriologo.apellido || ""}`.trim() : ""} onCerrar={cerrarModal} />
+          <PersonalizarDiseno nombreNutricionista={nutriologo ? `${nutriologo.nombre} ${nutriologo.apellido || ""}`.trim() : ""} onCerrar={cerrarModal} onGuardado={setMarca} />
         )}
         {modal.tipo === "paciente" && (
           <FormularioPaciente
