@@ -3,6 +3,7 @@
 // --marca-*), según qué tan claro u oscuro es. Solo aplica dentro de
 // .dashboard-marca (pantalla del nutricionista) y .portal-marca (paciente).
 // Uso: node scripts/gen-marca.cjs src/index.css  (pega la salida tras "/* marca generadas */")
+//      node scripts/gen-marca.cjs src/index.css --bordes  (reglas de esquinas, tras "/* bordes generadas */")
 const fs = require("fs");
 const css = fs.readFileSync(process.argv[2], "utf8").replace(/\r\n/g, "\n");
 const corte = css.indexOf("/* ===== COLOR DE MARCA");
@@ -77,6 +78,30 @@ function reemplazo(color, esTexto = false) {
 }
 
 const COLOR = /#[0-9a-f]{3,8}\b|rgba?\([^)]*\)/gi;
+
+// Esquinas: radios de 6 a 30 px pasan a rectas (4 px) o muy redondeadas (x1.7)
+// Uso: node scripts/gen-marca.cjs src/index.css --bordes  (tras "/* bordes generadas */")
+if (process.argv.includes("--bordes")) {
+  const salida = [];
+  const reB = /([^{}]+)\{([^{}]*)\}/g;
+  let b;
+  while ((b = reB.exec(limpio))) {
+    const selector = b[1].trim();
+    if (!selector || selector.startsWith("@") || /^(from|to|\d+%)/.test(selector) || /tema-oscuro|marca/.test(selector)) continue;
+    const decl = b[2].split(";").map((x) => x.trim()).find((x) => /^border-radius\s*:/.test(x));
+    if (!decl) continue;
+    const px = decl.split(":")[1].trim().match(/^(\d+(?:\.\d+)?)px$/);
+    if (!px) continue;
+    const n = Number(px[1]);
+    if (n < 6 || n > 30) continue;
+    const pref = (clase) => selector.split(",").map((s) => `:where(.${clase}) ${s.trim()}`).join(", ");
+    salida.push(`${pref("marca-bordes-rectos")} { border-radius: 4px; }`);
+    salida.push(`${pref("marca-bordes-redondeados")} { border-radius: ${Math.round(n * 1.7)}px; }`);
+  }
+  console.log(salida.join("\n"));
+  console.error(`${salida.length} reglas de bordes`);
+  process.exit(0);
+}
 const OMITIR = /assistant|boton-preparacion|weekly-meal-prep|prep-|live-dot|esqueleto|tema-oscuro|marca/;
 const reglas = [];
 const re = /([^{}]+)\{([^{}]*)\}/g;

@@ -1493,6 +1493,285 @@ html.tema-oscuro .dashboard-marca, html.tema-oscuro .portal-marca { --oscuro-ace
 :where(.dashboard-marca, .portal-marca) .weekly-meal-wrap:hover { box-shadow: 0 8px 22px color-mix(in srgb, var(--marca-principal) 12%, transparent); }
 :where(.dashboard-marca, .portal-marca) .weekly-meal-wrap:hover > .weekly-meal { border-color: var(--marca-claro); }
 
+/* Tipografía, esquinas y fondo elegidos en "Personalizar diseño" */
+.marca-fuente-clasica, .marca-fuente-clasica :where(*:not(svg):not(svg *)) { font-family: 'Lora', Georgia, serif !important; }
+.marca-fuente-redondeada, .marca-fuente-redondeada :where(*:not(svg):not(svg *)) { font-family: 'Nunito', system-ui, sans-serif !important; }
+.marca-bordes-rectos :where(.rounded-md, .rounded-lg, .rounded-xl, .rounded-2xl, .rounded-3xl) { border-radius: 4px; }
+.marca-bordes-redondeados :where(.rounded-lg) { border-radius: 14px; }
+.marca-bordes-redondeados :where(.rounded-xl) { border-radius: 20px; }
+.marca-bordes-redondeados :where(.rounded-2xl) { border-radius: 26px; }
+.marca-fondo-liso.dashboard-page { background: #f4f6f5; }
+.marca-fondo-liso.dashboard-page::before, .marca-fondo-liso.dashboard-page::after { display: none; }
+.marca-fondo-liso.portal-root { background: #f4f6f5; }
+html.tema-oscuro .marca-fondo-liso.dashboard-page, html.tema-oscuro .marca-fondo-liso.portal-root { background: var(--oscuro-fondo); }
+/* bordes generadas */
+:where(.marca-bordes-rectos) .topbar-search { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .topbar-search { border-radius: 17px; }
+:where(.marca-bordes-rectos) .primary-button { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .primary-button { border-radius: 15px; }
+:where(.marca-bordes-rectos) .topbar-logout { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .topbar-logout { border-radius: 15px; }
+:where(.marca-bordes-rectos) .dashboard-hero { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .dashboard-hero { border-radius: 31px; }
+:where(.marca-bordes-rectos) .dashboard-stat { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .dashboard-stat { border-radius: 22px; }
+:where(.marca-bordes-rectos) .stat-icon { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .stat-icon { border-radius: 17px; }
+:where(.marca-bordes-rectos) .patient-filters button { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .patient-filters button { border-radius: 15px; }
+:where(.marca-bordes-rectos) .patient-filters button span { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .patient-filters button span { border-radius: 34px; }
+:where(.marca-bordes-rectos) .patient-card { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .patient-card { border-radius: 24px; }
+:where(.marca-bordes-rectos) .patient-metrics { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .patient-metrics { border-radius: 17px; }
+:where(.marca-bordes-rectos) .patient-metrics > div { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .patient-metrics > div { border-radius: 19px; }
+:where(.marca-bordes-rectos) .patient-metrics .patient-metric-icon { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .patient-metrics .patient-metric-icon { border-radius: 14px; }
+:where(.marca-bordes-rectos) .patient-trend { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .patient-trend { border-radius: 22px; }
+:where(.marca-bordes-rectos) .weight-chart-frame { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .weight-chart-frame { border-radius: 20px; }
+:where(.marca-bordes-rectos) .followup-overview { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .followup-overview { border-radius: 27px; }
+:where(.marca-bordes-rectos) .followup-overview-stats > div { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .followup-overview-stats > div { border-radius: 17px; }
+:where(.marca-bordes-rectos) .patient-plan-action { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .patient-plan-action { border-radius: 19px; }
+:where(.marca-bordes-rectos) .patient-more summary { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .patient-more summary { border-radius: 19px; }
+:where(.marca-bordes-rectos) .patient-more-menu { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .patient-more-menu { border-radius: 20px; }
+:where(.marca-bordes-rectos) .patient-more-menu button { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .patient-more-menu button { border-radius: 14px; }
+:where(.marca-bordes-rectos) .menu-flow-steps li { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .menu-flow-steps li { border-radius: 17px; }
+:where(.marca-bordes-rectos) .menu-flow-error { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .menu-flow-error { border-radius: 17px; }
+:where(.marca-bordes-rectos) .menu-flow-step-card { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .menu-flow-step-card { border-radius: 27px; }
+:where(.marca-bordes-rectos) .menu-flow-card-icon { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .menu-flow-card-icon { border-radius: 20px; }
+:where(.marca-bordes-rectos) .menu-flow-step-card > button, :where(.marca-bordes-rectos) .menu-flow-food-return button, :where(.marca-bordes-rectos) .menu-flow-next button { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .menu-flow-step-card > button, :where(.marca-bordes-redondeados) .menu-flow-food-return button, :where(.marca-bordes-redondeados) .menu-flow-next button { border-radius: 15px; }
+:where(.marca-bordes-rectos) .menu-flow-coverage { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .menu-flow-coverage { border-radius: 17px; }
+:where(.marca-bordes-rectos) .menu-flow-food-heading { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .menu-flow-food-heading { border-radius: 24px; }
+:where(.marca-bordes-rectos) .menu-flow-result-intro { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .menu-flow-result-intro { border-radius: 19px; }
+:where(.marca-bordes-rectos) .menu-flow-next { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .menu-flow-next { border-radius: 20px; }
+:where(.marca-bordes-rectos) .food-search-combo input { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-search-combo input { border-radius: 19px; }
+:where(.marca-bordes-rectos) .food-search-results { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-search-results { border-radius: 20px; }
+:where(.marca-bordes-rectos) .food-search-results button { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-search-results button { border-radius: 14px; }
+:where(.marca-bordes-rectos) .filter-empty { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .filter-empty { border-radius: 20px; }
+:where(.marca-bordes-rectos) .rail-nav a { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .rail-nav a { border-radius: 19px; }
+:where(.marca-bordes-rectos) .hero-controls { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .hero-controls { border-radius: 51px; }
+:where(.marca-bordes-rectos) .hero-dots button { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .hero-dots button { border-radius: 14px; }
+:where(.marca-bordes-rectos) .dashboard-stat { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .dashboard-stat { border-radius: 27px; }
+:where(.marca-bordes-rectos) .assistant-float-label { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .assistant-float-label { border-radius: 14px; }
+:where(.marca-bordes-rectos) .assistant-panel { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .assistant-panel { border-radius: 31px; }
+:where(.marca-bordes-rectos) .assistant-panel-header > button { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .assistant-panel-header > button { border-radius: 14px; }
+:where(.marca-bordes-rectos) .assistant-panel-body select { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .assistant-panel-body select { border-radius: 14px; }
+:where(.marca-bordes-rectos) .rail-nav a { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .rail-nav a { border-radius: 26px; }
+:where(.marca-bordes-rectos) .dashboard-main .dashboard-hero { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .dashboard-main .dashboard-hero { border-radius: 46px; }
+:where(.marca-bordes-rectos) .hero-glass-panel { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .hero-glass-panel { border-radius: 31px; }
+:where(.marca-bordes-rectos) .hero-glass-panel::before { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .hero-glass-panel::before { border-radius: 22px; }
+:where(.marca-bordes-rectos) .hero-glass-modules span { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .hero-glass-modules span { border-radius: 34px; }
+:where(.marca-bordes-rectos) .dashboard-main .patient-card { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .dashboard-main .patient-card { border-radius: 31px; }
+:where(.marca-bordes-rectos) .patient-create-card { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .patient-create-card { border-radius: 31px; }
+:where(.marca-bordes-rectos) .patient-create-action { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .patient-create-action { border-radius: 43px; }
+:where(.marca-bordes-rectos) .dashboard-main .topbar-note { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .dashboard-main .topbar-note { border-radius: 51px; }
+:where(.marca-bordes-rectos) .food-selection-alert { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-selection-alert { border-radius: 15px; }
+:where(.marca-bordes-rectos) .food-selection-actions button { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-selection-actions button { border-radius: 12px; }
+:where(.marca-bordes-rectos) .food-add-button, :where(.marca-bordes-rectos) .food-entry-form button[type="submit"], :where(.marca-bordes-rectos) .patient-entry-form button[type="submit"] { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-add-button, :where(.marca-bordes-redondeados) .food-entry-form button[type="submit"], :where(.marca-bordes-redondeados) .patient-entry-form button[type="submit"] { border-radius: 15px; }
+:where(.marca-bordes-rectos) .food-budget-inline { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-budget-inline { border-radius: 15px; }
+:where(.marca-bordes-rectos) .food-coverage-card { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-coverage-card { border-radius: 22px; }
+:where(.marca-bordes-rectos) .food-coverage-visual > span { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-coverage-visual > span { border-radius: 20px; }
+:where(.marca-bordes-rectos) .food-coverage-count { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-coverage-count { border-radius: 12px; }
+:where(.marca-bordes-rectos) .food-coverage-track { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-coverage-track { border-radius: 14px; }
+:where(.marca-bordes-rectos) .food-coverage-suggestions button, :where(.marca-bordes-rectos) .form-suggestion-row button { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-coverage-suggestions button, :where(.marca-bordes-redondeados) .form-suggestion-row button { border-radius: 14px; }
+:where(.marca-bordes-rectos) .food-list-item { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-list-item { border-radius: 17px; }
+:where(.marca-bordes-rectos) .food-list-more { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-list-more { border-radius: 17px; }
+:where(.marca-bordes-rectos) .food-overview { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-overview { border-radius: 20px; }
+:where(.marca-bordes-rectos) .food-overview-next { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-overview-next { border-radius: 14px; }
+:where(.marca-bordes-rectos) .food-entry-allergy-warning { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-entry-allergy-warning { border-radius: 15px; }
+:where(.marca-bordes-rectos) .food-list-item-icon { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-list-item-icon { border-radius: 20px; }
+:where(.marca-bordes-rectos) .food-list-item { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-list-item { border-radius: 20px; }
+:where(.marca-bordes-rectos) .food-list-photo { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-list-photo { border-radius: 15px; }
+:where(.marca-bordes-rectos) .food-list-item-icon { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-list-item-icon { border-radius: 15px; }
+:where(.marca-bordes-rectos) .food-list-item-nutrients { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-list-item-nutrients { border-radius: 15px; }
+:where(.marca-bordes-rectos) .topbar-guide-link { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .topbar-guide-link { border-radius: 17px; }
+:where(.marca-bordes-rectos) .food-list-item-actions button { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-list-item-actions button { border-radius: 14px; }
+:where(.marca-bordes-rectos) .food-nutrition-toggle { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-nutrition-toggle { border-radius: 15px; }
+:where(.marca-bordes-rectos) .food-nutrition-preview { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-nutrition-preview { border-radius: 19px; }
+:where(.marca-bordes-rectos) .food-nutrition-preview-values span { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-nutrition-preview-values span { border-radius: 12px; }
+:where(.marca-bordes-rectos) .food-suggestion-tile { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-suggestion-tile { border-radius: 17px; }
+:where(.marca-bordes-rectos) .modal-card { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .modal-card { border-radius: 29px; }
+:where(.marca-bordes-rectos) .modal-card input:not([type="checkbox"]), :where(.marca-bordes-rectos) .modal-card select, :where(.marca-bordes-rectos) .modal-card textarea { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .modal-card input:not([type="checkbox"]), :where(.marca-bordes-redondeados) .modal-card select, :where(.marca-bordes-redondeados) .modal-card textarea { border-radius: 15px; }
+:where(.marca-bordes-rectos) .meal-preview { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .meal-preview { border-radius: 19px; }
+:where(.marca-bordes-rectos) .meal-food-row { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .meal-food-row { border-radius: 17px; }
+:where(.marca-bordes-rectos) .meal-food-remove { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .meal-food-remove { border-radius: 12px; }
+:where(.marca-bordes-rectos) .meal-food-add { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .meal-food-add { border-radius: 14px; }
+:where(.marca-bordes-rectos) .followup-open-button { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .followup-open-button { border-radius: 15px; }
+:where(.marca-bordes-rectos) .followup-data-warning { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .followup-data-warning { border-radius: 17px; }
+:where(.marca-bordes-rectos) .followup-entry-form .followup-weight-confirm { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .followup-entry-form .followup-weight-confirm { border-radius: 14px; }
+:where(.marca-bordes-rectos) .food-diary { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-diary { border-radius: 26px; }
+:where(.marca-bordes-rectos) .food-diary-icon { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-diary-icon { border-radius: 17px; }
+:where(.marca-bordes-rectos) .food-diary-form { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-diary-form { border-radius: 20px; }
+:where(.marca-bordes-rectos) .food-diary-form input { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-diary-form input { border-radius: 14px; }
+:where(.marca-bordes-rectos) .food-diary-suggestions { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-diary-suggestions { border-radius: 17px; }
+:where(.marca-bordes-rectos) .food-diary-suggestions button { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-diary-suggestions button { border-radius: 12px; }
+:where(.marca-bordes-rectos) .food-diary-submit button { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-diary-submit button { border-radius: 14px; }
+:where(.marca-bordes-rectos) .food-diary-error { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-diary-error { border-radius: 14px; }
+:where(.marca-bordes-rectos) .food-diary-empty { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-diary-empty { border-radius: 17px; }
+:where(.marca-bordes-rectos) .food-diary-day { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-diary-day { border-radius: 17px; }
+:where(.marca-bordes-rectos) .food-diary-nutrients > div span { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-diary-nutrients > div span { border-radius: 10px; }
+:where(.marca-bordes-rectos) .food-diary-trend { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .food-diary-trend { border-radius: 17px; }
+:where(.marca-bordes-rectos) .meal-preview-values > div { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .meal-preview-values > div { border-radius: 14px; }
+:where(.marca-bordes-rectos) .meal-calories-row button { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .meal-calories-row button { border-radius: 14px; }
+:where(.marca-bordes-rectos) ::-webkit-scrollbar-thumb { border-radius: 4px; }
+:where(.marca-bordes-redondeados) ::-webkit-scrollbar-thumb { border-radius: 14px; }
+:where(.marca-bordes-rectos) .dashboard-main .patient-card { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .dashboard-main .patient-card { border-radius: 41px; }
+:where(.marca-bordes-rectos) .dashboard-main .patient-card .patient-clinical-tag { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .dashboard-main .patient-card .patient-clinical-tag { border-radius: 12px; }
+:where(.marca-bordes-rectos) .patient-vitals { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .patient-vitals { border-radius: 26px; }
+:where(.marca-bordes-rectos) .patient-vital-icon { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .patient-vital-icon { border-radius: 15px; }
+:where(.marca-bordes-rectos) .patient-trend-detail { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .patient-trend-detail { border-radius: 26px; }
+:where(.marca-bordes-rectos) .patient-trend-percent { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .patient-trend-percent { border-radius: 24px; }
+:where(.marca-bordes-rectos) .patient-trend-adherence { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .patient-trend-adherence { border-radius: 20px; }
+:where(.marca-bordes-rectos) .patient-trend-detail .weight-chart-frame { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .patient-trend-detail .weight-chart-frame { border-radius: 15px; }
+:where(.marca-bordes-rectos) .patient-trend-pending { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .patient-trend-pending { border-radius: 15px; }
+:where(.marca-bordes-rectos) .dashboard-main .patient-card .patient-plan-action { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .dashboard-main .patient-card .patient-plan-action { border-radius: 22px; }
+:where(.marca-bordes-rectos) .patient-plan-icon { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .patient-plan-icon { border-radius: 19px; }
+:where(.marca-bordes-rectos) .dashboard-main .patient-card .patient-more summary { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .dashboard-main .patient-card .patient-more summary { border-radius: 17px; }
+:where(.marca-bordes-rectos) .patient-vital-icon { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .patient-vital-icon { border-radius: 12px; }
+:where(.marca-bordes-rectos) .weekly-menu-hero { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .weekly-menu-hero { border-radius: 31px; }
+:where(.marca-bordes-rectos) .weekly-menu-week { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .weekly-menu-week { border-radius: 20px; }
+:where(.marca-bordes-rectos) .weekly-menu-history-button { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .weekly-menu-history-button { border-radius: 15px; }
+:where(.marca-bordes-rectos) .weekly-menu-patient-note { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .weekly-menu-patient-note { border-radius: 17px; }
+:where(.marca-bordes-rectos) .weekly-menu-history { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .weekly-menu-history { border-radius: 22px; }
+:where(.marca-bordes-rectos) .weekly-menu-history-list button { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .weekly-menu-history-list button { border-radius: 17px; }
+:where(.marca-bordes-rectos) .menu-version-confirm > div button:first-child { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .menu-version-confirm > div button:first-child { border-radius: 15px; }
+:where(.marca-bordes-rectos) .weekly-menu-approve { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .weekly-menu-approve { border-radius: 17px; }
+:where(.marca-bordes-rectos) .weekly-menu-more summary { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .weekly-menu-more summary { border-radius: 17px; }
+:where(.marca-bordes-rectos) .weekly-menu-more > div { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .weekly-menu-more > div { border-radius: 19px; }
+:where(.marca-bordes-rectos) .weekly-menu-more button { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .weekly-menu-more button { border-radius: 12px; }
+:where(.marca-bordes-rectos) .weekly-side-card { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .weekly-side-card { border-radius: 26px; }
+:where(.marca-bordes-rectos) .weekly-side-icon { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .weekly-side-icon { border-radius: 17px; }
+:where(.marca-bordes-rectos) .weekly-menu-sidebar > .rounded-lg { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .weekly-menu-sidebar > .rounded-lg { border-radius: 26px; }
+:where(.marca-bordes-rectos) .weekly-day-strip button { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .weekly-day-strip button { border-radius: 22px; }
+:where(.marca-bordes-rectos) .weekly-day-detail { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .weekly-day-detail { border-radius: 29px; }
+:where(.marca-bordes-rectos) .weekly-nutrients { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .weekly-nutrients { border-radius: 20px; }
+:where(.marca-bordes-rectos) .weekly-meal { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .weekly-meal { border-radius: 20px; }
+:where(.marca-bordes-rectos) .weekly-meal-icon { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .weekly-meal-icon { border-radius: 17px; }
+:where(.marca-bordes-rectos) .weekly-meal-details button { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .weekly-meal-details button { border-radius: 12px; }
+:where(.marca-bordes-rectos) .weekly-meal-wrap { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .weekly-meal-wrap { border-radius: 20px; }
+
 /* ===== MODO OSCURO =====
    Se activa con la clase tema-oscuro en <html> (botón luna/sol, se recuerda
    en este dispositivo). Las reglas "generadas" repintan las clases propias de

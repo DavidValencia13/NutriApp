@@ -8,7 +8,7 @@ import AsistenteChat from "../components/AsistenteChat";
 import { cantidadLegible } from "../utils/cantidad";
 import { HojaPreparacion, MiniPasos } from "../components/PreparacionPlato";
 import { tienePreparacion, textoMinutos } from "../utils/preparacion";
-import { estiloDeMarca } from "../utils/marca";
+import { clasesDeMarca, estiloDeMarca } from "../utils/marca";
 import BotonTema from "../components/BotonTema";
 import { ordenarControles } from "../utils/ordenarControles";
 import {
@@ -137,7 +137,7 @@ function PortalPaciente() {
   const estiloMarca = estiloDeMarca(marca);
   const nombreConsulta = marca?.nombreConsulta || "";
   return (
-    <div className={`portal-root min-h-screen bg-surface md:flex ${estiloMarca ? "portal-marca" : ""}`} style={estiloMarca}>
+    <div className={`portal-root min-h-screen bg-surface md:flex ${clasesDeMarca(marca, "portal")}`} style={estiloMarca}>
       {/* Barra lateral (computadora) */}
       <aside className="portal-rail hidden md:flex w-60 shrink-0 flex-col bg-nutri-ink text-white sticky top-0 h-screen">
         <div className="px-5 h-16 flex items-center border-b border-white/10">

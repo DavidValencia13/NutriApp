@@ -1,9 +1,16 @@
 // "Personalizar diseño": el nutricionista define cómo ve su paciente la app.
 // marca = { nombreConsulta, especialidad, mensajeBienvenida, color,
-//           estiloEncabezado, logo } (cualquiera puede ser null)
+//           estiloEncabezado, tipografia, bordes, fondo, logo }
+//   (cualquiera puede ser null = diseño original de NutriApp)
 //   color: una clave de la paleta o un color propio "#rrggbb"
 const COLORES_MARCA = ["verde", "azul", "turquesa", "morado", "rosa", "naranja", "gris"];
 const ESTILOS_ENCABEZADO = ["degradado", "solido", "ondas"];
+// Opciones de diseño general (valor permitido -> se valida contra la lista)
+const OPCIONES = {
+  tipografia: ["moderna", "clasica", "redondeada"],
+  bordes: ["suaves", "rectos", "redondeados"],
+  fondo: ["decorado", "liso"],
+};
 const COLOR_PROPIO = /^#[0-9a-f]{6}$/i;
 const LIMITES = { nombreConsulta: 60, especialidad: 80, mensajeBienvenida: 160 };
 // El logo llega ya achicado desde el navegador (≈160 px). Tope holgado y por
@@ -37,14 +44,24 @@ function normalizarMarca(datos = {}) {
   if (estiloEncabezado && !ESTILOS_ENCABEZADO.includes(estiloEncabezado))
     throw errorValidacion("Estilo de encabezado no válido");
 
+  const opciones = {};
+  for (const [campo, permitidos] of Object.entries(OPCIONES)) {
+    const valor = datos[campo] ? String(datos[campo]) : null;
+    if (valor && !permitidos.includes(valor)) throw errorValidacion("Opción de diseño no válida");
+    opciones[campo] = valor;
+  }
+
   const logo = datos.logo ? String(datos.logo) : null;
   if (logo && !LOGO_VALIDO.test(logo)) throw errorValidacion("El logo debe ser una imagen PNG, JPG o WebP");
   if (logo && logo.length > MAX_LOGO) throw errorValidacion("El logo es muy pesado; usa una imagen más pequeña");
 
-  return { nombreConsulta, especialidad, mensajeBienvenida, color, estiloEncabezado, logo };
+  return { nombreConsulta, especialidad, mensajeBienvenida, color, estiloEncabezado, ...opciones, logo };
 }
 
-const VACIA = { nombreConsulta: null, especialidad: null, mensajeBienvenida: null, color: null, estiloEncabezado: null, logo: null };
+const VACIA = {
+  nombreConsulta: null, especialidad: null, mensajeBienvenida: null, color: null,
+  estiloEncabezado: null, tipografia: null, bordes: null, fondo: null, logo: null,
+};
 
 function marcaVacia(marca) {
   return !marca || Object.values(marca).every((v) => !v);
@@ -69,4 +86,4 @@ class PersonalizarMarca {
   }
 }
 
-module.exports = { PersonalizarMarca, normalizarMarca, COLORES_MARCA, ESTILOS_ENCABEZADO };
+module.exports = { PersonalizarMarca, normalizarMarca, COLORES_MARCA, ESTILOS_ENCABEZADO, OPCIONES };

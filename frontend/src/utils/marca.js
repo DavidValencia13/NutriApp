@@ -18,6 +18,34 @@ export const ESTILOS_ENCABEZADO = {
   ondas: "Con ondas",
 };
 
+// Opciones de diseño general (deben coincidir con OPCIONES del backend)
+export const OPCIONES_DISENO = {
+  tipografia: {
+    moderna: { nombre: "Moderna", fuente: "'DM Sans', system-ui, sans-serif" },
+    clasica: { nombre: "Clásica", fuente: "'Lora', Georgia, serif" },
+    redondeada: { nombre: "Redondeada", fuente: "'Nunito', system-ui, sans-serif" },
+  },
+  bordes: {
+    suaves: { nombre: "Suaves", radio: 12 },
+    rectos: { nombre: "Rectas", radio: 4 },
+    redondeados: { nombre: "Muy redondeadas", radio: 22 },
+  },
+  fondo: {
+    decorado: { nombre: "Decorado" },
+    liso: { nombre: "Liso" },
+  },
+};
+
+// Clases que aplican el diseño elegido. base: "dashboard" (nutricionista) o "portal" (paciente)
+export function clasesDeMarca(marca, base) {
+  const clases = [];
+  if (estiloDeMarca(marca)) clases.push(`${base}-marca`);
+  if (marca?.tipografia && marca.tipografia !== "moderna") clases.push(`marca-fuente-${marca.tipografia}`);
+  if (marca?.bordes && marca.bordes !== "suaves") clases.push(`marca-bordes-${marca.bordes}`);
+  if (marca?.fondo === "liso") clases.push("marca-fondo-liso");
+  return clases.join(" ");
+}
+
 const HEX = /^#[0-9a-f]{6}$/i;
 
 function mezclar(hex, con, proporcion) {

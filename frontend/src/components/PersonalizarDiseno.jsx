@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { BadgeCheck, CalendarDays, Check, ImagePlus, Loader2, MessageSquareQuote, Paintbrush, Sun, Trash2, TrendingUp } from "lucide-react";
 import { obtenerMarcaNutriologo, guardarMarcaNutriologo } from "../services/authService";
-import { ESTILOS_ENCABEZADO, PALETA_MARCA, achicarLogo, colorDeMarca, esColorPropio, fondoEncabezado } from "../utils/marca";
+import { ESTILOS_ENCABEZADO, OPCIONES_DISENO, PALETA_MARCA, achicarLogo, colorDeMarca, esColorPropio, fondoEncabezado } from "../utils/marca";
 import { Logo } from "./Logo";
 
 // "Personalizar diseño": el nutricionista define cómo ve su paciente la app
 // (identidad, color, estilo y mensaje), con vista previa de celular en vivo.
-const VACIA = { nombreConsulta: "", especialidad: "", mensajeBienvenida: "", color: "verde", estiloEncabezado: "degradado", logo: null };
+const VACIA = {
+  nombreConsulta: "", especialidad: "", mensajeBienvenida: "", color: "verde", estiloEncabezado: "degradado",
+  tipografia: "moderna", bordes: "suaves", fondo: "decorado", logo: null,
+};
 
 function desdeServidor(m) {
   return {
@@ -15,6 +18,9 @@ function desdeServidor(m) {
     mensajeBienvenida: m?.mensajeBienvenida || "",
     color: m?.color || "verde",
     estiloEncabezado: m?.estiloEncabezado || "degradado",
+    tipografia: m?.tipografia || "moderna",
+    bordes: m?.bordes || "suaves",
+    fondo: m?.fondo || "decorado",
     logo: m?.logo || null,
   };
 }
@@ -31,6 +37,16 @@ function Seccion({ numero, titulo, descripcion, children }) {
       </div>
       <div className="space-y-4">{children}</div>
     </section>
+  );
+}
+
+function Opcion({ elegido, onClick, nombre, children }) {
+  return (
+    <button type="button" onClick={onClick} aria-pressed={elegido}
+      className={`rounded-xl border-2 p-2.5 text-center transition-colors ${elegido ? "border-nutri-ink bg-surface" : "border-line hover:border-gray-300"}`}>
+      {children}
+      <span className={`block text-xs font-semibold mt-1.5 ${elegido ? "text-nutri-ink" : "text-gray-500"}`}>{nombre}</span>
+    </button>
   );
 }
 
@@ -54,9 +70,13 @@ function VistaCelular({ marca, nombreNutricionista }) {
   const c = colorDeMarca(marca) || PALETA_MARCA.verde;
   const nombre = marca.nombreConsulta.trim();
   const tieneMarca = nombre || marca.logo;
+  const fuente = OPCIONES_DISENO.tipografia[marca.tipografia]?.fuente;
+  const radio = OPCIONES_DISENO.bordes[marca.bordes]?.radio ?? 12;
+  const tarjeta = { borderRadius: radio };
   return (
     <div className="mx-auto w-[270px] rounded-[2.2rem] bg-gray-900 p-2.5 shadow-2xl">
-      <div className="relative rounded-[1.7rem] overflow-hidden bg-surface h-[520px] flex flex-col">
+      <div className="relative rounded-[1.7rem] overflow-hidden h-[520px] flex flex-col"
+        style={{ fontFamily: fuente, background: marca.fondo === "liso" ? "#f4f6f5" : `radial-gradient(circle at 90% 30%, ${c.claro}33, transparent 45%), radial-gradient(circle at 10% 90%, ${c.claro}33, transparent 40%), #f6f9f8` }}>
         <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-20 h-4 rounded-full bg-gray-900 z-10" aria-hidden="true" />
         <div className="flex items-center gap-2 px-4 pt-7 pb-2.5 text-white" style={{ background: c.oscuro }}>
           {tieneMarca ? (
@@ -77,18 +97,18 @@ function VistaCelular({ marca, nombreNutricionista }) {
           )}
         </div>
         <div className="flex-1 p-3 space-y-2 overflow-hidden">
-          <div className="rounded-xl bg-white border border-line p-3 flex items-center gap-3">
+          <div className="bg-white border border-line p-3 flex items-center gap-3" style={tarjeta}>
             <span className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold" style={{ color: c.principal, background: `${c.claro}55` }}>50%</span>
             <span className="text-xs font-semibold text-nutri-ink">2 de 4 comidas registradas</span>
           </div>
           {["Desayuno", "Almuerzo"].map((t) => (
-            <div key={t} className="rounded-xl bg-white border border-line p-3">
+            <div key={t} className="bg-white border border-line p-3" style={tarjeta}>
               <p className="text-[11px] font-semibold" style={{ color: c.principal }}>{t}</p>
               <p className="text-xs font-semibold text-nutri-ink">Plato del día</p>
               <div className="grid grid-cols-3 gap-1 mt-2">
-                <span className="text-[10px] text-center rounded-md py-1 text-white" style={{ background: c.principal }}>La comí</span>
-                <span className="text-[10px] text-center rounded-md py-1 border border-line text-gray-500">Una parte</span>
-                <span className="text-[10px] text-center rounded-md py-1 border border-line text-gray-500">No</span>
+                <span className="text-[10px] text-center py-1 text-white" style={{ background: c.principal, borderRadius: radio / 2 }}>La comí</span>
+                <span className="text-[10px] text-center py-1 border border-line text-gray-500" style={{ borderRadius: radio / 2 }}>Una parte</span>
+                <span className="text-[10px] text-center py-1 border border-line text-gray-500" style={{ borderRadius: radio / 2 }}>No</span>
               </div>
             </div>
           ))}
@@ -220,7 +240,42 @@ function PersonalizarDiseno({ nombreNutricionista, onCerrar, onGuardado }) {
             </div>
           </Seccion>
 
-          <Seccion numero={3} titulo="Mensaje para tus pacientes" descripcion="Aparece en el encabezado de su app. Opcional.">
+          <Seccion numero={3} titulo="Estilo general" descripcion="Se aplica a tu pantalla y a la app de tus pacientes.">
+            <div>
+              <p className="text-sm font-medium text-nutri-ink mb-2">Tipografía</p>
+              <div className="grid grid-cols-3 gap-2">
+                {Object.entries(OPCIONES_DISENO.tipografia).map(([clave, op]) => (
+                  <Opcion key={clave} elegido={marca.tipografia === clave} onClick={() => cambiar("tipografia")(clave)} nombre={op.nombre}>
+                    <span className="block text-2xl text-nutri-ink" style={{ fontFamily: op.fuente }}>Aa</span>
+                    <span className="block text-[11px] text-gray-500 mt-0.5" style={{ fontFamily: op.fuente }}>Hola, María</span>
+                  </Opcion>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-nutri-ink mb-2">Esquinas</p>
+              <div className="grid grid-cols-3 gap-2">
+                {Object.entries(OPCIONES_DISENO.bordes).map(([clave, op]) => (
+                  <Opcion key={clave} elegido={marca.bordes === clave} onClick={() => cambiar("bordes")(clave)} nombre={op.nombre}>
+                    <span className="block mx-auto w-14 h-9 border-2" style={{ borderRadius: op.radio, borderColor: c.principal, background: `${c.claro}40` }} />
+                  </Opcion>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-nutri-ink mb-2">Fondo</p>
+              <div className="grid grid-cols-2 gap-2">
+                {Object.entries(OPCIONES_DISENO.fondo).map(([clave, op]) => (
+                  <Opcion key={clave} elegido={marca.fondo === clave} onClick={() => cambiar("fondo")(clave)} nombre={op.nombre}>
+                    <span className="block h-9 rounded-lg border border-line"
+                      style={{ background: clave === "liso" ? "#f4f6f5" : `radial-gradient(circle at 85% 20%, ${c.claro}66, transparent 50%), radial-gradient(circle at 10% 90%, ${c.principal}33, transparent 45%), #f6f9f8` }} />
+                  </Opcion>
+                ))}
+              </div>
+            </div>
+          </Seccion>
+
+          <Seccion numero={4} titulo="Mensaje para tus pacientes" descripcion="Aparece en el encabezado de su app. Opcional.">
             <Campo etiqueta="Mensaje de bienvenida" valor={marca.mensajeBienvenida} max={160} multilinea
               placeholder="Ej.: ¡Vamos paso a paso! Cualquier duda, escríbeme en tu próxima consulta." onChange={cambiar("mensajeBienvenida")} />
           </Seccion>

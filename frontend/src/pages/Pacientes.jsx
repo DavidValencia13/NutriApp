@@ -13,7 +13,7 @@ import AccesoPaciente from "../components/AccesoPaciente";
 import PersonalizarDiseno from "../components/PersonalizarDiseno";
 import BotonTema from "../components/BotonTema";
 import { obtenerMarcaNutriologo } from "../services/authService";
-import { estiloDeMarca } from "../utils/marca";
+import { clasesDeMarca, estiloDeMarca } from "../utils/marca";
 import { BrainCircuit, CalendarCheck2, Ellipsis, HeartPulse, Palette, Ruler, ShieldAlert, Smartphone, UserRound, UtensilsCrossed } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { Logo } from "../components/Logo";
@@ -186,7 +186,7 @@ function Pacientes() {
     : `${pacientes.length} paciente${pacientes.length !== 1 ? "s" : ""}`;
 
   return (
-    <div className={`dashboard-page min-h-screen bg-surface ${estiloMarca ? "dashboard-marca" : ""}`} style={estiloMarca}>
+    <div className={`dashboard-page min-h-screen bg-surface ${clasesDeMarca(marca, "dashboard")}`} style={estiloMarca}>
       <aside className="dashboard-rail" aria-label="Navegación de NutriApp">
           <div className="rail-brand">
             {marca?.logo || marca?.nombreConsulta ? (
