@@ -293,6 +293,10 @@ class MenuRepositorySequelize {
     });
   }
 
+  async guardarBebida(idComidaMenu, bebida) {
+    await ComidaMenuModel.update({ bebida }, { where: { id: Number(idComidaMenu) } });
+  }
+
   // { [idComidaMenu]: preparacion | null }
   async guardarPreparaciones(porComida) {
     const entradas = Object.entries(porComida || {});

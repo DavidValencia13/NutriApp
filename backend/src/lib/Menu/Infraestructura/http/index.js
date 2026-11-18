@@ -4,6 +4,9 @@ const MenuRepositorySequelize = require("../MenuRepositorySequelize");
 const GeneradorMenuIA = require("../GeneradorMenuIA");
 const GeneradorPreparacionIA = require("../GeneradorPreparacionIA");
 const ExplicarPreparacionMenu = require("../../Aplicacion/ExplicarPreparacionMenu");
+const { AsignarBebidaComida } = require("../../Aplicacion/AsignarBebidaComida");
+const { detalleRequerimiento } = require("../../Dominio/Servicios/RequerimientoCalorico");
+const { proteinaPorKg } = require("../../../Alimento/Dominio/Servicios/SuficienciaCatalogo");
 const { pedirCompletion } = require("../../../../Infraestructura/ia/iaClient");
 
 const GenerarMenuSemanal = require("../../Aplicacion/GenerarMenuSemanal");
@@ -54,6 +57,8 @@ module.exports = function registerMenuModule(app) {
     aprobarMenu: new AprobarMenu({ menuRepository: menuRepo, explicarPreparacion: explicarPreparacionMenu }),
     calcularNutrientesPreviewComida: new CalcularNutrientesPreviewComida({ menuRepository: menuRepo, listarAlimentosPorPaciente, pacienteRepository: pacienteRepo }),
     explicarPreparacionMenu,
+    asignarBebidaComida: new AsignarBebidaComida({ menuRepository: menuRepo }),
+    obtenerRequerimiento: async (idPaciente) => detalleRequerimiento((await pacienteRepo.findById(idPaciente)) || {}, { proteinaPorKg }),
   });
 
   app.use(

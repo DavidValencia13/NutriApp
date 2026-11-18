@@ -2,13 +2,15 @@ const { AppError } = require("../../Dominio/Errores");
 const { sumarNutrientes } = require("../../Dominio/Servicios/CalculadoraNutricional");
 
 class MenuController {
-  constructor({ generarMenuSemanal, obtenerMenuPorPaciente, ajustarComidaMenu, aprobarMenu, calcularNutrientesPreviewComida, explicarPreparacionMenu }) {
+  constructor({ generarMenuSemanal, obtenerMenuPorPaciente, ajustarComidaMenu, aprobarMenu, calcularNutrientesPreviewComida, explicarPreparacionMenu, asignarBebidaComida, obtenerRequerimiento }) {
     this.generarMenuSemanal = generarMenuSemanal;
     this.obtenerMenuPorPaciente = obtenerMenuPorPaciente;
     this.ajustarComidaMenu = ajustarComidaMenu;
     this.aprobarMenu = aprobarMenu;
     this.calcularNutrientesPreviewComida = calcularNutrientesPreviewComida;
     this.explicarPreparacionMenu = explicarPreparacionMenu;
+    this.asignarBebidaComida = asignarBebidaComida;
+    this.obtenerRequerimiento = obtenerRequerimiento;
   }
 
   generar = async (req, res, next) => {
@@ -122,6 +124,26 @@ class MenuController {
         return res.status(400).json({ message: "El id de la comida no es válido" });
       }
       res.json(await this.explicarPreparacionMenu.editar(idComidaMenu, req.nutriologo.id, req.body?.preparacion ?? null));
+    } catch (error) {
+      this._manejarError(error, res, next);
+    }
+  };
+
+  asignarBebida = async (req, res, next) => {
+    try {
+      const idComidaMenu = Number(req.params.idComidaMenu);
+      if (!Number.isInteger(idComidaMenu) || idComidaMenu <= 0) {
+        return res.status(400).json({ message: "El id de la comida no es válido" });
+      }
+      res.json(await this.asignarBebidaComida.ejecutar(idComidaMenu, req.nutriologo.id, req.body?.bebida ?? null));
+    } catch (error) {
+      this._manejarError(error, res, next);
+    }
+  };
+
+  requerimiento = async (req, res, next) => {
+    try {
+      res.json(await this.obtenerRequerimiento(req.idPaciente));
     } catch (error) {
       this._manejarError(error, res, next);
     }

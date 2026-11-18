@@ -121,7 +121,7 @@ Para responder sobre seguimiento, menús o datos clínicos de una persona, pide 
 Identificador: paciente de la consulta actual
 Peso de ficha: ${paciente.peso} kg | Peso inicial de ficha: ${paciente.pesoInicial} kg | Altura: ${paciente.altura} m
 Objetivo: ${paciente.objetivo} | Actividad: ${paciente.nivelActividad} | Comidas/día: ${paciente.numeroComidas}
-Presupuesto semanal: $${paciente.presupuesto} | Tiempo para cocinar: ${paciente.tiempoParaCocinar} minutos
+Presupuesto semanal: ${paciente.presupuesto > 0 ? `$${paciente.presupuesto}` : "sin presupuesto definido"} | Tiempo para cocinar: ${paciente.tiempoParaCocinar} minutos
 Restricciones: ${paciente.restricciones || "sin registrar"} | Preferencias: ${paciente.preferencias || "sin registrar"}
 Alergias: ${paciente.alergias?.length ? paciente.alergias.join(", ") : "sin registrar"}
 Enfermedades: ${paciente.enfermedades?.length ? paciente.enfermedades.join(", ") : "sin registrar"}

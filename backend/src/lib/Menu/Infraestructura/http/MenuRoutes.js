@@ -6,6 +6,7 @@ module.exports = (controller, { limiteGeneracion } = {}) => {
   router.post("/generar", ...(limiteGeneracion ? [limiteGeneracion] : []), controller.generar); // RF-008
   router.get("/", controller.obtener); // RF-009 / RF-0010
   router.get("/historial", controller.historial);
+  router.get("/requerimiento", controller.requerimiento); // cómo se calculó la meta y los macros
   router.get("/historial/:idMenu", controller.obtenerVersion);
   router.put("/comida/:idComidaMenu", controller.ajustar); // RF-0011
   router.post("/:idMenu/preview-nutrientes", controller.previewNutrientes); // feedback en vivo
@@ -13,5 +14,6 @@ module.exports = (controller, { limiteGeneracion } = {}) => {
   // Explicación de preparación (IA a pedido + corrección del nutricionista)
   router.post("/:idMenu/preparacion", controller.generarPreparacion);
   router.put("/comida/:idComidaMenu/preparacion", controller.editarPreparacion);
+  router.put("/comida/:idComidaMenu/bebida", controller.asignarBebida);
   return router;
 };

@@ -63,7 +63,8 @@ class GenerarMenuSemanal {
       objetivo: paciente.objetivo,
       nivelActividad: paciente.nivelActividad,
       numeroComidas: paciente.numeroComidas,
-      presupuesto: paciente.presupuesto,
+      // Presupuesto opcional: 0 = sin límite (p. ej. consulta privada)
+      ...(paciente.presupuesto > 0 && { presupuesto: paciente.presupuesto }),
       tiempoParaCocinar: paciente.tiempoParaCocinar,
       restricciones: paciente.restricciones,
       preferencias: paciente.preferencias,

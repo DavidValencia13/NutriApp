@@ -8,6 +8,7 @@ import AsistenteChat from "../components/AsistenteChat";
 import { cantidadLegible } from "../utils/cantidad";
 import { HojaPreparacion, MiniPasos } from "../components/PreparacionPlato";
 import PanelComposicion from "../components/ComposicionCorporal";
+import { LineaBebida } from "../components/BebidaComida";
 import { tienePreparacion, textoMinutos } from "../utils/preparacion";
 import { clasesDeMarca, estiloDeMarca } from "../utils/marca";
 import BotonTema from "../components/BotonTema";
@@ -420,6 +421,8 @@ function TarjetaComida({ comida, marca, onMarcar, indice }) {
             ))}
           </ul>
         )}
+
+        <LineaBebida bebida={comida.bebida} className="mt-3 text-gray-700" />
 
         {tienePreparacion(comida) && (
           <button type="button" onClick={() => setVerPreparacion(true)}

@@ -59,4 +59,58 @@ function repartoPorComida(caloriasDia, momentos) {
   }));
 }
 
-module.exports = { requerimientoCalorico, repartoPorComida, factorActividad };
+// Detalle del cálculo para mostrarle al profesional de dónde sale la meta
+// (fórmula, valores usados y cada paso) y la distribución de macronutrientes:
+// proteína según objetivo (g/kg), grasa 30 % de las kcal y carbohidratos el
+// resto (dentro de los rangos AMDR del Institute of Medicine).
+const NOMBRES_ACTIVIDAD = [
+  [1.2, "Sedentario"], [1.375, "Ligero"], [1.55, "Moderado"], [1.725, "Alto"], [1.9, "Muy alto"],
+];
+const PORCENTAJE_GRASA = 0.3;
+
+function detalleRequerimiento(paciente = {}, { proteinaPorKg } = {}) {
+  const kg = Number(paciente.peso);
+  const cm = Number(paciente.altura) * 100;
+  if (!(kg > 0) || !(cm > 0)) return null;
+  const edadDato = Number(paciente.edad) > 0;
+  const anios = edadDato ? Number(paciente.edad) : 30;
+  const sexo = paciente.sexo === "masculino" || paciente.sexo === "femenino" ? paciente.sexo : null;
+  const ajusteSexo = sexo === "masculino" ? 5 : sexo === "femenino" ? -161 : -78;
+  const tmb = 10 * kg + 6.25 * cm - 5 * anios + ajusteSexo;
+  const factor = factorActividad(paciente.nivelActividad);
+  const get = tmb * factor;
+  const ajuste = ajusteObjetivo(paciente.objetivo);
+  const meta = requerimientoCalorico(paciente);
+  const minimo = MINIMO_SEGURO[sexo] || 1350;
+
+  const gPorKg = proteinaPorKg ? proteinaPorKg(paciente.objetivo) : 1;
+  const proteinaG = Math.round(kg * gPorKg);
+  const grasaKcal = meta * PORCENTAJE_GRASA;
+  const grasaG = Math.round(grasaKcal / 9);
+  const carbohidratosKcal = Math.max(meta - proteinaG * 4 - grasaG * 9, 0);
+  const carbohidratosG = Math.round(carbohidratosKcal / 4);
+  const macro = (g, kcalPorG, nota) => ({ gramos: g, kcal: g * kcalPorG, porcentaje: Math.round(((g * kcalPorG) / meta) * 100), nota });
+
+  return {
+    formula: "Mifflin-St Jeor (1990)",
+    ecuacion: `TMB = 10 × peso (kg) + 6,25 × talla (cm) − 5 × edad (años) ${sexo === "masculino" ? "+ 5" : sexo === "femenino" ? "− 161" : "− 78 (promedio: sexo no indicado)"}`,
+    valores: { peso: kg, tallaCm: Math.round(cm), edad: anios, sexo, edadSupuesta: !edadDato, sexoSupuesto: !sexo },
+    tmb: Math.round(tmb),
+    factorActividad: factor,
+    nivelActividad: NOMBRES_ACTIVIDAD.find(([f]) => f === factor)?.[1] || paciente.nivelActividad,
+    get: Math.round(get),
+    ajusteObjetivo: ajuste,
+    objetivo: paciente.objetivo,
+    meta,
+    minimoAplicado: Math.round(get + ajuste) < minimo,
+    minimoSeguro: minimo,
+    macronutrientes: {
+      proteinas: macro(proteinaG, 4, `${String(gPorKg).replace(".", ",")} g por kg de peso según el objetivo`),
+      carbohidratos: macro(carbohidratosG, 4, "Resto de las calorías"),
+      grasas: macro(grasaG, 9, "30 % de las calorías"),
+    },
+    referencias: "TMB: Mifflin-St Jeor (1990). Factores de actividad: FAO/OMS. Rangos aceptables: carbohidratos 45–65 %, grasas 20–35 %, proteínas 10–35 % (Institute of Medicine, 2005).",
+  };
+}
+
+module.exports = { requerimientoCalorico, repartoPorComida, factorActividad, detalleRequerimiento };

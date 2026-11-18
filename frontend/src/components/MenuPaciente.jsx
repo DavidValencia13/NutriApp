@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { generarMenu, obtenerMenu, aprobarMenu, listarHistorialMenu, obtenerVersionMenu, generarPreparacion, guardarPreparacion } from "../services/menuService";
+import { generarMenu, obtenerMenu, aprobarMenu, listarHistorialMenu, obtenerVersionMenu, generarPreparacion, guardarPreparacion, guardarBebida } from "../services/menuService";
 import { EditorPreparacion } from "./PreparacionPlato";
+import { EditorBebida, LineaBebida } from "./BebidaComida";
+import RequerimientoNutricional from "./RequerimientoNutricional";
 import { aplicarPreparaciones, tienePreparacion, textoMinutos } from "../utils/preparacion";
 import { listarSeguimiento } from "../services/seguimientoService";
 import { listarAlimentos, obtenerCoberturaCatalogo } from "../services/alimentoService";
@@ -11,7 +13,7 @@ import FormularioAjustarComida from "./FormularioAjustarComida";
 import EfectividadMenu from "./EfectividadMenu";
 import ListaAlimentos from "./ListaAlimentos";
 import { IconAlertTriangle } from "./Icons";
-import { ArrowLeft, ArrowRight, CalendarDays, Check, ChefHat, ChevronLeft, ChevronRight, ClipboardCheck, History, Loader2, Smartphone, Sparkles, UtensilsCrossed } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarDays, Check, ChefHat, CupSoda, ChevronLeft, ChevronRight, ClipboardCheck, History, Loader2, Smartphone, Sparkles, UtensilsCrossed } from "lucide-react";
 import IconoMomento from "./IconoMomento";
 import NutriIcon from "./NutriIcon";
 import PesoTrendChart from "./PesoTrendChart";
@@ -120,6 +122,7 @@ function MenuPaciente({ idPaciente, paciente, presupuesto, vistaInicial = "resum
   const [error, setError] = useState("");
   const [comidaEditar, setComidaEditar] = useState(null);
   const [comidaPreparacion, setComidaPreparacion] = useState(null);
+  const [comidaBebida, setComidaBebida] = useState(null);
   const [explicandoId, setExplicandoId] = useState(null);
   // Cobertura del catálogo: si los alimentos alcanzan para la meta del
   // paciente (y la meta misma, para comparar cada día)
@@ -241,6 +244,17 @@ function MenuPaciente({ idPaciente, paciente, presupuesto, vistaInicial = "resum
     if (versionVista) setVersionVista((v) => aplicarPreparaciones(v, cambio));
     else setMenu((m) => aplicarPreparaciones(m, cambio));
     setComidaPreparacion(null);
+  }
+
+  async function handleGuardarBebida(bebida) {
+    const { bebida: guardada } = await guardarBebida(idPaciente, comidaBebida.id, bebida);
+    const conBebida = (m) => m && {
+      ...m,
+      dias: (m.dias || []).map((d) => ({ ...d, comidas: (d.comidas || []).map((c) => (c.id === comidaBebida.id ? { ...c, bebida: guardada } : c)) })),
+    };
+    if (versionVista) setVersionVista(conBebida);
+    else setMenu(conBebida);
+    setComidaBebida(null);
   }
 
   function handleSuccessAjuste() {
@@ -385,6 +399,7 @@ function MenuPaciente({ idPaciente, paciente, presupuesto, vistaInicial = "resum
           explicandoId={explicandoId}
           preparandoTodo={preparandoTodo}
           onPreparacion={handleExplicarComida}
+          onBebida={setComidaBebida}
         />
       ) : null}
 
@@ -401,6 +416,10 @@ function MenuPaciente({ idPaciente, paciente, presupuesto, vistaInicial = "resum
             <button type="button" className="weekly-menu-approve" onClick={() => handleGenerar(true)} disabled={!puedeGenerar || generando}>Crear nueva propuesta</button>
           </div>
         </div>
+      </Modal>
+
+      <Modal isOpen={comidaBebida !== null} onClose={() => setComidaBebida(null)} title="Bebida de la comida">
+        {comidaBebida && <EditorBebida key={comidaBebida.id} comida={comidaBebida} onGuardar={handleGuardarBebida} onCancelar={() => setComidaBebida(null)} />}
       </Modal>
 
       <Modal
@@ -485,7 +504,7 @@ function ResumenSeguimientoMenu({ idPaciente }) {
   </section>;
 }
 
-function MenuSemanalVista({ menu, esHistorico, historial, mostrarHistorial, onToggleHistorial, onVerVersion, onVolverActual, paciente, idPaciente, presupuesto, cobertura, puedeGenerar, diaActivo, onSeleccionarDia, onAprobar, onGenerar, onRevisarAlimentos, onSeguimiento, onAcceso, onAjustarComida, explicandoId, preparandoTodo, onPreparacion }) {
+function MenuSemanalVista({ menu, esHistorico, historial, mostrarHistorial, onToggleHistorial, onVerVersion, onVolverActual, paciente, idPaciente, presupuesto, cobertura, puedeGenerar, diaActivo, onSeleccionarDia, onAprobar, onGenerar, onRevisarAlimentos, onSeguimiento, onAcceso, onAjustarComida, explicandoId, preparandoTodo, onPreparacion, onBebida }) {
   const dias = [...(menu.dias || [])].sort((a, b) => a.numeroDia - b.numeroDia);
   const indiceActivo = Math.max(0, dias.findIndex((dia) => dia.id === diaActivo?.id));
   const aprobado = menu.estado === "aprobado";
@@ -544,6 +563,7 @@ function MenuSemanalVista({ menu, esHistorico, historial, mostrarHistorial, onTo
             <b>{objetivo}</b>
             {paciente?.preferencias && <p>{paciente.preferencias}</p>}
           </section>
+          <RequerimientoNutricional idPaciente={idPaciente} resumenSemanal={menu.resumenNutricionalSemanal} />
           <ResumenSeguimientoMenu idPaciente={idPaciente} />
           {menu.resumenNutricionalSemanal && <ResumenNutricional resumen={menu.resumenNutricionalSemanal} />}
           {presupuesto !== undefined && <ResumenPresupuesto dias={dias} presupuesto={presupuesto} />}
@@ -589,9 +609,11 @@ function MenuSemanalVista({ menu, esHistorico, historial, mostrarHistorial, onTo
                 <div className="weekly-meal-details">
                   {comida.descripcion && <p>{comida.descripcion}</p>}
                   <p>{(comida.detalles || []).map((d) => `${d.nombreAlimento} ${cantidadLegible(d.cantidadUtilizada, d.unidadMedida)}`).join(" · ")}</p>
+                  <LineaBebida bebida={comida.bebida} className="text-[11px] mt-1" />
                   <div><span>Costo estimado: ${Number(comida.costoTotal || 0).toFixed(2)}</span>{!aprobado && !esHistorico && <button type="button" onClick={() => onAjustarComida(comida)}>Ajustar comida <ArrowRight size={14} aria-hidden="true" /></button>}</div>
                 </div>
               </details>
+                <div className="weekly-meal-actions">
                 {(tienePreparacion(comida) || !esHistorico) && <button type="button" className="weekly-meal-prep" onClick={() => onPreparacion(comida)} disabled={Boolean(explicandoId) || (preparandoTodo && !tienePreparacion(comida))}>
                   {explicandoId === comida.id || (preparandoTodo && !tienePreparacion(comida))
                     ?<><Loader2 size={13} className="animate-spin" aria-hidden="true" /> Escribiendo la preparación…</>
@@ -599,6 +621,10 @@ function MenuSemanalVista({ menu, esHistorico, historial, mostrarHistorial, onTo
                       ? <><ChefHat size={13} aria-hidden="true" /> Ver preparación · {comida.preparacion.pasos.length} pasos{comida.preparacion.minutosTotales > 0 && ` · ${textoMinutos(comida.preparacion.minutosTotales)}`}</>
                       : <><ChefHat size={13} aria-hidden="true" /> Explicación de preparación</>}
                 </button>}
+                  {!esHistorico && <button type="button" className="weekly-meal-drink" onClick={() => onBebida(comida)} title={comida.bebida ? `Bebida: ${comida.bebida}` : "Agregar una bebida a esta comida"}>
+                    <CupSoda size={13} aria-hidden="true" /> {comida.bebida ? "Cambiar bebida" : "Agregar bebida"}
+                  </button>}
+                </div>
               </div>)}
             </div>
           </article>}
@@ -613,7 +639,9 @@ function ResumenPresupuesto({ dias, presupuesto }) {
     (total, dia) => total + Number(dia.costoTotalDia || 0),
     0,
   );
-  const excedido = costoTotal > presupuesto;
+  // Presupuesto opcional: 0 = sin límite (consulta privada)
+  const sinLimite = !(Number(presupuesto) > 0);
+  const excedido = !sinLimite && costoTotal > presupuesto;
   const porcentaje = presupuesto > 0
     ? Math.min((costoTotal / presupuesto) * 100, 100)
     : 0;
@@ -641,17 +669,17 @@ function ResumenPresupuesto({ dias, presupuesto }) {
           Costo del menú semanal
         </span>
         <span className={excedido ? "text-nutri-pink font-semibold" : "text-nutri-brand font-semibold"}>
-          {costoTotal.toFixed(2)}$ / {Number(presupuesto).toFixed(2)}$
+          {sinLimite ? <>{costoTotal.toFixed(2)}$ <small className="font-normal text-gray-500">· sin presupuesto definido</small></> : <>{costoTotal.toFixed(2)}$ / {Number(presupuesto).toFixed(2)}$</>}
         </span>
       </div>
-      <div className="w-full h-1.5 bg-white rounded-full overflow-hidden">
+      {!sinLimite && <div className="w-full h-1.5 bg-white rounded-full overflow-hidden">
         <div
           className={`h-full transition-all duration-700 ease-out ${
             excedido ? "bg-nutri-pink" : "bg-nutri-brand"
           }`}
           style={{ width: `${anchoAnimado}%` }}
         />
-      </div>
+      </div>}
       {excedido && (
         <p className="text-xs text-nutri-pink mt-1.5">
           El menú excede el presupuesto del paciente por{" "}

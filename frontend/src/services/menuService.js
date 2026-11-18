@@ -53,3 +53,16 @@ export async function guardarPreparacion(idPaciente, idComidaMenu, preparacion) 
     body: JSON.stringify({ preparacion }),
   });
 }
+
+// Cómo se calculó la meta de calorías (fórmula y pasos) y los macronutrientes
+export async function obtenerRequerimiento(idPaciente) {
+  return await apiFetch(`/paciente/${idPaciente}/menu/requerimiento`);
+}
+
+// Bebida que acompaña una comida (null = quitarla)
+export async function guardarBebida(idPaciente, idComidaMenu, bebida) {
+  return await apiFetch(`/paciente/${idPaciente}/menu/comida/${idComidaMenu}/bebida`, {
+    method: "PUT",
+    body: JSON.stringify({ bebida }),
+  });
+}

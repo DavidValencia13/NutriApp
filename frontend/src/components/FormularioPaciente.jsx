@@ -12,7 +12,8 @@ function FormularioPaciente({ pacienteEditar, onSuccess, onCancel }) {
     objetivo: pacienteEditar.objetivo,
     nivelActividad: pacienteEditar.nivelActividad,
     numeroComidas: pacienteEditar.numeroComidas,
-    presupuesto: pacienteEditar.presupuesto,
+    // 0 = sin presupuesto (se muestra vacío)
+    presupuesto: Number(pacienteEditar.presupuesto) > 0 ? pacienteEditar.presupuesto : "",
     tiempoParaCocinar: pacienteEditar.tiempoParaCocinar,
     restricciones: pacienteEditar.restricciones || "",
     preferencias: pacienteEditar.preferencias || "",
@@ -68,7 +69,8 @@ function FormularioPaciente({ pacienteEditar, onSuccess, onCancel }) {
         peso: parseFloat(form.peso),
         altura: parseFloat(form.altura),
         numeroComidas: parseInt(form.numeroComidas),
-        presupuesto: parseFloat(form.presupuesto),
+        // Presupuesto opcional: vacío = 0 = sin límite (consulta privada)
+        presupuesto: parseFloat(form.presupuesto) > 0 ? parseFloat(form.presupuesto) : 0,
         tiempoParaCocinar: parseInt(form.tiempoParaCocinar),
         alergias: form.alergias
           .split(",")
@@ -223,21 +225,22 @@ function FormularioPaciente({ pacienteEditar, onSuccess, onCancel }) {
           <select id="patient-meals" name="numeroComidas" value={form.numeroComidas} onChange={handleChange} required className={inputClass}><option value="">Elige</option>{[3, 4, 5, 6].map((valor) => <option key={valor} value={valor}>{valor} comidas</option>)}{form.numeroComidas && ![3, 4, 5, 6].includes(Number(form.numeroComidas)) && <option value={form.numeroComidas}>{form.numeroComidas} comidas</option>}</select>
         </div>
         <div>
-          <label htmlFor="patient-budget" className={labelClass}><Wallet aria-hidden="true" />Presupuesto semanal</label>
+          <label htmlFor="patient-budget" className={labelClass}><Wallet aria-hidden="true" />Presupuesto semanal <span className="font-normal text-gray-400">(opcional)</span></label>
           <div className="flex items-center gap-1.5">
             <input
               id="patient-budget"
               type="number"
               step="0.01"
-              min="0.01"
+              min="0"
               name="presupuesto"
               value={form.presupuesto}
               onChange={handleChange}
-              required
+              placeholder="Sin límite"
               className={inputClass}
             />
             <span className="text-gray-400 text-sm">$</span>
           </div>
+          <p className="text-[11px] text-gray-400 mt-1">Déjalo vacío si no manejas presupuesto (por ejemplo, en consulta privada).</p>
         </div>
       </div>
 
