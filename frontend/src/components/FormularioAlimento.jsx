@@ -488,6 +488,12 @@ function FormularioAlimento({
       setError("Selecciona al menos un grupo alimenticio");
       return;
     }
+    // Comprado por unidad: sin el peso de una pieza no se calculan nutrientes
+    if (form.unidadMedida === "unidad" && tieneDatosNutricionales && !(parseFloat(gramosPorPorcion) > 0)) {
+      setError("Escribe cuánto pesa 1 unidad en gramos (campo resaltado). Sin ese dato no se pueden calcular sus calorías y nutrientes.");
+      document.getElementById("peso-unidad")?.focus();
+      return;
+    }
     if (presupuestoExcedido) {
       setError(
         `El costo del catálogo superaría el presupuesto semanal por $${(
@@ -882,7 +888,7 @@ function FormularioAlimento({
       {form.unidadMedida === "unidad" && (
         <div className="mb-4">
           <label htmlFor="peso-unidad" className={labelClass}>
-            Peso aproximado de 1 unidad (g)
+            Peso aproximado de 1 unidad (g) <span className="text-nutri-pink">*</span>
           </label>
           <input
             id="peso-unidad"
@@ -891,12 +897,17 @@ function FormularioAlimento({
             min="1"
             value={gramosPorPorcion}
             onChange={(e) => setGramosPorPorcion(e.target.value)}
-            className={inputCompactClass}
+            className={`${inputCompactClass} ${parseFloat(gramosPorPorcion) > 0 ? "" : "ring-2 ring-nutri-pink/60 border-nutri-pink"}`}
             placeholder="Ej. 180 (una manzana mediana)"
           />
-          <p className="text-xs text-gray-400 mt-1">
-            Necesario para calcular calorías y nutrientes de los menús.
-          </p>
+          {parseFloat(gramosPorPorcion) > 0 ? (
+            <p className="text-xs text-gray-400 mt-1">Necesario para calcular calorías y nutrientes de los menús.</p>
+          ) : (
+            <p className="text-xs text-nutri-pink mt-1">
+              Falta este dato. Pesa una pieza o usa un valor aproximado: huevo ≈ 50 g, papa ≈ 150 g, manzana ≈ 180 g,
+              queso fresco (bloque) ≈ 500 g, funda de papas fritas ≈ 45 g.
+            </p>
+          )}
         </div>
       )}
 

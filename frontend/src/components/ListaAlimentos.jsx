@@ -220,7 +220,7 @@ function ListaAlimentos({ idPaciente, paciente, onContinue }) {
         <div><Target size={21} aria-hidden="true" /><span>Objetivo<strong>{paciente?.objetivo || "Sin registrar"}</strong></span></div>
         <div><Layers3 size={21} aria-hidden="true" /><span>Guardados<strong>{alimentos.length} alimentos</strong></span></div>
         <div><Sprout size={21} aria-hidden="true" /><span>Grupos presentes<strong>{cobertura?.resumen?.esencialesCubiertos ?? "—"} / {cobertura?.resumen?.esencialesTotal ?? "—"}</strong></span></div>
-        <div><Wallet2 size={21} aria-hidden="true" /><span>Presupuesto semanal<strong>$${costoCatalogo.toFixed(2)} / $${Number(paciente?.presupuesto || 0).toFixed(2)}</strong></span></div>
+        <div><Wallet2 size={21} aria-hidden="true" /><span>Presupuesto semanal<strong>${costoCatalogo.toFixed(2)} / ${Number(paciente?.presupuesto || 0).toFixed(2)}</strong></span></div>
         {onContinue && <button type="button" className="food-overview-next" onClick={onContinue} disabled={!puedeContinuar} title={puedeContinuar ? "Revisar la propuesta de menú" : "Completa los alimentos y sus datos nutricionales para continuar"}>Continuar al menú <span aria-hidden="true">→</span></button>}
       </div>
       {!cargandoCobertura && !cobertura && <p className="food-coverage-unavailable" role="status">No se pudo comprobar el catálogo. Vuelve a abrir esta vista para intentarlo de nuevo.</p>}
@@ -233,6 +233,10 @@ function ListaAlimentos({ idPaciente, paciente, onContinue }) {
           bloqueaMenu={!puedeContinuar}
           onAgregarGrupo={abrirFormularioConGrupo}
           onAgregarAlimento={abrirFormularioCrear}
+          onCompletarAlimento={(nombre) => {
+            const alimento = alimentos.find((a) => a.nombre === nombre);
+            if (alimento) abrirFormularioEditar(alimento);
+          }}
         />
       </div>
 
@@ -298,6 +302,12 @@ function ListaAlimentos({ idPaciente, paciente, onContinue }) {
                   : <span className="food-list-item-icon"><IconoAlimento grupos={a.gruposAlimenticios} /></span>}
                 <div className="food-list-item-main">
                   <p className="font-medium">{a.nombre}</p>
+                  {cobertura?.suficiencia?.alimentosSinPeso?.includes(a.nombre) && (
+                    <button type="button" onClick={() => abrirFormularioEditar(a)}
+                      className="mt-1 inline-flex items-center gap-1 rounded-full bg-nutri-pink/10 px-2 py-0.5 text-[11px] font-semibold text-nutri-pink hover:bg-nutri-pink/20">
+                      ⚠ Falta peso de 1 unidad · completar
+                    </button>
+                  )}
                   <p className="food-list-item-meta" title={`Precio de referencia: ${precioDeReferencia(a)}`}>
                     {a.cantidad} {a.unidadMedida === "unidad" ? Number(a.cantidad) === 1 ? "unidad" : "unidades" : a.unidadMedida} disponibles <span>·</span> ${(Number(a.precio) * Number(a.cantidad)).toFixed(2)} total
                   </p>
