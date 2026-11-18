@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { generarMenu, obtenerMenu, aprobarMenu, listarHistorialMenu, obtenerVersionMenu, generarPreparacion, guardarPreparacion } from "../services/menuService";
 import { EditorPreparacion } from "./PreparacionPlato";
 import { aplicarPreparaciones, tienePreparacion, textoMinutos } from "../utils/preparacion";
@@ -125,6 +125,28 @@ function MenuPaciente({ idPaciente, paciente, presupuesto, vistaInicial = "resum
   // paciente (y la meta misma, para comparar cada día)
   const [cobertura, setCobertura] = useState(null);
   const { paso, segundos } = usePasoGeneracion(generando);
+
+  // Explicación de preparación automática: al abrir (o generar) un menú, los
+  // platos sin explicación se completan solos en segundo plano, en UNA
+  // llamada barata a la IA. Cada conjunto de platos se intenta una sola vez.
+  const [preparandoTodo, setPreparandoTodo] = useState(false);
+  const intentosPreparacion = useRef(new Set());
+  useEffect(() => {
+    const faltantes = (menu?.dias || []).flatMap((d) => d.comidas || []).filter((c) => !tienePreparacion(c)).map((c) => c.id);
+    if (!menu?.id || faltantes.length === 0) return;
+    const clave = `${menu.id}:${faltantes.join(",")}`;
+    if (intentosPreparacion.current.has(clave)) return;
+    intentosPreparacion.current.add(clave);
+    let vigente = true;
+    queueMicrotask(() => { if (vigente) setPreparandoTodo(true); });
+    generarPreparacion(idPaciente, menu.id)
+      .then(({ preparaciones }) => {
+        setMenu((m) => (m && m.id === menu.id ? aplicarPreparaciones(m, preparaciones) : m));
+      })
+      .catch(() => { /* queda el botón de cada comida para reintentar */ })
+      .finally(() => setPreparandoTodo(false));
+    return () => { vigente = false; };
+  }, [menu, idPaciente]);
 
   const cargarDatos = useCallback(async () => {
     setCargando(true);
@@ -361,6 +383,7 @@ function MenuPaciente({ idPaciente, paciente, presupuesto, vistaInicial = "resum
           onAcceso={onAcceso}
           onAjustarComida={setComidaEditar}
           explicandoId={explicandoId}
+          preparandoTodo={preparandoTodo}
           onPreparacion={handleExplicarComida}
         />
       ) : null}
@@ -462,7 +485,7 @@ function ResumenSeguimientoMenu({ idPaciente }) {
   </section>;
 }
 
-function MenuSemanalVista({ menu, esHistorico, historial, mostrarHistorial, onToggleHistorial, onVerVersion, onVolverActual, paciente, idPaciente, presupuesto, cobertura, puedeGenerar, diaActivo, onSeleccionarDia, onAprobar, onGenerar, onRevisarAlimentos, onSeguimiento, onAcceso, onAjustarComida, explicandoId, onPreparacion }) {
+function MenuSemanalVista({ menu, esHistorico, historial, mostrarHistorial, onToggleHistorial, onVerVersion, onVolverActual, paciente, idPaciente, presupuesto, cobertura, puedeGenerar, diaActivo, onSeleccionarDia, onAprobar, onGenerar, onRevisarAlimentos, onSeguimiento, onAcceso, onAjustarComida, explicandoId, preparandoTodo, onPreparacion }) {
   const dias = [...(menu.dias || [])].sort((a, b) => a.numeroDia - b.numeroDia);
   const indiceActivo = Math.max(0, dias.findIndex((dia) => dia.id === diaActivo?.id));
   const aprobado = menu.estado === "aprobado";
@@ -569,9 +592,9 @@ function MenuSemanalVista({ menu, esHistorico, historial, mostrarHistorial, onTo
                   <div><span>Costo estimado: ${Number(comida.costoTotal || 0).toFixed(2)}</span>{!aprobado && !esHistorico && <button type="button" onClick={() => onAjustarComida(comida)}>Ajustar comida <ArrowRight size={14} aria-hidden="true" /></button>}</div>
                 </div>
               </details>
-                {(tienePreparacion(comida) || !esHistorico) && <button type="button" className="weekly-meal-prep" onClick={() => onPreparacion(comida)} disabled={Boolean(explicandoId)}>
-                  {explicandoId === comida.id
-                    ? <><Loader2 size={13} className="animate-spin" aria-hidden="true" /> Escribiendo la preparación…</>
+                {(tienePreparacion(comida) || !esHistorico) && <button type="button" className="weekly-meal-prep" onClick={() => onPreparacion(comida)} disabled={Boolean(explicandoId) || (preparandoTodo && !tienePreparacion(comida))}>
+                  {explicandoId === comida.id || (preparandoTodo && !tienePreparacion(comida))
+                    ?<><Loader2 size={13} className="animate-spin" aria-hidden="true" /> Escribiendo la preparación…</>
                     : tienePreparacion(comida)
                       ? <><ChefHat size={13} aria-hidden="true" /> Ver preparación · {comida.preparacion.pasos.length} pasos{comida.preparacion.minutosTotales > 0 && ` · ${textoMinutos(comida.preparacion.minutosTotales)}`}</>
                       : <><ChefHat size={13} aria-hidden="true" /> Explicación de preparación</>}

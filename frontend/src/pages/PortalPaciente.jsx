@@ -6,7 +6,7 @@ import IconoMomento from "../components/IconoMomento";
 import DiarioAlimentario from "../components/DiarioAlimentario";
 import AsistenteChat from "../components/AsistenteChat";
 import { cantidadLegible } from "../utils/cantidad";
-import { HojaPreparacion } from "../components/PreparacionPlato";
+import { HojaPreparacion, MiniPasos } from "../components/PreparacionPlato";
 import { tienePreparacion, textoMinutos } from "../utils/preparacion";
 import { ordenarControles } from "../utils/ordenarControles";
 import {
@@ -391,9 +391,12 @@ function TarjetaComida({ comida, marca, onMarcar, indice }) {
 
         {tienePreparacion(comida) && (
           <button type="button" onClick={() => setVerPreparacion(true)}
-            className="boton-preparacion mt-3 w-full flex items-center justify-center gap-2 rounded-xl text-white font-bold py-3.5 text-[15px]">
-            <ChefHat size={19} aria-hidden="true" /> Ver cómo prepararlo
-            {comida.preparacion.minutosTotales > 0 && <span className="font-normal opacity-90">· {textoMinutos(comida.preparacion.minutosTotales)}</span>}
+            className="boton-preparacion mt-3 w-full flex flex-col items-center gap-1.5 rounded-xl text-white py-3">
+            <span className="flex items-center gap-2 font-bold text-[15px]">
+              <ChefHat size={19} aria-hidden="true" /> Ver cómo prepararlo
+              {comida.preparacion.minutosTotales > 0 && <span className="font-normal opacity-90">· {textoMinutos(comida.preparacion.minutosTotales)}</span>}
+            </span>
+            <MiniPasos pasos={comida.preparacion.pasos} />
           </button>
         )}
       </div>

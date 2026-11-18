@@ -36,6 +36,11 @@ module.exports = function registerMenuModule(app) {
     marcaRepo: new MarcaComidaRepositorySequelize(),
   });
 
+  const explicarPreparacionMenu = new ExplicarPreparacionMenu({
+    menuRepository: menuRepo,
+    generadorPreparacion: new GeneradorPreparacionIA(pedirCompletion),
+  });
+
   const controller = new MenuController({
     generarMenuSemanal: new GenerarMenuSemanal({
       pacienteRepository: pacienteRepo,
@@ -46,12 +51,9 @@ module.exports = function registerMenuModule(app) {
     }),
     obtenerMenuPorPaciente: new ObtenerMenuPorPaciente(pacienteRepo, menuRepo),
     ajustarComidaMenu: new AjustarComidaMenu({ menuRepository: menuRepo, listarAlimentosPorPaciente }),
-    aprobarMenu: new AprobarMenu({ menuRepository: menuRepo }),
+    aprobarMenu: new AprobarMenu({ menuRepository: menuRepo, explicarPreparacion: explicarPreparacionMenu }),
     calcularNutrientesPreviewComida: new CalcularNutrientesPreviewComida({ menuRepository: menuRepo, listarAlimentosPorPaciente, pacienteRepository: pacienteRepo }),
-    explicarPreparacionMenu: new ExplicarPreparacionMenu({
-      menuRepository: menuRepo,
-      generadorPreparacion: new GeneradorPreparacionIA(pedirCompletion),
-    }),
+    explicarPreparacionMenu,
   });
 
   app.use(

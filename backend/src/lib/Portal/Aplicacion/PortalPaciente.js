@@ -8,7 +8,10 @@ const { NotFoundError, ValidationError } = require("../Dominio/Errores");
 // que su nutriólogo aprobó (nunca uno recién generado sin revisar), y solo
 // puede marcar comidas de ese menú.
 class PortalPaciente {
-  constructor({ pacienteRepository, nutriologoRepository, menuRepository, marcaRepository, seguimientoRepository, registrarSeguimiento }) {
+  // completarPreparacion (opcional): completa en segundo plano las
+  // explicaciones de preparación que le falten al menú aprobado
+  constructor({ pacienteRepository, nutriologoRepository, menuRepository, marcaRepository, seguimientoRepository, registrarSeguimiento, completarPreparacion = null }) {
+    this.completarPreparacion = completarPreparacion;
     this.pacienteRepository = pacienteRepository;
     this.nutriologoRepository = nutriologoRepository;
     this.menuRepository = menuRepository;
@@ -50,6 +53,7 @@ class PortalPaciente {
   async menu(idPaciente) {
     const menu = await this._menuAprobado(idPaciente);
     if (!menu) return { menu: null, marcas: [] };
+    this.completarPreparacion?.completarEnSegundoPlano(menu);
     const marcas = await this.marcaRepository.listarPorComidas(idPaciente, this._idsComidas(menu));
     return { menu, marcas };
   }

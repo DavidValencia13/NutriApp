@@ -14,6 +14,9 @@ const NutriologoRepositorySequelize = require("../../../Nutriologo/Infraestructu
 const MenuRepositorySequelize = require("../../../Menu/Infraestructura/MenuRepositorySequelize");
 const SeguimientoRepositorySequelize = require("../../../Seguimiento/Infraestructura/SeguimientoRepositorySequelize");
 const RegistrarSeguimiento = require("../../../Seguimiento/Aplicacion/RegistrarSeguimiento");
+const ExplicarPreparacionMenu = require("../../../Menu/Aplicacion/ExplicarPreparacionMenu");
+const GeneradorPreparacionIA = require("../../../Menu/Infraestructura/GeneradorPreparacionIA");
+const { pedirCompletion } = require("../../../../Infraestructura/ia/iaClient");
 const ReferenciaUSFQModel = require("../../../Alimento/Infraestructura/ReferenciaUSFQModel");
 const RegistroIngestaRepositorySequelize = require("../RegistroIngestaRepositorySequelize");
 const DiarioIngesta = require("../../Aplicacion/DiarioIngesta");
@@ -48,6 +51,10 @@ module.exports = function registerPortalModule(app) {
     marcaRepository: marcaRepo,
     seguimientoRepository: seguimientoRepo,
     registrarSeguimiento: new RegistrarSeguimiento(seguimientoRepo),
+    completarPreparacion: new ExplicarPreparacionMenu({
+      menuRepository: menuRepo,
+      generadorPreparacion: new GeneradorPreparacionIA(pedirCompletion),
+    }),
   });
   const obtenerCumplimiento = new ObtenerCumplimientoPaciente({ menuRepository: menuRepo, marcaRepository: marcaRepo, accesoRepository: accesoRepo });
 

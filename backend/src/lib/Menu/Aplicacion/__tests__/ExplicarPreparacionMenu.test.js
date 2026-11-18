@@ -157,3 +157,21 @@ test("el botón de una comida genera solo esa comida", async () => {
   assert.deepEqual(pedidas, [12]);
   assert.equal(r.preparaciones[12].pasos[0].texto, "Nuevo");
 });
+
+test("al abrir el paciente su menú se completan las que faltan, sin repetir en 10 minutos", async () => {
+  const repo = repoFalso();
+  let llamadas = 0;
+  const caso = new ExplicarPreparacionMenu({
+    menuRepository: repo,
+    generadorPreparacion: { async generar() { llamadas += 1; return { 11: [{ accion: "hervir", texto: "Hierve", minutos: 5 }] }; } },
+  });
+  assert.equal(caso.completarEnSegundoPlano(menuDePrueba()), true);
+  await new Promise((r) => setTimeout(r, 10));
+  assert.equal(llamadas, 1);
+  assert.deepEqual(Object.keys(repo.guardadas[0]), ["11"]);
+  assert.equal(caso.completarEnSegundoPlano(menuDePrueba()), false); // freno de 10 min
+  const completo = menuDePrueba();
+  completo.id = 8;
+  completo.dias[0].comidas = [completo.dias[0].comidas[1]];
+  assert.equal(caso.completarEnSegundoPlano(completo), false); // nada que completar
+});

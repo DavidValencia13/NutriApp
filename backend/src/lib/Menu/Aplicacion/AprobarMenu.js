@@ -5,8 +5,21 @@ const { NotFoundError, ConflictError } = require("../Dominio/Errores");
 // llegar aquí — este paso ya no vuelve a evaluarlas ni bloquea nada, es su
 // decisión la que cierra el menú.
 class AprobarMenu {
-  constructor({ menuRepository }) {
+  // explicarPreparacion (opcional): al aprobar se completan las
+  // explicaciones de preparación que falten, para que el paciente las vea
+  // sin que nadie tenga que pedirlas. Si la IA falla, igual se aprueba.
+  constructor({ menuRepository, explicarPreparacion = null }) {
     this.menuRepository = menuRepository;
+    this.explicarPreparacion = explicarPreparacion;
+  }
+
+  async _completarPreparaciones(idMenu, idNutriologo) {
+    if (!this.explicarPreparacion) return;
+    try {
+      await this.explicarPreparacion.generar(idMenu, idNutriologo);
+    } catch (error) {
+      console.error("No se pudo completar la preparación al aprobar:", error.message);
+    }
   }
 
   async ejecutar(idMenu, idNutriologo) {

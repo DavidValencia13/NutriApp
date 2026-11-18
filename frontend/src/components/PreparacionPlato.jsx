@@ -1,66 +1,136 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, ChefHat, ListChecks, Plus, Timer, Trash2, X } from "lucide-react";
 import { cantidadLegible } from "../utils/cantidad";
-import { ACCIONES, textoMinutos } from "../utils/preparacion";
+import { ACCIONES, accion, emojiDeAlimento, ingredientesDelPaso, textoMinutos } from "../utils/preparacion";
 
-// Explicación de preparación de un plato: pasos cortos con ícono por acción.
+// Explicación de preparación de un plato: pasos cortos con ícono de color
+// por acción y dibujos de los ingredientes (todo local, no gasta IA).
 // La usan el nutricionista (ver y corregir) y el paciente (ver y cocinar).
-function IconoAccion({ accion, size = 20, className = "" }) {
-  const { Icono } = ACCIONES[accion] || ACCIONES.cocinar;
-  return <Icono size={size} strokeWidth={2} className={className} aria-hidden="true" />;
+function IconoAccion({ clave, size = 20 }) {
+  const { Icono } = accion(clave);
+  return <Icono size={size} strokeWidth={2.2} aria-hidden="true" />;
 }
 
-export function ListaPasos({ pasos, grande = false }) {
+function BurbujaAccion({ clave, tamano = 48, icono = 24, numero }) {
+  const a = accion(clave);
   return (
-    <ol className="space-y-2.5">
-      {pasos.map((paso, i) => (
-        <li key={i} className="flex items-start gap-3 rounded-xl border border-line bg-white p-3">
-          <span className={`relative shrink-0 flex items-center justify-center rounded-xl bg-nutri-brand/10 text-nutri-brand ${grande ? "w-12 h-12" : "w-10 h-10"}`}>
-            <IconoAccion accion={paso.accion} size={grande ? 24 : 20} />
-            <span className="absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full bg-nutri-brand text-white text-[11px] font-bold flex items-center justify-center">{i + 1}</span>
+    <span className="relative shrink-0 flex items-center justify-center rounded-full"
+      style={{ width: tamano, height: tamano, color: a.color, background: a.fondo, boxShadow: `0 0 0 3px #fff, 0 0 0 4px ${a.fondo}` }}>
+      <IconoAccion clave={clave} size={icono} />
+      {numero !== undefined && (
+        <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-white text-[11px] font-bold flex items-center justify-center"
+          style={{ background: a.color }}>{numero}</span>
+      )}
+    </span>
+  );
+}
+
+// Fila de íconos de acción: resumen visual de la receta (va en la tarjeta del paciente)
+export function MiniPasos({ pasos, max = 6 }) {
+  const visibles = pasos.slice(0, max);
+  return (
+    <span className="flex items-center gap-1" aria-hidden="true">
+      {visibles.map((p, i) => (
+        <span key={i} className="flex items-center gap-1">
+          {i > 0 && <span className="w-2 h-px bg-current opacity-60" />}
+          <span className="w-6 h-6 rounded-full flex items-center justify-center bg-white" style={{ color: accion(p.accion).color }}>
+            <IconoAccion clave={p.accion} size={13} />
           </span>
-          <div className="min-w-0 flex-1">
-            <p className={`text-nutri-ink ${grande ? "text-base" : "text-sm"}`}>{paso.texto}</p>
-            <p className="text-xs text-gray-500 mt-0.5">
-              {ACCIONES[paso.accion]?.nombre || "Cocinar"}
-              {paso.minutos > 0 && <> · <Timer size={11} className="inline -mt-0.5" aria-hidden="true" /> {textoMinutos(paso.minutos)}</>}
-            </p>
-          </div>
-        </li>
+        </span>
       ))}
+      {pasos.length > max && <span className="text-xs opacity-90">+{pasos.length - max}</span>}
+    </span>
+  );
+}
+
+export function ListaPasos({ pasos, detalles = [] }) {
+  return (
+    <ol className="relative">
+      {pasos.map((paso, i) => {
+        const a = accion(paso.accion);
+        const ingredientes = ingredientesDelPaso(paso.texto, detalles);
+        const ultimo = i === pasos.length - 1;
+        return (
+          <li key={i} className="relative flex gap-3 pb-4">
+            {!ultimo && (
+              <span className="absolute left-6 top-12 bottom-0 w-0.5 -ml-px" aria-hidden="true"
+                style={{ background: `linear-gradient(${a.color}55, ${accion(pasos[i + 1].accion).color}55)` }} />
+            )}
+            <BurbujaAccion clave={paso.accion} numero={i + 1} />
+            <div className="min-w-0 flex-1 rounded-2xl border-2 bg-white p-3" style={{ borderColor: a.fondo }}>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-bold uppercase tracking-wide" style={{ color: a.color }}>{a.nombre}</span>
+                {paso.minutos > 0 && (
+                  <span className="text-xs font-semibold rounded-full px-2 py-0.5 flex items-center gap-1" style={{ color: a.color, background: a.fondo }}>
+                    <Timer size={11} aria-hidden="true" /> {textoMinutos(paso.minutos)}
+                  </span>
+                )}
+                {ingredientes.length > 0 && (
+                  <span className="ml-auto flex gap-0.5 text-xl leading-none" title={ingredientes.map((d) => d.nombreAlimento).join(", ")}>
+                    {ingredientes.map((d, k) => <span key={k}>{emojiDeAlimento(d.nombreAlimento)}</span>)}
+                  </span>
+                )}
+              </div>
+              <p className="text-[15px] text-nutri-ink mt-1 leading-snug">{paso.texto}</p>
+            </div>
+          </li>
+        );
+      })}
     </ol>
   );
 }
 
-// Vista del paciente: ingredientes para marcar, pasos y modo "paso a paso"
+const POSICIONES_BURBUJA = [
+  { top: -6, right: -12 }, { bottom: -4, left: -14 }, { top: -6, left: -14 }, { bottom: -4, right: -14 },
+];
+
+// Vista del paciente: ingredientes con dibujo para marcar, pasos y modo "paso a paso"
 export function VistaPreparacion({ comida }) {
   const pasos = comida.preparacion?.pasos || [];
+  const detalles = comida.detalles || [];
   const [listos, setListos] = useState({});
   const [pasoActual, setPasoActual] = useState(null);
 
   if (pasoActual !== null) {
     const paso = pasos[pasoActual];
+    const a = accion(paso.accion);
     const ultimo = pasoActual === pasos.length - 1;
+    const ingredientes = ingredientesDelPaso(paso.texto, detalles);
     return (
-      <div className="flex flex-col min-h-[50vh]">
-        <p className="text-xs font-semibold text-nutri-brand">Paso {pasoActual + 1} de {pasos.length}</p>
-        <div className="h-1.5 rounded-full bg-gray-100 mt-2 overflow-hidden">
-          <div className="h-full bg-nutri-brand rounded-full transition-all" style={{ width: `${((pasoActual + 1) / pasos.length) * 100}%` }} />
+      <div className="flex flex-col min-h-[60vh]">
+        <div className="flex gap-1.5" role="progressbar" aria-valuemin={1} aria-valuemax={pasos.length} aria-valuenow={pasoActual + 1}>
+          {pasos.map((p, i) => (
+            <span key={i} className="h-1.5 flex-1 rounded-full transition-all" style={{ background: i <= pasoActual ? accion(p.accion).color : "#e5e7eb" }} />
+          ))}
         </div>
-        <div className="flex-1 flex flex-col items-center justify-center text-center py-8 gap-4">
-          <span className="w-24 h-24 rounded-3xl bg-nutri-brand/10 text-nutri-brand flex items-center justify-center">
-            <IconoAccion accion={paso.accion} size={48} />
-          </span>
-          <p className="text-xl font-medium text-nutri-ink max-w-md">{paso.texto}</p>
-          {paso.minutos > 0 && <p className="text-sm text-gray-500 flex items-center gap-1.5"><Timer size={15} aria-hidden="true" /> {textoMinutos(paso.minutos)}</p>}
+        <p className="text-xs font-bold mt-3" style={{ color: a.color }}>PASO {pasoActual + 1} DE {pasos.length}</p>
+        <div key={pasoActual} className="flex-1 flex flex-col items-center justify-center text-center py-6 gap-5 animate-fade-in-up">
+          <div className="relative">
+            <span className="w-36 h-36 rounded-full flex items-center justify-center"
+              style={{ color: a.color, background: a.fondo, boxShadow: `0 0 0 12px ${a.fondo}88` }}>
+              <IconoAccion clave={paso.accion} size={68} />
+            </span>
+            {ingredientes.slice(0, 4).map((d, k) => (
+              <span key={k} className="absolute w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center text-2xl" style={POSICIONES_BURBUJA[k]}>
+                {emojiDeAlimento(d.nombreAlimento)}
+              </span>
+            ))}
+          </div>
+          <p className="text-sm font-bold uppercase tracking-wide" style={{ color: a.color }}>{a.nombre}</p>
+          <p className="text-xl font-medium text-nutri-ink max-w-md leading-snug">{paso.texto}</p>
+          {paso.minutos > 0 && (
+            <p className="text-base font-semibold rounded-full px-4 py-1.5 flex items-center gap-2" style={{ color: a.color, background: a.fondo }}>
+              <Timer size={18} aria-hidden="true" /> {textoMinutos(paso.minutos)}
+            </p>
+          )}
         </div>
         <div className="grid grid-cols-2 gap-3">
           <button type="button" onClick={() => setPasoActual(pasoActual === 0 ? null : pasoActual - 1)}
-            className="flex items-center justify-center gap-2 rounded-xl border border-line py-3.5 font-semibold text-nutri-ink">
+            className="flex items-center justify-center gap-2 rounded-xl border border-line bg-white py-3.5 font-semibold text-nutri-ink">
             <ArrowLeft size={18} aria-hidden="true" /> {pasoActual === 0 ? "Volver" : "Anterior"}
           </button>
           <button type="button" onClick={() => setPasoActual(ultimo ? null : pasoActual + 1)}
-            className="flex items-center justify-center gap-2 rounded-xl bg-nutri-brand py-3.5 font-semibold text-white">
+            className="boton-preparacion flex items-center justify-center gap-2 rounded-xl py-3.5 font-bold text-white">
             {ultimo ? <><Check size={18} aria-hidden="true" /> ¡Listo!</> : <>Siguiente <ArrowRight size={18} aria-hidden="true" /></>}
           </button>
         </div>
@@ -70,26 +140,40 @@ export function VistaPreparacion({ comida }) {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center gap-2 text-sm text-gray-600">
-        <ChefHat size={18} className="text-nutri-brand" aria-hidden="true" />
-        <span>{comida.nombrePlato}</span>
-        {comida.preparacion?.minutosTotales > 0 && <span className="ml-auto flex items-center gap-1 text-gray-500"><Timer size={14} aria-hidden="true" /> {textoMinutos(comida.preparacion.minutosTotales)}</span>}
+      <div className="rounded-2xl bg-white border border-line p-4">
+        <p className="font-semibold text-nutri-ink leading-snug">{comida.nombrePlato}</p>
+        {detalles.length > 0 && (
+          <p className="text-3xl mt-2 tracking-wider" aria-hidden="true">{detalles.map((d) => emojiDeAlimento(d.nombreAlimento)).join("")}</p>
+        )}
+        <div className="flex flex-wrap gap-2 mt-2 text-xs font-semibold">
+          {comida.preparacion?.minutosTotales > 0 && (
+            <span className="rounded-full px-2.5 py-1 bg-orange-50 text-[#c25e0c] flex items-center gap-1"><Timer size={13} aria-hidden="true" /> {textoMinutos(comida.preparacion.minutosTotales)}</span>
+          )}
+          <span className="rounded-full px-2.5 py-1 bg-orange-50 text-[#c25e0c] flex items-center gap-1"><ChefHat size={13} aria-hidden="true" /> {pasos.length} pasos</span>
+          {detalles.length > 0 && <span className="rounded-full px-2.5 py-1 bg-orange-50 text-[#c25e0c]">{detalles.length} ingredientes</span>}
+        </div>
       </div>
 
-      {(comida.detalles || []).length > 0 && (
+      {detalles.length > 0 && (
         <section>
-          <h3 className="text-sm font-semibold text-nutri-ink mb-2 flex items-center gap-1.5"><ListChecks size={16} aria-hidden="true" /> Necesitas</h3>
-          <ul className="grid sm:grid-cols-2 gap-2">
-            {comida.detalles.map((d, i) => {
+          <h3 className="text-sm font-semibold text-nutri-ink mb-2 flex items-center gap-1.5">
+            <ListChecks size={16} aria-hidden="true" /> Necesitas <span className="font-normal text-gray-500">(toca para marcar)</span>
+          </h3>
+          <ul className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+            {detalles.map((d, i) => {
               const marcado = Boolean(listos[i]);
               return (
                 <li key={i}>
                   <button type="button" onClick={() => setListos((l) => ({ ...l, [i]: !l[i] }))} aria-pressed={marcado}
-                    className={`w-full flex items-center gap-2.5 rounded-lg border px-3 py-2 text-left text-sm ${marcado ? "border-nutri-green bg-nutri-green/10 text-gray-500 line-through" : "border-line bg-white text-nutri-ink"}`}>
-                    <span className={`w-5 h-5 shrink-0 rounded-md border flex items-center justify-center ${marcado ? "bg-nutri-green border-nutri-green text-white" : "border-gray-300"}`}>
-                      {marcado && <Check size={13} strokeWidth={3} aria-hidden="true" />}
-                    </span>
-                    {d.nombreAlimento} <span className="ml-auto text-gray-500 no-underline">{cantidadLegible(d.cantidadUtilizada, d.unidadMedida)}</span>
+                    className={`relative w-full h-full flex flex-col items-center gap-1 rounded-2xl border-2 p-2.5 text-center transition-all ${marcado ? "border-nutri-green bg-nutri-green/10 opacity-70" : "border-line bg-white hover:border-orange-300"}`}>
+                    {marcado && (
+                      <span className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-nutri-green text-white flex items-center justify-center">
+                        <Check size={12} strokeWidth={3} aria-hidden="true" />
+                      </span>
+                    )}
+                    <span className="text-3xl leading-none mt-1" aria-hidden="true">{emojiDeAlimento(d.nombreAlimento)}</span>
+                    <span className="text-xs font-semibold text-nutri-ink leading-tight">{d.nombreAlimento}</span>
+                    <span className="text-[11px] text-gray-500">{cantidadLegible(d.cantidadUtilizada, d.unidadMedida)}</span>
                   </button>
                 </li>
               );
@@ -99,13 +183,13 @@ export function VistaPreparacion({ comida }) {
       )}
 
       <section>
-        <h3 className="text-sm font-semibold text-nutri-ink mb-2">Cómo prepararlo</h3>
-        <ListaPasos pasos={pasos} grande />
+        <h3 className="text-sm font-semibold text-nutri-ink mb-3">Cómo prepararlo</h3>
+        <ListaPasos pasos={pasos} detalles={detalles} />
       </section>
 
       <button type="button" onClick={() => setPasoActual(0)}
-        className="boton-preparacion w-full flex items-center justify-center gap-2 rounded-xl py-3.5 font-bold text-white">
-        <ChefHat size={19} aria-hidden="true" /> Cocinar paso a paso
+        className="boton-preparacion sticky bottom-0 w-full flex items-center justify-center gap-2 rounded-xl py-4 font-bold text-white text-base">
+        <ChefHat size={20} aria-hidden="true" /> Cocinar paso a paso
       </button>
     </div>
   );
@@ -118,7 +202,9 @@ export function EditorPreparacion({ comida, soloLectura = false, onGuardar, onCa
   const [error, setError] = useState("");
 
   if (soloLectura) {
-    return pasos.length ? <ListaPasos pasos={pasos} /> : <p className="text-sm text-gray-500">Este plato no tiene explicación de preparación.</p>;
+    return pasos.length
+      ? <ListaPasos pasos={pasos} detalles={comida.detalles || []} />
+      : <p className="text-sm text-gray-500">Este plato no tiene explicación de preparación.</p>;
   }
 
   function cambiar(i, campo, valor) {
@@ -141,13 +227,13 @@ export function EditorPreparacion({ comida, soloLectura = false, onGuardar, onCa
   return (
     <div className="space-y-4">
       <p className="text-sm text-gray-600">
-        Revisa los pasos de <strong>{comida.nombrePlato}</strong>. El paciente los verá en su app con estos íconos.
+        Revisa los pasos de <strong>{comida.nombrePlato}</strong>. El paciente los verá en su app con estos íconos y colores.
       </p>
       <ol className="space-y-3">
         {pasos.map((paso, i) => (
-          <li key={i} className="rounded-xl border border-line p-3 space-y-2">
+          <li key={i} className="rounded-xl border-2 p-3 space-y-2" style={{ borderColor: accion(paso.accion).fondo }}>
             <div className="flex items-center gap-2">
-              <span className="w-9 h-9 shrink-0 rounded-lg bg-nutri-brand/10 text-nutri-brand flex items-center justify-center"><IconoAccion accion={paso.accion} size={18} /></span>
+              <BurbujaAccion clave={paso.accion} tamano={36} icono={18} />
               <span className="text-xs font-semibold text-gray-500">Paso {i + 1}</span>
               <select value={paso.accion} onChange={(e) => cambiar(i, "accion", e.target.value)} aria-label={`Acción del paso ${i + 1}`}
                 className="ml-auto rounded-lg border border-line bg-white px-2 py-1.5 text-sm">

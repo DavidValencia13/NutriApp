@@ -46,6 +46,40 @@ class ExplicarPreparacionMenu {
     return { preparaciones: todas, generadas: Object.keys(preparaciones).length };
   }
 
+  // Para menús ya aprobados sin explicación (p. ej. aprobados antes de esta
+  // función): cuando el paciente abre su app se completan sin bloquearlo.
+  // Un menú se intenta como máximo una vez cada 10 minutos, para no gastar IA
+  // de más si falla.
+  completarEnSegundoPlano(menu) {
+    const comidas = (menu?.dias || []).flatMap((dia) => dia.comidas || []);
+    if (!menu?.id || !comidas.some((c) => !c.preparacion?.pasos?.length)) return false;
+    this._intentos = this._intentos || new Map();
+    const ultimo = this._intentos.get(menu.id);
+    if (ultimo && Date.now() - ultimo < 10 * 60 * 1000) return false;
+    this._intentos.set(menu.id, Date.now());
+    this._completarFaltantes(menu.id).catch((error) =>
+      console.error("No se pudo completar la preparación en segundo plano:", error.message),
+    );
+    return true;
+  }
+
+  async _completarFaltantes(idMenu) {
+    const menu = await this.menuRepository.obtenerConDetallesPorId(idMenu);
+    const pendientes = (menu?.dias || []).flatMap((dia) => dia.comidas || []).filter((c) => !c.preparacion?.pasos?.length);
+    if (pendientes.length === 0) return;
+    const crudas = await this.generadorPreparacion.generar(pendientes);
+    const preparaciones = {};
+    for (const comida of pendientes) {
+      try {
+        const p = normalizarPreparacion(crudas[Number(comida.id)]);
+        if (p) preparaciones[comida.id] = p;
+      } catch {
+        // un plato mal formado no tumba a los demás
+      }
+    }
+    await this.menuRepository.guardarPreparaciones(preparaciones);
+  }
+
   // El nutricionista corrige (o quita, con null) la explicación de un plato
   async editar(idComidaMenu, idNutriologo, preparacion) {
     const comida = await this.menuRepository.obtenerComidaConPropietario(idComidaMenu, idNutriologo);

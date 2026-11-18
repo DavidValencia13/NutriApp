@@ -1,17 +1,54 @@
 import { Blend, CookingPot, Droplets, Flame, Microwave, Salad, Slice, Soup, Utensils } from "lucide-react";
 
 // Explicación de preparación de un plato: { pasos: [{ accion, texto, minutos }], minutosTotales }
+// color: tono fuerte del ícono · fondo: círculo suave detrás
 export const ACCIONES = {
-  lavar: { Icono: Droplets, nombre: "Lavar" },
-  picar: { Icono: Slice, nombre: "Picar" },
-  hervir: { Icono: Soup, nombre: "Hervir" },
-  cocinar: { Icono: CookingPot, nombre: "Cocinar" },
-  freir: { Icono: Flame, nombre: "Freír" },
-  hornear: { Icono: Microwave, nombre: "Al horno" },
-  licuar: { Icono: Blend, nombre: "Licuar" },
-  mezclar: { Icono: Utensils, nombre: "Mezclar" },
-  servir: { Icono: Salad, nombre: "Servir" },
+  lavar: { Icono: Droplets, nombre: "Lavar", color: "#0284c7", fondo: "#e0f2fe" },
+  picar: { Icono: Slice, nombre: "Picar", color: "#15803d", fondo: "#dcfce7" },
+  hervir: { Icono: Soup, nombre: "Hervir", color: "#ea580c", fondo: "#ffedd5" },
+  cocinar: { Icono: CookingPot, nombre: "Cocinar", color: "#b45309", fondo: "#fef3c7" },
+  freir: { Icono: Flame, nombre: "Freír", color: "#dc2626", fondo: "#fee2e2" },
+  hornear: { Icono: Microwave, nombre: "Al horno", color: "#9a3412", fondo: "#fed7aa" },
+  licuar: { Icono: Blend, nombre: "Licuar", color: "#7c3aed", fondo: "#ede9fe" },
+  mezclar: { Icono: Utensils, nombre: "Mezclar", color: "#0f766e", fondo: "#ccfbf1" },
+  servir: { Icono: Salad, nombre: "Servir", color: "#db2777", fondo: "#fce7f3" },
 };
+
+export function accion(clave) {
+  return ACCIONES[clave] || ACCIONES.cocinar;
+}
+
+// Dibujo (emoji) de cada alimento, por palabras de su nombre. Es solo
+// decorativo (no usa IA): si no se reconoce se usa un plato genérico.
+const EMOJIS = [
+  [/huevo|clara/, "🥚"], [/pollo|gallina|pechuga|muslo/, "🍗"], [/carne|\bres\b|lomo|chuleta|cerdo|chancho/, "🥩"],
+  [/atun|pescado|tilapia|corvina|sardina|camaron|marisco/, "🐟"], [/lenteja|frejol|frijol|haba|garbanzo|arveja|chocho|menestra/, "🫘"],
+  [/arroz/, "🍚"], [/papa|yuca|camote/, "🥔"], [/avena|quinua|trigo|cebada|granola|mote|maiz|choclo/, "🌾"],
+  [/\bpan\b|tostada/, "🍞"], [/fideo|pasta|tallarin/, "🍝"], [/leche|yogur/, "🥛"], [/queso/, "🧀"],
+  [/platano|guineo|banano/, "🍌"], [/manzana/, "🍎"], [/naranja|mandarina/, "🍊"], [/limon/, "🍋"],
+  [/fresa|frutilla|\bmoras?\b/, "🍓"], [/pina/, "🍍"], [/sandia/, "🍉"], [/papaya|mango|melon/, "🥭"], [/uva/, "🍇"], [/pera/, "🍐"],
+  [/aguacate/, "🥑"], [/tomate/, "🍅"], [/zanahoria/, "🥕"], [/brocoli|coliflor/, "🥦"], [/pimiento|aji/, "🫑"],
+  [/cebolla/, "🧅"], [/ajo/, "🧄"], [/lechuga|espinaca|acelga|\bcol\b|ensalada/, "🥬"], [/pepino|zucchini|zapallo/, "🥒"],
+  [/aceite|manteca|mantequilla/, "🫒"], [/mani|nuez|almendra/, "🥜"], [/azucar|miel|panela/, "🍯"], [/agua/, "💧"],
+];
+
+function sinTildes(texto) {
+  return String(texto || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+}
+
+export function emojiDeAlimento(nombre) {
+  const limpio = sinTildes(nombre);
+  return EMOJIS.find(([patron]) => patron.test(limpio))?.[1] || "🍽️";
+}
+
+// Ingredientes del plato que se mencionan en el texto de un paso
+export function ingredientesDelPaso(texto, detalles = []) {
+  const limpio = sinTildes(texto);
+  return detalles.filter((d) => {
+    const palabra = sinTildes(d.nombreAlimento).split(/[\s,(]+/)[0];
+    return palabra.length >= 3 && limpio.includes(palabra.slice(0, Math.max(3, palabra.length - 1)));
+  });
+}
 
 export function tienePreparacion(comida) {
   return Boolean(comida?.preparacion?.pasos?.length);
@@ -38,4 +75,3 @@ export function aplicarPreparaciones(menu, preparaciones) {
     })),
   };
 }
-
