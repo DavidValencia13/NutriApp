@@ -3,6 +3,7 @@ const { listaDeCompras } = require("../Dominio/Servicios/ListaCompras");
 const { resumenCumplimiento } = require("../Dominio/Servicios/ResumenCumplimiento");
 const { requerimientoCalorico } = require("../../Menu/Dominio/Servicios/RequerimientoCalorico");
 const { NotFoundError, ValidationError } = require("../Dominio/Errores");
+const { conComposicion } = require("../../Seguimiento/Dominio/Servicios/ComposicionCorporal");
 
 // Lo que el paciente hace desde su app. El paciente SOLO ve el último menú
 // que su nutriólogo aprobó (nunca uno recién generado sin revisar), y solo
@@ -113,7 +114,9 @@ class PortalPaciente {
       objetivo: paciente.objetivo,
       pesoInicial: paciente.pesoInicial,
       pesoPrimerControl: registros.find((registro) => Number.isFinite(Number(registro.peso)) && Number(registro.peso) > 0)?.peso ?? null,
-      registros: registros.map(({ id, fecha, peso, nivelCumplimiento }) => ({ id, fecha, peso, nivelCumplimiento })),
+      registros: conComposicion(registros, paciente).map(({ id, fecha, peso, nivelCumplimiento, composicion }) => ({
+        id, fecha, peso, nivelCumplimiento, ...(composicion && { composicion }),
+      })),
       cumplimiento: menu ? resumenCumplimiento(menu, marcas) : null,
     };
   }

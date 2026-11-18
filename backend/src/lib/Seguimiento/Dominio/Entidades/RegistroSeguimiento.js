@@ -1,4 +1,5 @@
 const { ValidationError } = require("../Errores");
+const { normalizarMedidas } = require("../Servicios/ComposicionCorporal");
 
 const NIVELES_CUMPLIMIENTO = ["bien", "regular", "mal"];
 
@@ -8,7 +9,8 @@ const NIVELES_CUMPLIMIENTO = ["bien", "regular", "mal"];
 // lo mínimo pedido: peso y si la dieta se está cumpliendo bien/regular/mal,
 // más una observación libre opcional.
 class RegistroSeguimiento {
-  constructor({ id, idPaciente, fecha, peso, nivelCumplimiento, observaciones }) {
+  // medidas (opcional): medidas corporales del control (ver ComposicionCorporal)
+  constructor({ id, idPaciente, fecha, peso, nivelCumplimiento, observaciones, medidas }) {
     const idPacienteNum = Number(idPaciente);
     if (!Number.isInteger(idPacienteNum) || idPacienteNum <= 0)
       throw new ValidationError("El id del paciente no es válido");
@@ -25,6 +27,7 @@ class RegistroSeguimiento {
     this.peso = peso ?? undefined;
     this.nivelCumplimiento = nivelCumplimiento;
     this.observaciones = observaciones ? observaciones.trim() : undefined;
+    this.medidas = normalizarMedidas(medidas);
   }
 }
 

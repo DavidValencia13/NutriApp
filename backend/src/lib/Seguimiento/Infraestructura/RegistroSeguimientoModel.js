@@ -11,6 +11,8 @@ const RegistroSeguimientoModel = sequelize.define(
     peso: { type: DataTypes.DECIMAL(5, 2), allowNull: true },
     nivelCumplimiento: { type: DataTypes.ENUM(...NIVELES_CUMPLIMIENTO), allowNull: false },
     observaciones: { type: DataTypes.TEXT, allowNull: true },
+    // Medidas corporales opcionales (cintura, pliegues, bioimpedancia...)
+    medidas: { type: DataTypes.JSONB, allowNull: true },
   },
   { timestamps: true },
 );

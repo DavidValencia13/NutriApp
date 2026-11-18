@@ -16,7 +16,7 @@ module.exports = function registerSeguimientoModule(app) {
 
   const controller = new SeguimientoController({
     registrarSeguimiento: new RegistrarSeguimiento(repo),
-    listarSeguimientoPorPaciente: new ListarSeguimientoPorPaciente(repo),
+    listarSeguimientoPorPaciente: new ListarSeguimientoPorPaciente(repo, pacienteRepo),
     actualizarSeguimiento: new ActualizarSeguimiento(repo),
     eliminarSeguimiento: new EliminarSeguimiento(repo),
   });

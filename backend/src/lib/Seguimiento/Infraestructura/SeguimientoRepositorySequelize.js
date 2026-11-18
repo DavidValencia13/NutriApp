@@ -9,6 +9,7 @@ class SeguimientoRepositorySequelize {
       peso: registro.peso,
       nivelCumplimiento: registro.nivelCumplimiento,
       observaciones: registro.observaciones,
+      medidas: registro.medidas,
     });
     return this._toEntity(doc);
   }
@@ -36,6 +37,7 @@ class SeguimientoRepositorySequelize {
       peso: registro.peso,
       nivelCumplimiento: registro.nivelCumplimiento,
       observaciones: registro.observaciones ?? null,
+      medidas: registro.medidas ?? null,
     });
     return this._toEntity(doc);
   }
@@ -59,6 +61,7 @@ class SeguimientoRepositorySequelize {
       peso: doc.peso === null ? undefined : parseFloat(doc.peso),
       nivelCumplimiento: doc.nivelCumplimiento,
       observaciones: doc.observaciones,
+      medidas: doc.medidas || null,
     });
   }
 }

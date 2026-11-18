@@ -7,6 +7,7 @@ import DiarioAlimentario from "../components/DiarioAlimentario";
 import AsistenteChat from "../components/AsistenteChat";
 import { cantidadLegible } from "../utils/cantidad";
 import { HojaPreparacion, MiniPasos } from "../components/PreparacionPlato";
+import PanelComposicion from "../components/ComposicionCorporal";
 import { tienePreparacion, textoMinutos } from "../utils/preparacion";
 import { clasesDeMarca, estiloDeMarca } from "../utils/marca";
 import BotonTema from "../components/BotonTema";
@@ -658,6 +659,9 @@ function SeccionProgreso({ perfil }) {
           <><GraficaPeso registros={pesos} />{new Set(pesos.map((r) => new Date(r.fecha).toISOString().slice(0, 10))).size === 1 && <p className="text-xs text-gray-500 mt-2">Se muestra el último peso del día. Registra otro día para ver la tendencia.</p>}</>
         )}
       </div>
+
+      {/* "Mi cuerpo": solo si la nutricionista registró medidas corporales */}
+      <PanelComposicion registros={datos.registros || []} paraPaciente />
     </div>
   );
 }

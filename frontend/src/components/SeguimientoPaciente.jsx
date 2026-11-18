@@ -10,6 +10,8 @@ import CumplimientoMenu from "./CumplimientoMenu";
 import DiarioAlimentario from "./DiarioAlimentario";
 import PesoTrendChart from "./PesoTrendChart";
 import { ordenarControles } from "../utils/ordenarControles";
+import PanelComposicion, { FormularioMedidas } from "./ComposicionCorporal";
+import { hayMedidas, medidasDesdeRegistro, medidasParaEnviar } from "../utils/composicion";
 import { AlertTriangle, CalendarDays, ClipboardCheck, NotebookPen, Pencil, Scale } from "lucide-react";
 
 const ESTILOS_NIVEL = {
@@ -41,6 +43,7 @@ function datosFormulario(registro, fecha) {
     peso: registro?.peso != null ? String(registro.peso) : "",
     nivelCumplimiento: registro?.nivelCumplimiento || "",
     observaciones: registro?.observaciones || "",
+    medidas: medidasDesdeRegistro(registro?.medidas),
   };
 }
 
@@ -147,6 +150,8 @@ function SeguimientoPaciente({ idPaciente }) {
         <p className="followup-overview-note">La gráfica muestra únicamente peso.{diasConPeso === 1 ? " Hay un punto para esta fecha; la línea aparecerá cuando registres otro día." : ""} La alimentación registrada por el paciente aparece más abajo y no modifica esta gráfica.</p>
       </section>
 
+      <div className="mt-4"><PanelComposicion registros={registros} /></div>
+
       <div className="followup-entry-section">
         <button
           onClick={() => { setRegistroEdicion(null); setMostrarFormulario((v) => !v); }}
@@ -185,6 +190,7 @@ function SeguimientoPaciente({ idPaciente }) {
                     <p className="font-medium text-nutri-ink flex items-center gap-2 flex-wrap">
                       {formatoFecha(r.fecha)}
                       {r.peso != null && <span>· Peso: {formatoPeso(r.peso)} kg</span>}
+                      {r.medidas && <span className="px-2 py-0.5 rounded-full bg-nutri-brand/10 text-nutri-brand font-medium">+ medidas corporales</span>}
                       <span className={`px-2 py-0.5 rounded-full font-medium ${estilo.clase}`}>
                         Cumplimiento: {estilo.label}
                       </span>
@@ -226,6 +232,7 @@ function FormularioSeguimiento({ idPaciente, registros, registroInicial, onSucce
   const [error, setError] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [pesoConfirmado, setPesoConfirmado] = useState(false);
+  const [verMedidas, setVerMedidas] = useState(() => hayMedidas(form.medidas));
   const registroObjetivo = registroInicial || registroEnFecha(registros, form.fecha);
   const pesoIngresado = form.peso === "" ? null : Number(form.peso);
   const pesoAnterior = Number([...registros].filter((registro) =>
@@ -261,6 +268,7 @@ function FormularioSeguimiento({ idPaciente, registros, registroInicial, onSucce
         peso: pesoIngresado,
         nivelCumplimiento: form.nivelCumplimiento,
         observaciones: form.observaciones || undefined,
+        medidas: medidasParaEnviar(form.medidas),
       };
       if (registroObjetivo) {
         await actualizarSeguimiento(idPaciente, registroObjetivo.id, datos);
@@ -311,6 +319,14 @@ function FormularioSeguimiento({ idPaciente, registros, registroInicial, onSucce
         {diferencia !== null && <strong className={cambioInusual ? "followup-weight-change-warning" : ""}>Cambio frente al último control: {diferencia > 0 ? "+" : ""}{formatoPeso(diferencia)} kg</strong>}
       </div>
       {cambioInusual && <label className="followup-weight-confirm"><input type="checkbox" checked={pesoConfirmado} onChange={(event) => setPesoConfirmado(event.target.checked)} />Confirmo que {formatoPeso(pesoIngresado)} kg es el peso total medido.</label>}
+
+      <FormularioMedidas
+        idBase={`followup-medidas-${idPaciente}`}
+        medidas={form.medidas}
+        onChange={(medidas) => setForm((prev) => ({ ...prev, medidas }))}
+        abierto={verMedidas}
+        onToggle={() => setVerMedidas((v) => !v)}
+      />
 
       <div className="mb-3">
         <label htmlFor={`followup-notes-${idPaciente}`} className={labelClass}><NotebookPen size={13} aria-hidden="true" />Observaciones (opcional)</label>
