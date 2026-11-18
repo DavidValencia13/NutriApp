@@ -36,3 +36,20 @@ export async function aprobarMenu(idPaciente, idMenu) {
   });
 }
 
+
+// Explicación de preparación: la IA escribe los pasos de los platos que no
+// la tienen (o de todos con regenerar). Devuelve { preparaciones, generadas }
+export async function generarPreparacion(idPaciente, idMenu, { regenerar = false } = {}) {
+  return await apiFetch(`/paciente/${idPaciente}/menu/${idMenu}/preparacion`, {
+    method: "POST",
+    body: JSON.stringify({ regenerar }),
+  });
+}
+
+// El nutricionista corrige (o quita, con null) los pasos de un plato
+export async function guardarPreparacion(idPaciente, idComidaMenu, preparacion) {
+  return await apiFetch(`/paciente/${idPaciente}/menu/comida/${idComidaMenu}/preparacion`, {
+    method: "PUT",
+    body: JSON.stringify({ preparacion }),
+  });
+}

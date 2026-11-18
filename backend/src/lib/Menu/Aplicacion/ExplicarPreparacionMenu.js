@@ -1,0 +1,55 @@
+const { NotFoundError } = require("../Dominio/Errores");
+const { normalizarPreparacion } = require("../Dominio/Servicios/Preparacion");
+
+// Explicación de preparación de los platos de un menú. La genera la IA solo
+// cuando el nutricionista la pide, se guarda y él la puede corregir; el
+// paciente ve la versión guardada (abrirla no gasta IA).
+class ExplicarPreparacionMenu {
+  constructor({ menuRepository, generadorPreparacion }) {
+    this.menuRepository = menuRepository;
+    this.generadorPreparacion = generadorPreparacion;
+  }
+
+  // Genera las que faltan (o todas con regenerar). Devuelve
+  // { preparaciones: { [idComida]: preparacion }, generadas }
+  async generar(idMenu, idNutriologo, { regenerar = false } = {}) {
+    const propio = await this.menuRepository.obtenerMenuConPropietario(idMenu, idNutriologo);
+    if (!propio) throw new NotFoundError("Menú no encontrado");
+    const menu = await this.menuRepository.obtenerConDetallesPorId(idMenu);
+    const comidas = (menu?.dias || []).flatMap((dia) => dia.comidas || []);
+
+    const pendientes = comidas.filter((c) => regenerar || !c.preparacion?.pasos?.length);
+    const preparaciones = {};
+    if (pendientes.length > 0) {
+      const crudas = await this.generadorPreparacion.generar(pendientes);
+      for (const comida of pendientes) {
+        let preparacion = null;
+        try {
+          preparacion = normalizarPreparacion(crudas[Number(comida.id)]);
+        } catch {
+          preparacion = null; // un plato mal formado no tumba a los demás
+        }
+        if (preparacion) preparaciones[comida.id] = preparacion;
+      }
+      await this.menuRepository.guardarPreparaciones(preparaciones);
+    }
+
+    const todas = {};
+    for (const c of comidas) {
+      const p = preparaciones[c.id] || c.preparacion;
+      if (p?.pasos?.length) todas[c.id] = p;
+    }
+    return { preparaciones: todas, generadas: Object.keys(preparaciones).length };
+  }
+
+  // El nutricionista corrige (o quita, con null) la explicación de un plato
+  async editar(idComidaMenu, idNutriologo, preparacion) {
+    const comida = await this.menuRepository.obtenerComidaConPropietario(idComidaMenu, idNutriologo);
+    if (!comida) throw new NotFoundError("Comida no encontrada");
+    const normalizada = normalizarPreparacion(preparacion);
+    await this.menuRepository.guardarPreparaciones({ [idComidaMenu]: normalizada });
+    return { idComidaMenu, preparacion: normalizada };
+  }
+}
+
+module.exports = ExplicarPreparacionMenu;

@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { generarMenu, obtenerMenu, aprobarMenu, listarHistorialMenu, obtenerVersionMenu } from "../services/menuService";
+import { generarMenu, obtenerMenu, aprobarMenu, listarHistorialMenu, obtenerVersionMenu, generarPreparacion, guardarPreparacion } from "../services/menuService";
+import { EditorPreparacion } from "./PreparacionPlato";
+import { aplicarPreparaciones, tienePreparacion, textoMinutos } from "../utils/preparacion";
 import { listarSeguimiento } from "../services/seguimientoService";
 import { listarAlimentos, obtenerCoberturaCatalogo } from "../services/alimentoService";
 import SuficienciaAlimentos from "./SuficienciaAlimentos";
@@ -9,7 +11,7 @@ import FormularioAjustarComida from "./FormularioAjustarComida";
 import EfectividadMenu from "./EfectividadMenu";
 import ListaAlimentos from "./ListaAlimentos";
 import { IconAlertTriangle } from "./Icons";
-import { ArrowLeft, ArrowRight, CalendarDays, Check, ChevronLeft, ChevronRight, ClipboardCheck, History, Loader2, Smartphone, Sparkles, UtensilsCrossed } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarDays, Check, ChefHat, ChevronLeft, ChevronRight, ClipboardCheck, History, Loader2, Smartphone, Sparkles, UtensilsCrossed } from "lucide-react";
 import IconoMomento from "./IconoMomento";
 import NutriIcon from "./NutriIcon";
 import PesoTrendChart from "./PesoTrendChart";
@@ -117,6 +119,9 @@ function MenuPaciente({ idPaciente, paciente, presupuesto, vistaInicial = "resum
   const [generando, setGenerando] = useState(false);
   const [error, setError] = useState("");
   const [comidaEditar, setComidaEditar] = useState(null);
+  const [comidaPreparacion, setComidaPreparacion] = useState(null);
+  const [explicando, setExplicando] = useState(false);
+  const [avisoPreparacion, setAvisoPreparacion] = useState("");
   // Cobertura del catálogo: si los alimentos alcanzan para la meta del
   // paciente (y la meta misma, para comparar cada día)
   const [cobertura, setCobertura] = useState(null);
@@ -180,6 +185,36 @@ function MenuPaciente({ idPaciente, paciente, presupuesto, vistaInicial = "resum
     } catch (err) {
       setError(err.message);
     }
+  }
+
+  // Explicación de preparación: solo la pide el nutricionista (una llamada
+  // barata a la IA por menú); se guarda y el paciente ve la versión guardada
+  async function handleExplicarPreparacion(regenerar = false) {
+    const objetivo = versionVista || menu;
+    if (!objetivo || explicando) return;
+    setError("");
+    setAvisoPreparacion("");
+    setExplicando(true);
+    try {
+      const { preparaciones, generadas } = await generarPreparacion(idPaciente, objetivo.id, { regenerar });
+      if (versionVista) setVersionVista((v) => aplicarPreparaciones(v, preparaciones));
+      else setMenu((m) => aplicarPreparaciones(m, preparaciones));
+      setAvisoPreparacion(generadas > 0
+        ? `Listo: se explicó la preparación de ${generadas} ${generadas === 1 ? "plato" : "platos"}. Revísalos abriendo cada comida.`
+        : "Todos los platos ya tenían su explicación.");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setExplicando(false);
+    }
+  }
+
+  async function handleGuardarPreparacion(preparacion) {
+    const { preparacion: guardada } = await guardarPreparacion(idPaciente, comidaPreparacion.id, preparacion);
+    const cambio = { [comidaPreparacion.id]: guardada };
+    if (versionVista) setVersionVista((v) => aplicarPreparaciones(v, cambio));
+    else setMenu((m) => aplicarPreparaciones(m, cambio));
+    setComidaPreparacion(null);
   }
 
   function handleSuccessAjuste() {
@@ -321,6 +356,10 @@ function MenuPaciente({ idPaciente, paciente, presupuesto, vistaInicial = "resum
           onSeguimiento={onSeguimiento}
           onAcceso={onAcceso}
           onAjustarComida={setComidaEditar}
+          explicando={explicando}
+          avisoPreparacion={avisoPreparacion}
+          onExplicarPreparacion={handleExplicarPreparacion}
+          onVerPreparacion={setComidaPreparacion}
         />
       ) : null}
 
@@ -337,6 +376,22 @@ function MenuPaciente({ idPaciente, paciente, presupuesto, vistaInicial = "resum
             <button type="button" className="weekly-menu-approve" onClick={() => handleGenerar(true)} disabled={!puedeGenerar || generando}>Crear nueva propuesta</button>
           </div>
         </div>
+      </Modal>
+
+      <Modal
+        isOpen={comidaPreparacion !== null}
+        onClose={() => setComidaPreparacion(null)}
+        title="Explicación de preparación"
+      >
+        {comidaPreparacion && (
+          <EditorPreparacion
+            key={comidaPreparacion.id}
+            comida={comidaPreparacion}
+            soloLectura={Boolean(versionVista)}
+            onGuardar={handleGuardarPreparacion}
+            onCancelar={() => setComidaPreparacion(null)}
+          />
+        )}
       </Modal>
 
       <Modal
@@ -403,13 +458,16 @@ function ResumenSeguimientoMenu({ idPaciente }) {
   </section>;
 }
 
-function MenuSemanalVista({ menu, esHistorico, historial, mostrarHistorial, onToggleHistorial, onVerVersion, onVolverActual, paciente, idPaciente, presupuesto, cobertura, puedeGenerar, diaActivo, onSeleccionarDia, onAprobar, onGenerar, onRevisarAlimentos, onSeguimiento, onAcceso, onAjustarComida }) {
+function MenuSemanalVista({ menu, esHistorico, historial, mostrarHistorial, onToggleHistorial, onVerVersion, onVolverActual, paciente, idPaciente, presupuesto, cobertura, puedeGenerar, diaActivo, onSeleccionarDia, onAprobar, onGenerar, onRevisarAlimentos, onSeguimiento, onAcceso, onAjustarComida, explicando, avisoPreparacion, onExplicarPreparacion, onVerPreparacion }) {
   const dias = [...(menu.dias || [])].sort((a, b) => a.numeroDia - b.numeroDia);
   const indiceActivo = Math.max(0, dias.findIndex((dia) => dia.id === diaActivo?.id));
   const aprobado = menu.estado === "aprobado";
   const versionVisible = historial.find((version) => version.visibleParaPaciente);
   const estaVisible = Number(versionVisible?.id) === Number(menu.id);
   const objetivo = paciente?.objetivo || "Plan personalizado";
+  const todasLasComidas = dias.flatMap((dia) => dia.comidas || []);
+  const faltanPreparaciones = todasLasComidas.some((c) => !tienePreparacion(c));
+  const puedeExplicar = !esHistorico && todasLasComidas.length > 0;
 
   return (
     <div className="weekly-menu">
@@ -425,17 +483,32 @@ function MenuSemanalVista({ menu, esHistorico, historial, mostrarHistorial, onTo
           <span className={`weekly-menu-status ${aprobado ? "approved" : "pending"}`}><Check size={15} aria-hidden="true" /> {estaVisible ? "Visible para el paciente" : esHistorico ? "Versión anterior · consulta" : "Propuesta pendiente"}</span>
           {esHistorico && <button type="button" className="weekly-menu-history-button" onClick={onVolverActual}>Volver a la versión actual</button>}
           <button type="button" className="weekly-menu-history-button" onClick={onToggleHistorial} aria-expanded={mostrarHistorial}><History size={15} aria-hidden="true" /> Historial ({historial.length})</button>
+          {puedeExplicar && faltanPreparaciones && <button type="button" className="weekly-menu-prep-button" onClick={() => onExplicarPreparacion(false)} disabled={explicando}>
+            {explicando ? <Loader2 size={17} className="animate-spin" aria-hidden="true" /> : <ChefHat size={17} aria-hidden="true" />} {explicando ? "Explicando preparación…" : "Explicación de preparación"}
+          </button>}
           {!aprobado && !esHistorico && <button type="button" className="weekly-menu-approve" onClick={onAprobar}><Check size={17} aria-hidden="true" /> Aprobar menú</button>}
           {!esHistorico && <details className="weekly-menu-more">
             <summary aria-label="Más opciones del menú">···</summary>
             <div>
               <button type="button" onClick={onRevisarAlimentos}>Revisar alimentos</button>
               <button type="button" onClick={onGenerar} disabled={!puedeGenerar}>Crear nueva propuesta</button>
+              {puedeExplicar && !faltanPreparaciones && <button type="button" onClick={() => onExplicarPreparacion(true)} disabled={explicando}>Rehacer explicación de preparación</button>}
             </div>
           </details>}
         </div>
       </div>
 
+      {avisoPreparacion && <p className="weekly-menu-patient-note" role="status">{avisoPreparacion}</p>}
+      {puedeExplicar && faltanPreparaciones && <div className="weekly-prep-banner">
+        <span className="weekly-prep-banner-icon"><ChefHat size={26} aria-hidden="true" /></span>
+        <div>
+          <strong>Explica cómo preparar cada plato</strong>
+          <p>La IA escribe pasos cortos con íconos para que el paciente sepa cocinar su menú. Tú los revisas y corriges antes de que los vea.</p>
+        </div>
+        <button type="button" onClick={() => onExplicarPreparacion(false)} disabled={explicando}>
+          {explicando ? <Loader2 size={18} className="animate-spin" aria-hidden="true" /> : <ChefHat size={18} aria-hidden="true" />} {explicando ? "Explicando… (unos segundos)" : "Explicación de preparación"}
+        </button>
+      </div>}
       {!esHistorico && !aprobado && versionVisible && <p className="weekly-menu-patient-note">El paciente sigue viendo el menú aprobado anterior. Esta propuesta se mostrará en su app cuando la apruebes.</p>}
       {mostrarHistorial && <section className="weekly-menu-history" aria-label="Historial de menús">
         <div className="weekly-menu-history-heading"><strong>Versiones guardadas</strong><span>Selecciona una para consultar sus comidas.</span></div>
@@ -501,12 +574,16 @@ function MenuSemanalVista({ menu, esHistorico, historial, mostrarHistorial, onTo
                 <summary>
                   <span className="weekly-meal-icon"><IconoMomento tipoComida={comida.tipoComida} /></span>
                   <span className="weekly-meal-copy"><strong>{comida.tipoComida}</strong><span>{comida.nombrePlato}</span></span>
+                  {tienePreparacion(comida) && <span className="weekly-meal-prep-badge" title="Tiene explicación de preparación"><ChefHat size={13} aria-hidden="true" /></span>}
                   <b className="weekly-meal-calories" title={comida.nutrientes?.completo === false ? "Valor estimado: faltan nutrientes de algún alimento" : undefined}>{comida.nutrientes?.completo === false && <IconAlertTriangle style={{ width: 12, height: 12 }} />} {Math.round(Number(comida.calorias) || 0)} kcal</b>
                   <ChevronRight className="weekly-meal-chevron" size={17} aria-hidden="true" />
                 </summary>
                 <div className="weekly-meal-details">
                   {comida.descripcion && <p>{comida.descripcion}</p>}
                   <p>{(comida.detalles || []).map((d) => `${d.nombreAlimento} ${cantidadLegible(d.cantidadUtilizada, d.unidadMedida)}`).join(" · ")}</p>
+                  {tienePreparacion(comida)
+                    ? <button type="button" className="weekly-meal-prep" onClick={() => onVerPreparacion(comida)}><ChefHat size={15} aria-hidden="true" /> Preparación · {comida.preparacion.pasos.length} pasos{comida.preparacion.minutosTotales > 0 && ` · ${textoMinutos(comida.preparacion.minutosTotales)}`} <ArrowRight size={14} aria-hidden="true" /></button>
+                    : !esHistorico && <p className="weekly-meal-prep-missing"><ChefHat size={14} aria-hidden="true" /> Sin explicación de preparación todavía</p>}
                   <div><span>Costo estimado: ${Number(comida.costoTotal || 0).toFixed(2)}</span>{!aprobado && !esHistorico && <button type="button" onClick={() => onAjustarComida(comida)}>Ajustar comida <ArrowRight size={14} aria-hidden="true" /></button>}</div>
                 </div>
               </details>)}

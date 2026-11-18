@@ -1066,6 +1066,18 @@ h1, h2, h3, h4, h5, .font-display {
 .weekly-menu-status.approved { background: #dcfce9; }
 .weekly-menu-approve { display: inline-flex; align-items: center; gap: 5px; padding: 8px 12px; border: 0; border-radius: 10px; color: white; background: linear-gradient(125deg, #007d60, #06aa78); box-shadow: 0 5px 14px #008d6330; font-size: 12px; font-weight: 800; cursor: pointer; }
 .weekly-menu-approve:hover { filter: brightness(1.07); }
+.weekly-menu-prep-button { display: inline-flex; align-items: center; gap: 7px; padding: 9px 15px; border: 0; border-radius: 10px; color: white; background: linear-gradient(125deg, #e8700f, #f59e0b); box-shadow: 0 6px 16px #e8700f45; font-size: 13px; font-weight: 800; cursor: pointer; }
+.weekly-menu-prep-button:hover { filter: brightness(1.06); transform: translateY(-1px); }
+.weekly-menu-prep-button:disabled { opacity: .75; cursor: wait; transform: none; }
+.weekly-prep-banner { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 0 0 15px; padding: 14px 16px; border: 2px solid #fbbf6a; border-radius: 14px; background: linear-gradient(110deg, #fff7eb, #fffdf7); }
+.weekly-prep-banner > div { flex: 1 1 240px; }
+.weekly-prep-banner strong { display: block; color: #7a3d06; font-size: 15px; }
+.weekly-prep-banner p { margin-top: 2px; color: #8a5a2b; font-size: 12px; line-height: 1.4; }
+.weekly-prep-banner-icon { display: grid; place-items: center; width: 48px; height: 48px; flex-shrink: 0; border-radius: 14px; color: white; background: linear-gradient(135deg, #e8700f, #f59e0b); box-shadow: 0 6px 14px #e8700f40; }
+.weekly-prep-banner button { display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px; border: 0; border-radius: 12px; color: white; background: linear-gradient(125deg, #e8700f, #f59e0b); box-shadow: 0 6px 16px #e8700f45; font-size: 14px; font-weight: 800; cursor: pointer; }
+.weekly-prep-banner button:hover { filter: brightness(1.06); }
+.weekly-prep-banner button:disabled { opacity: .75; cursor: wait; }
+.weekly-meal-prep-badge { display: grid; place-items: center; width: 22px; height: 22px; flex-shrink: 0; border-radius: 7px; color: white; background: #f59e0b; }
 .weekly-menu-more { position: relative; }
 .weekly-menu-more summary { display: grid; place-items: center; width: 36px; height: 34px; border: 1px solid #dce9f0; border-radius: 10px; background: white; color: #315c60; font-size: 22px; font-weight: 800; line-height: 1; cursor: pointer; list-style: none; }
 .weekly-menu-more summary::-webkit-details-marker { display: none; }
@@ -1141,6 +1153,9 @@ h1, h2, h3, h4, h5, .font-display {
 .weekly-meal-details p { margin: 2px 0; line-height: 1.35; }
 .weekly-meal-details > div { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 5px; }
 .weekly-meal-details button { display: inline-flex; align-items: center; gap: 3px; padding: 4px 7px; border: 1px solid #bfe6d8; border-radius: 7px; color: #067c62; background: #f1fcf7; font-size: 10px; font-weight: 750; cursor: pointer; }
+.weekly-meal-details .weekly-meal-prep { margin: 7px 0 3px; padding: 8px 13px; gap: 7px; border: 0; border-radius: 9px; color: #fff; background: linear-gradient(125deg, #e8700f, #f59e0b); box-shadow: 0 4px 12px #e8700f35; font-size: 12px; font-weight: 800; }
+.weekly-meal-details .weekly-meal-prep:hover { filter: brightness(1.06); }
+.weekly-meal-details .weekly-meal-prep-missing { display: flex; align-items: center; gap: 5px; color: #8a9a96; font-style: italic; }
 @media (max-width: 800px) { .weekly-menu-layout { grid-template-columns: 1fr; } .weekly-menu-sidebar { grid-template-columns: repeat(2, minmax(0, 1fr)); } .weekly-menu-sidebar > .rounded-lg { grid-column: span 2; } }
 @media (max-width: 620px) { .weekly-menu-hero { min-height: 106px; padding: 15px; background-position: 70% center; } .weekly-menu-hero p { max-width: 70%; } .weekly-menu-toolbar { align-items: flex-start; } .weekly-menu-status { display: none; } .weekly-menu-sidebar { grid-template-columns: 1fr; } .weekly-menu-sidebar > .rounded-lg { grid-column: auto; } .weekly-day-strip { display: flex; overflow-x: auto; padding-bottom: 4px; } .weekly-day-strip button { min-width: 75px; } .weekly-nutrient-item { margin-bottom: 4px; } .weekly-day-heading h4 { font-size: 16px; } }
 .nutri-moment-icon { background: linear-gradient(145deg, #e8fff2, #e1f5fa); box-shadow: inset 0 0 0 1px #bdebd9, 0 2px 5px #0a6b5114; }
@@ -1150,3 +1165,8 @@ h1, h2, h3, h4, h5, .font-display {
 .weekly-meal-icon > .nutri-moment-icon { width: 30px; height: 30px; background: transparent; box-shadow: none; }
 .weekly-side-icon { background: linear-gradient(145deg, #d8ffe9, #e0f8ff); box-shadow: inset 0 0 0 1px #bce9d9, 0 2px 6px #09795b1a; }
 .weekly-nutrient-item > svg { flex: none; filter: drop-shadow(0 1px 1px #0c83642c); }
+
+/* Todo lo de "preparación" va en naranja para reconocerlo de un vistazo */
+.boton-preparacion { background: linear-gradient(125deg, #e8700f, #f59e0b); box-shadow: 0 6px 16px #e8700f40; transition: filter .15s, transform .15s; }
+.boton-preparacion:hover { filter: brightness(1.06); }
+button.boton-preparacion:active { transform: scale(.98); }

@@ -230,6 +230,13 @@ class MenuRepositorySequelize {
       if (ultimaVersion.estado !== "generado")
         throw new ConflictError("No se puede ajustar un menú ya aprobado");
 
+      // Si cambian el plato o sus ingredientes, la explicación de
+      // preparación ya no corresponde: se borra para volver a generarla
+      const anteriores = await DetalleComidaAlimentoModel.findAll({ where: { idComidaMenu }, transaction });
+      const idsAntes = anteriores.map((d) => String(d.idAlimento)).sort().join(",");
+      const idsDespues = cambios.alimentos.map((d) => String(d.idAlimento)).sort().join(",");
+      const preparacionVigente = idsAntes === idsDespues && comida.nombrePlato === cambios.nombrePlato;
+
       await DetalleComidaAlimentoModel.destroy({
         where: { idComidaMenu },
         transaction,
@@ -246,6 +253,7 @@ class MenuRepositorySequelize {
           nombrePlato: cambios.nombrePlato,
           costoTotal: cambios.costoTotal,
           nutrientes: cambios.nutrientes,
+          ...(!preparacionVigente && { preparacion: null }),
         },
         { transaction },
       );
@@ -282,6 +290,20 @@ class MenuRepositorySequelize {
         nutrientes: cambios.nutrientes,
         alimentos: cambios.alimentos,
       };
+    });
+  }
+
+  // { [idComidaMenu]: preparacion | null }
+  async guardarPreparaciones(porComida) {
+    const entradas = Object.entries(porComida || {});
+    if (entradas.length === 0) return;
+    await sequelize.transaction(async (transaction) => {
+      for (const [idComidaMenu, preparacion] of entradas) {
+        await ComidaMenuModel.update(
+          { preparacion: preparacion || null },
+          { where: { id: Number(idComidaMenu) }, transaction },
+        );
+      }
     });
   }
 

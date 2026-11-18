@@ -2,6 +2,8 @@ const MenuRoutes = require("./MenuRoutes");
 const MenuController = require("./MenuController");
 const MenuRepositorySequelize = require("../MenuRepositorySequelize");
 const GeneradorMenuIA = require("../GeneradorMenuIA");
+const GeneradorPreparacionIA = require("../GeneradorPreparacionIA");
+const ExplicarPreparacionMenu = require("../../Aplicacion/ExplicarPreparacionMenu");
 const { pedirCompletion } = require("../../../../Infraestructura/ia/iaClient");
 
 const GenerarMenuSemanal = require("../../Aplicacion/GenerarMenuSemanal");
@@ -46,6 +48,10 @@ module.exports = function registerMenuModule(app) {
     ajustarComidaMenu: new AjustarComidaMenu({ menuRepository: menuRepo, listarAlimentosPorPaciente }),
     aprobarMenu: new AprobarMenu({ menuRepository: menuRepo }),
     calcularNutrientesPreviewComida: new CalcularNutrientesPreviewComida({ menuRepository: menuRepo, listarAlimentosPorPaciente, pacienteRepository: pacienteRepo }),
+    explicarPreparacionMenu: new ExplicarPreparacionMenu({
+      menuRepository: menuRepo,
+      generadorPreparacion: new GeneradorPreparacionIA(pedirCompletion),
+    }),
   });
 
   app.use(

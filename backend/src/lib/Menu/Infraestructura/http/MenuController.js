@@ -2,12 +2,13 @@ const { AppError } = require("../../Dominio/Errores");
 const { sumarNutrientes } = require("../../Dominio/Servicios/CalculadoraNutricional");
 
 class MenuController {
-  constructor({ generarMenuSemanal, obtenerMenuPorPaciente, ajustarComidaMenu, aprobarMenu, calcularNutrientesPreviewComida }) {
+  constructor({ generarMenuSemanal, obtenerMenuPorPaciente, ajustarComidaMenu, aprobarMenu, calcularNutrientesPreviewComida, explicarPreparacionMenu }) {
     this.generarMenuSemanal = generarMenuSemanal;
     this.obtenerMenuPorPaciente = obtenerMenuPorPaciente;
     this.ajustarComidaMenu = ajustarComidaMenu;
     this.aprobarMenu = aprobarMenu;
     this.calcularNutrientesPreviewComida = calcularNutrientesPreviewComida;
+    this.explicarPreparacionMenu = explicarPreparacionMenu;
   }
 
   generar = async (req, res, next) => {
@@ -93,6 +94,33 @@ class MenuController {
       }
       const resultado = await this.aprobarMenu.ejecutar(idMenu, req.nutriologo.id);
       res.json(resultado);
+    } catch (error) {
+      this._manejarError(error, res, next);
+    }
+  };
+
+  generarPreparacion = async (req, res, next) => {
+    try {
+      const idMenu = Number(req.params.idMenu);
+      if (!Number.isInteger(idMenu) || idMenu <= 0) {
+        return res.status(400).json({ message: "El id del menú no es válido" });
+      }
+      const resultado = await this.explicarPreparacionMenu.generar(idMenu, req.nutriologo.id, {
+        regenerar: req.body?.regenerar === true,
+      });
+      res.json(resultado);
+    } catch (error) {
+      this._manejarError(error, res, next);
+    }
+  };
+
+  editarPreparacion = async (req, res, next) => {
+    try {
+      const idComidaMenu = Number(req.params.idComidaMenu);
+      if (!Number.isInteger(idComidaMenu) || idComidaMenu <= 0) {
+        return res.status(400).json({ message: "El id de la comida no es válido" });
+      }
+      res.json(await this.explicarPreparacionMenu.editar(idComidaMenu, req.nutriologo.id, req.body?.preparacion ?? null));
     } catch (error) {
       this._manejarError(error, res, next);
     }

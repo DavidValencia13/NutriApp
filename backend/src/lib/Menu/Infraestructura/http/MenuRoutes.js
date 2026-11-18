@@ -10,5 +10,8 @@ module.exports = (controller, { limiteGeneracion } = {}) => {
   router.put("/comida/:idComidaMenu", controller.ajustar); // RF-0011
   router.post("/:idMenu/preview-nutrientes", controller.previewNutrientes); // feedback en vivo
   router.post("/:idMenu/aprobar", controller.aprobar);
+  // Explicación de preparación (IA a pedido + corrección del nutricionista)
+  router.post("/:idMenu/preparacion", controller.generarPreparacion);
+  router.put("/comida/:idComidaMenu/preparacion", controller.editarPreparacion);
   return router;
 };

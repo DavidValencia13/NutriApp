@@ -121,6 +121,9 @@ async function pedirCompletion(messages, systemPrompt) {
  */
 async function pedirCompletionJSON(messages, opciones = {}) {
   const esMenu = opciones.tarea === "menu";
+  // Preparación: modelo barato (ANTHROPIC_MODEL), sin razonamiento y con
+  // timeout largo (son los pasos de toda la semana en una sola respuesta)
+  const esPreparacion = opciones.tarea === "preparacion";
   const sistema = messages.filter((m) => m.role === "system").map((m) => m.content);
   sistema.push(
     "Responde únicamente con un objeto JSON válido, sin texto antes ni después y sin bloques de código.",
@@ -136,9 +139,9 @@ async function pedirCompletionJSON(messages, opciones = {}) {
       system: sistema.join("\n\n"),
       messages: messages.filter((m) => m.role !== "system"),
       ...(opciones.tarea === "traduccion" && { output_config: { effort: "low" } }),
-      ...(esMenu && razonamientoMenu(modelo)),
+      ...((esMenu || esPreparacion) && razonamientoMenu(modelo)),
     },
-    esMenu ? ANTHROPIC_TIMEOUT_MENU_MS : ANTHROPIC_TIMEOUT_MS,
+    esMenu || esPreparacion ? ANTHROPIC_TIMEOUT_MENU_MS : ANTHROPIC_TIMEOUT_MS,
   );
   return extraerJSON(textoDeRespuesta(response));
 }

@@ -18,8 +18,8 @@ async function apiFetch(endpoint, options = {}) {
   }
 
   // El servidor gratis de la nube se duerme si nadie lo usa: si tarda más de
-  // 5 s se avisa "Conectando..." (menos al generar menú, que tiene su propia espera)
-  const avisar = !endpoint.endsWith("/generar");
+  // 5 s se avisa "Conectando..." (menos al generar menú o preparación, que tienen su propia espera)
+  const avisar = !endpoint.endsWith("/generar") && !endpoint.endsWith("/preparacion");
   const temporizador = avisar
     ? setTimeout(() => window.dispatchEvent(new CustomEvent("servidor-lento", { detail: true })), 5000)
     : null;
