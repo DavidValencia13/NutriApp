@@ -81,7 +81,7 @@ function EncabezadoMarca({ marca, grande = false }) {
       {marca.logo && <img src={marca.logo} alt="" className={`${grande ? "w-10 h-10" : "w-8 h-8"} rounded-lg object-contain bg-white p-0.5 shrink-0`} />}
       <span className="min-w-0 leading-tight">
         <span className="block font-semibold truncate">{nombreConsulta || "Mi nutricionista"}</span>
-        <span className="block text-[11px] text-white/60">con NutriApp</span>
+        <span className="block text-[11px] text-white/60 truncate">{marca.especialidad || "con NutriApp"}</span>
       </span>
     </span>
   );
@@ -196,6 +196,9 @@ function PortalPaciente() {
                 : "Tu plan de alimentación."}
               {perfil?.metaCalorias ? ` Meta diaria: ${perfil.metaCalorias} kcal.` : ""}
             </p>
+            {marca?.mensajeBienvenida && (
+              <p className="mt-4 max-w-xl rounded-xl bg-white/15 px-4 py-3 text-sm italic text-white/95 leading-relaxed">“{marca.mensajeBienvenida}”</p>
+            )}
           </div>
         </header>
 

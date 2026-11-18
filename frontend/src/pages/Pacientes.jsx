@@ -287,6 +287,7 @@ function Pacientes() {
         title={tituloModal}
         ancho={
           modal.tipo === "menu" ? "max-w-[980px]"
+          : modal.tipo === "diseno" ? "max-w-5xl"
           : modal.tipo === "seguimiento" ? "max-w-3xl"
           : "max-w-3xl"
         }

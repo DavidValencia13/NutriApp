@@ -1,9 +1,10 @@
 // Paleta de "Personalizar diseño". Las claves deben coincidir con
 // COLORES_MARCA del backend (Nutriologo/Aplicacion/PersonalizarMarca.js).
-// principal: botones y acentos · oscuro: menú lateral y encabezado
+// También se acepta un color propio "#rrggbb".
+// principal: botones y acentos · oscuro: menú lateral y encabezado · claro: detalles
 export const PALETA_MARCA = {
   verde: { nombre: "Verde NutriApp", principal: "#1F7A52", oscuro: "#0F3D33", claro: "#7BE0B0" },
-  azul: { nombre: "Azul", principal: "#1D5FA8", oscuro: "#0F2747", claro: "#93C5FD" },
+  azul: { nombre: "Azul confianza", principal: "#1D5FA8", oscuro: "#0F2747", claro: "#93C5FD" },
   turquesa: { nombre: "Turquesa", principal: "#0E7C80", oscuro: "#0B3033", claro: "#7FE3E0" },
   morado: { nombre: "Morado", principal: "#6D3FB0", oscuro: "#2A1748", claro: "#C4B5FD" },
   rosa: { nombre: "Rosa", principal: "#B83A72", oscuro: "#3D1428", claro: "#F9A8D4" },
@@ -11,19 +12,60 @@ export const PALETA_MARCA = {
   gris: { nombre: "Gris elegante", principal: "#475569", oscuro: "#1E293B", claro: "#CBD5E1" },
 };
 
-export function colorDeMarca(marca) {
-  return marca?.color && PALETA_MARCA[marca.color] ? PALETA_MARCA[marca.color] : null;
+export const ESTILOS_ENCABEZADO = {
+  degradado: "Degradado",
+  solido: "Sólido",
+  ondas: "Con ondas",
+};
+
+const HEX = /^#[0-9a-f]{6}$/i;
+
+function mezclar(hex, con, proporcion) {
+  const a = parseInt(hex.slice(1), 16);
+  const b = parseInt(con.slice(1), 16);
+  const canal = (x, y) => Math.round(x + (y - x) * proporcion);
+  const r = canal(a >> 16, b >> 16);
+  const g = canal((a >> 8) & 255, (b >> 8) & 255);
+  const bl = canal(a & 255, b & 255);
+  return `#${((1 << 24) | (r << 16) | (g << 8) | bl).toString(16).slice(1)}`;
 }
 
-// Variables CSS que repintan la app del paciente con el color elegido
+export function esColorPropio(color) {
+  return HEX.test(color || "");
+}
+
+export function colorDeMarca(marca) {
+  const color = marca?.color;
+  if (color && PALETA_MARCA[color]) return PALETA_MARCA[color];
+  if (esColorPropio(color)) {
+    return { nombre: "Color propio", principal: color, oscuro: mezclar(color, "#000000", 0.62), claro: mezclar(color, "#ffffff", 0.55) };
+  }
+  return null;
+}
+
+// Fondo del encabezado según el estilo elegido
+export function fondoEncabezado(c, estilo) {
+  if (estilo === "solido") return c.oscuro;
+  if (estilo === "ondas") {
+    const ondas = encodeURIComponent(
+      `<svg xmlns='http://www.w3.org/2000/svg' width='600' height='160' viewBox='0 0 600 160'><path d='M0 110 C150 60 300 160 600 90 V160 H0Z' fill='${c.claro}' fill-opacity='0.18'/><path d='M0 130 C200 90 380 170 600 120 V160 H0Z' fill='${c.claro}' fill-opacity='0.14'/></svg>`,
+    );
+    return `url("data:image/svg+xml,${ondas}") bottom / 100% auto no-repeat, linear-gradient(110deg, ${c.oscuro}, ${c.principal})`;
+  }
+  return `radial-gradient(circle at 80% 15%, ${c.claro}40, transparent 40%), linear-gradient(110deg, ${c.oscuro}, ${c.principal})`;
+}
+
+// Variables CSS que repintan la app del paciente con el diseño elegido
 export function estiloDeMarca(marca) {
   const c = colorDeMarca(marca);
-  // Verde = diseño original de NutriApp (con sus degradados propios)
-  if (!c || marca.color === "verde") return undefined;
+  const estilo = marca?.estiloEncabezado;
+  // Verde sin estilo especial = diseño original de NutriApp (con sus degradados propios)
+  if (!c || (marca.color === "verde" && (!estilo || estilo === "degradado"))) return undefined;
   return {
     "--marca-principal": c.principal,
     "--marca-oscuro": c.oscuro,
     "--marca-claro": c.claro,
+    "--marca-encabezado": fondoEncabezado(c, estilo),
     "--color-nutri-brand": c.principal,
     "--color-nutri-brand-dark": c.oscuro,
     "--color-nutri-ink": c.oscuro,

@@ -18,25 +18,33 @@ function repoFalso() {
   };
 }
 
-test("normaliza el nombre y valida color y logo", () => {
-  assert.deepEqual(normalizarMarca({ nombreConsulta: "  Nutri   Vida ", color: "azul", logo: LOGO }), {
-    nombreConsulta: "Nutri Vida", color: "azul", logo: LOGO,
-  });
-  assert.deepEqual(normalizarMarca({}), { nombreConsulta: null, color: null, logo: null });
-  assert.throws(() => normalizarMarca({ color: "#ff0000" }), /paleta/);
+test("normaliza textos y valida color, estilo y logo", () => {
+  assert.deepEqual(
+    normalizarMarca({
+      nombreConsulta: "  Nutri   Vida ", especialidad: "Nutrición clínica", mensajeBienvenida: " Hola ",
+      color: "azul", estiloEncabezado: "ondas", logo: LOGO,
+    }),
+    { nombreConsulta: "Nutri Vida", especialidad: "Nutrición clínica", mensajeBienvenida: "Hola", color: "azul", estiloEncabezado: "ondas", logo: LOGO },
+  );
+  assert.equal(normalizarMarca({ color: "#1A2B3C" }).color, "#1a2b3c"); // color propio
+  assert.throws(() => normalizarMarca({ color: "rojo" }), /color/);
+  assert.throws(() => normalizarMarca({ color: "#12345" }), /color/);
+  assert.throws(() => normalizarMarca({ estiloEncabezado: "neon" }), /Estilo/);
   assert.throws(() => normalizarMarca({ logo: "data:image/svg+xml;base64,PHN2Zz4=" }), /PNG, JPG o WebP/);
   assert.throws(() => normalizarMarca({ logo: "javascript:alert(1)" }), /PNG, JPG o WebP/);
   assert.throws(() => normalizarMarca({ logo: `data:image/png;base64,${"A".repeat(95000)}` }), /pesado/);
   assert.throws(() => normalizarMarca({ nombreConsulta: "x".repeat(61) }), /60/);
+  assert.throws(() => normalizarMarca({ mensajeBienvenida: "x".repeat(161) }), /160/);
 });
 
 test("guarda, devuelve y se puede volver al diseño original", async () => {
   const repo = repoFalso();
   const caso = new PersonalizarMarca(repo);
-  assert.deepEqual(await caso.obtener(1), { nombreConsulta: null, color: null, logo: null });
+  assert.equal((await caso.obtener(1)).color, null);
 
   const guardada = await caso.guardar(1, { nombreConsulta: "Consultorio Sánchez", color: "morado" });
   assert.equal(guardada.color, "morado");
+  assert.equal(guardada.especialidad, null);
   assert.equal(repo.fila.marca.nombreConsulta, "Consultorio Sánchez");
 
   await caso.guardar(1, {});
