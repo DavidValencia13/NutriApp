@@ -422,7 +422,7 @@ function TarjetaComida({ comida, marca, onMarcar, indice }) {
           </ul>
         )}
 
-        <LineaBebida bebida={comida.bebida} className="mt-3 text-gray-700" />
+        <LineaBebida bebida={comida.bebida} nutricion={comida.bebidaNutricion} className="mt-3 text-gray-700" />
 
         {tienePreparacion(comida) && (
           <button type="button" onClick={() => setVerPreparacion(true)}

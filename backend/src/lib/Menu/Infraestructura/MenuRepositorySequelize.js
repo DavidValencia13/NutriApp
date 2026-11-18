@@ -11,6 +11,11 @@ const Menu = require("../Dominio/Entidades/Menu");
 const { NotFoundError, ConflictError } = require("../Dominio/Errores");
 const { sumarNutrientes } = require("../Dominio/Servicios/CalculadoraNutricional");
 
+// Nutrientes de la bebida con el mismo formato que suma la calculadora
+function resultadoBebida(bebidaNutricion) {
+  return bebidaNutricion?.nutrientes ? { nutrientes: bebidaNutricion.nutrientes, completo: true, camposFaltantes: [] } : null;
+}
+
 class MenuRepositorySequelize {
   async ejecutarEnTransaccion(fn) {
     return await sequelize.transaction(fn);
@@ -247,6 +252,15 @@ class MenuRepositorySequelize {
           { transaction },
         );
       }
+      // La bebida (si tiene calorías) se sigue sumando a la comida
+      const bebidaRes = resultadoBebida(comida.bebidaNutricion);
+      if (bebidaRes) {
+        cambios = {
+          ...cambios,
+          calorias: Number(cambios.calorias) + (Number(comida.bebidaNutricion.nutrientes.calorias) || 0),
+          nutrientes: sumarNutrientes([cambios.nutrientes, bebidaRes]),
+        };
+      }
       await comida.update(
         {
           calorias: cambios.calorias,
@@ -293,8 +307,43 @@ class MenuRepositorySequelize {
     });
   }
 
-  async guardarBebida(idComidaMenu, bebida) {
-    await ComidaMenuModel.update({ bebida }, { where: { id: Number(idComidaMenu) } });
+  // Guarda la bebida y recalcula la comida (alimentos + bebida) y su día
+  async guardarBebida(idComidaMenu, bebida, bebidaNutricion = null) {
+    return await sequelize.transaction(async (transaction) => {
+      const comida = await ComidaMenuModel.findOne({
+        where: { id: Number(idComidaMenu) },
+        include: { model: DetalleComidaAlimentoModel, as: "detalles" },
+        transaction,
+      });
+      if (!comida) throw new NotFoundError("Comida no encontrada");
+      const kcalAnterior = Number(comida.bebidaNutricion?.nutrientes?.calorias) || 0;
+      const kcalNueva = Number(bebidaNutricion?.nutrientes?.calorias) || 0;
+      const base = sumarNutrientes((comida.detalles || []).map((d) => d.nutrientes));
+      const bebidaRes = resultadoBebida(bebidaNutricion);
+      await comida.update(
+        {
+          bebida,
+          bebidaNutricion,
+          calorias: Math.max(Number(comida.calorias) - kcalAnterior + kcalNueva, 0),
+          nutrientes: bebidaRes ? sumarNutrientes([base, bebidaRes]) : base,
+        },
+        { transaction },
+      );
+      await this._recalcularDia(comida.idDiaMenu, transaction);
+      return { id: comida.id, bebida, bebidaNutricion, calorias: Number(comida.calorias) };
+    });
+  }
+
+  async _recalcularDia(idDiaMenu, transaction) {
+    const comidasDelDia = await ComidaMenuModel.findAll({ where: { idDiaMenu }, transaction });
+    await DiaMenuModel.update(
+      {
+        caloriasTotales: comidasDelDia.reduce((t, c) => t + Number(c.calorias), 0),
+        costoTotalDia: comidasDelDia.reduce((t, c) => t + Number(c.costoTotal), 0),
+        nutrientes: sumarNutrientes(comidasDelDia.map((c) => c.nutrientes)),
+      },
+      { where: { id: idDiaMenu }, transaction },
+    );
   }
 
   // { [idComidaMenu]: preparacion | null }

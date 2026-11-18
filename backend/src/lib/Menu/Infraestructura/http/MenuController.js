@@ -135,7 +135,7 @@ class MenuController {
       if (!Number.isInteger(idComidaMenu) || idComidaMenu <= 0) {
         return res.status(400).json({ message: "El id de la comida no es válido" });
       }
-      res.json(await this.asignarBebidaComida.ejecutar(idComidaMenu, req.nutriologo.id, req.body?.bebida ?? null));
+      res.json(await this.asignarBebidaComida.ejecutar(idComidaMenu, req.nutriologo.id, req.body || {}));
     } catch (error) {
       this._manejarError(error, res, next);
     }

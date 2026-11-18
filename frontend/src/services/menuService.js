@@ -59,10 +59,11 @@ export async function obtenerRequerimiento(idPaciente) {
   return await apiFetch(`/paciente/${idPaciente}/menu/requerimiento`);
 }
 
-// Bebida que acompaña una comida (null = quitarla)
-export async function guardarBebida(idPaciente, idComidaMenu, bebida) {
+// Bebida que acompaña una comida: { bebida } o, si tiene calorías,
+// { bebida, ml, por100, fuente, referencia } ({ bebida: null } = quitarla)
+export async function guardarBebida(idPaciente, idComidaMenu, datos) {
   return await apiFetch(`/paciente/${idPaciente}/menu/comida/${idComidaMenu}/bebida`, {
     method: "PUT",
-    body: JSON.stringify({ bebida }),
+    body: JSON.stringify(datos),
   });
 }

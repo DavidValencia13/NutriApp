@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const { AsignarBebidaComida, normalizarBebida } = require("../AsignarBebidaComida");
+const { AsignarBebidaComida, normalizarBebida, nutricionDeBebida } = require("../AsignarBebidaComida");
 const { detalleRequerimiento, requerimientoCalorico } = require("../../Dominio/Servicios/RequerimientoCalorico");
 const { proteinaPorKg } = require("../../../Alimento/Dominio/Servicios/SuficienciaCatalogo");
 const { NotFoundError, ValidationError } = require("../../Dominio/Errores");
@@ -18,10 +18,10 @@ test("bebida: solo el nutricionista dueño la asigna", async () => {
   const guardadas = [];
   const repo = (dueno) => ({
     async obtenerComidaConPropietario(id) { return dueno ? { id } : null; },
-    async guardarBebida(id, b) { guardadas.push([id, b]); },
+    async guardarBebida(id, b, n) { guardadas.push(n ? [id, b, n] : [id, b]); },
   });
-  const r = await new AsignarBebidaComida({ menuRepository: repo(true) }).ejecutar(11, 1, "Vaso de agua (250 ml)");
-  assert.deepEqual(r, { idComidaMenu: 11, bebida: "Vaso de agua (250 ml)" });
+  const r = await new AsignarBebidaComida({ menuRepository: repo(true) }).ejecutar(11, 1, { bebida: "Vaso de agua (250 ml)" });
+  assert.deepEqual(r, { idComidaMenu: 11, bebida: "Vaso de agua (250 ml)", bebidaNutricion: null });
   assert.deepEqual(guardadas, [[11, "Vaso de agua (250 ml)"]]);
   await assert.rejects(() => new AsignarBebidaComida({ menuRepository: repo(false) }).ejecutar(11, 9, "Jugo"), NotFoundError);
 });
@@ -42,4 +42,25 @@ test("requerimiento: muestra fórmula, pasos y macros que suman la meta", () => 
   assert.ok(Math.abs(suma - d.meta) <= 10, `suma ${suma} vs meta ${d.meta}`);
   assert.equal(detalleRequerimiento({ peso: 0, altura: 1.6 }), null);
   assert.equal(detalleRequerimiento({ peso: 64, altura: 1.6 }).valores.sexoSupuesto, true);
+});
+
+test("bebida con calorías: nutrientes de la porción con la tabla (por 100 ml)", async () => {
+  const jugo = { calorias: 45, proteinas: 0.7, carbohidratos: 10.4, grasasTotales: 0.2, vitaminaC: 50 };
+  const n = nutricionDeBebida({ ml: 200, por100: jugo, fuente: "USDA", referencia: "Orange juice, raw" });
+  assert.equal(n.ml, 200);
+  assert.equal(n.nutrientes.calorias, 90);
+  assert.equal(n.nutrientes.carbohidratos, 20.8);
+  assert.equal(n.nutrientes.vitaminaC, 100);
+  assert.equal(n.fuente, "USDA");
+  assert.equal(nutricionDeBebida({}), null); // agua o infusión: sin nutrientes
+  assert.throws(() => nutricionDeBebida({ ml: 5000, por100: jugo }), ValidationError);
+
+  const guardadas = [];
+  const repo = {
+    async obtenerComidaConPropietario(id) { return { id }; },
+    async guardarBebida(id, b, nut) { guardadas.push({ id, b, nut }); },
+  };
+  const r = await new AsignarBebidaComida({ menuRepository: repo }).ejecutar(12, 1, { bebida: "Jugo de naranja natural", ml: 200, por100: jugo, fuente: "USDA" });
+  assert.equal(r.bebidaNutricion.nutrientes.calorias, 90);
+  assert.equal(guardadas[0].nut.nutrientes.calorias, 90);
 });

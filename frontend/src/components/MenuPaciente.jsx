@@ -246,14 +246,12 @@ function MenuPaciente({ idPaciente, paciente, presupuesto, vistaInicial = "resum
     setComidaPreparacion(null);
   }
 
-  async function handleGuardarBebida(bebida) {
-    const { bebida: guardada } = await guardarBebida(idPaciente, comidaBebida.id, bebida);
-    const conBebida = (m) => m && {
-      ...m,
-      dias: (m.dias || []).map((d) => ({ ...d, comidas: (d.comidas || []).map((c) => (c.id === comidaBebida.id ? { ...c, bebida: guardada } : c)) })),
-    };
-    if (versionVista) setVersionVista(conBebida);
-    else setMenu(conBebida);
+  // Si la bebida tiene calorías cambian los totales de la comida y del día:
+  // se vuelve a traer el menú (sin la pantalla de carga)
+  async function handleGuardarBebida(datos) {
+    await guardarBebida(idPaciente, comidaBebida.id, datos);
+    if (versionVista) setVersionVista(await obtenerVersionMenu(idPaciente, versionVista.id));
+    else setMenu(await obtenerMenu(idPaciente));
     setComidaBebida(null);
   }
 
@@ -419,7 +417,7 @@ function MenuPaciente({ idPaciente, paciente, presupuesto, vistaInicial = "resum
       </Modal>
 
       <Modal isOpen={comidaBebida !== null} onClose={() => setComidaBebida(null)} title="Bebida de la comida">
-        {comidaBebida && <EditorBebida key={comidaBebida.id} comida={comidaBebida} onGuardar={handleGuardarBebida} onCancelar={() => setComidaBebida(null)} />}
+        {comidaBebida && <EditorBebida key={comidaBebida.id} idPaciente={idPaciente} comida={comidaBebida} onGuardar={handleGuardarBebida} onCancelar={() => setComidaBebida(null)} />}
       </Modal>
 
       <Modal
@@ -609,7 +607,7 @@ function MenuSemanalVista({ menu, esHistorico, historial, mostrarHistorial, onTo
                 <div className="weekly-meal-details">
                   {comida.descripcion && <p>{comida.descripcion}</p>}
                   <p>{(comida.detalles || []).map((d) => `${d.nombreAlimento} ${cantidadLegible(d.cantidadUtilizada, d.unidadMedida)}`).join(" · ")}</p>
-                  <LineaBebida bebida={comida.bebida} className="text-[11px] mt-1" />
+                  <LineaBebida bebida={comida.bebida} nutricion={comida.bebidaNutricion} className="text-[11px] mt-1" />
                   <div><span>Costo estimado: ${Number(comida.costoTotal || 0).toFixed(2)}</span>{!aprobado && !esHistorico && <button type="button" onClick={() => onAjustarComida(comida)}>Ajustar comida <ArrowRight size={14} aria-hidden="true" /></button>}</div>
                 </div>
               </details>

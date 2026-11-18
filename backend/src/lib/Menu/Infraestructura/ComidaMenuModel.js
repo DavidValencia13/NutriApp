@@ -25,6 +25,9 @@ const ComidaMenuModel = sequelize.define(
     preparacion: { type: DataTypes.JSONB, allowNull: true },
     // Bebida que acompaña la comida (agua, agua aromática, jugo...), opcional
     bebida: { type: DataTypes.STRING(160), allowNull: true },
+    // Nutrientes de la bebida si tiene calorías: { ml, nutrientes, fuente, referencia }.
+    // Se suman a calorias/nutrientes de la comida (null = agua o infusión sin azúcar)
+    bebidaNutricion: { type: DataTypes.JSONB, allowNull: true },
   },
   {
     timestamps: true,
