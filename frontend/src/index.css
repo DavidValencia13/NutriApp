@@ -1171,6 +1171,328 @@ button.boton-preparacion:active { transform: scale(.98); }
 .portal-marca .portal-rail { background: radial-gradient(circle at 20% 90%, color-mix(in srgb, var(--marca-principal) 45%, transparent), transparent 55%), linear-gradient(180deg, var(--marca-oscuro), color-mix(in srgb, var(--marca-oscuro) 80%, var(--marca-principal))); }
 .portal-marca .portal-rail nav button:hover, .portal-marca .portal-rail nav button[class*="bg-white/10"] { background: linear-gradient(100deg, color-mix(in srgb, var(--marca-principal) 85%, transparent), color-mix(in srgb, var(--marca-principal) 50%, transparent)); }
 .portal-marca .portal-header { background: var(--marca-encabezado); }
+/* ===== COLOR DE MARCA =====
+   "Personalizar diseño": todos los verdes de la app pasan al color elegido por
+   el nutricionista. Las reglas "marca generadas" salen de
+   frontend/scripts/gen-marca.cjs; regenerarlas si cambian los estilos. */
+.dashboard-marca .dashboard-hero::before, .dashboard-marca .hero-slide::before {
+  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: linear-gradient(100deg, var(--marca-oscuro) 0%, color-mix(in srgb, var(--marca-oscuro) 85%, transparent) 38%, color-mix(in srgb, var(--marca-principal) 25%, transparent) 62%, transparent 80%);
+}
+.dashboard-marca .hero-copy { position: relative; z-index: 1; }
+html.tema-oscuro .dashboard-marca, html.tema-oscuro .portal-marca { --oscuro-acento: var(--marca-claro); }
+/* marca generadas */
+:where(.dashboard-marca, .portal-marca) .dashboard-topbar { box-shadow: 0 5px 20px color-mix(in srgb, var(--marca-principal) 4%, transparent); }
+:where(.dashboard-marca, .portal-marca) .topbar-eyebrow, :where(.dashboard-marca, .portal-marca) .section-eyebrow { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .topbar-greeting h1 { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .topbar-search:focus-within { border-color: var(--marca-claro); box-shadow: 0 0 0 3px color-mix(in srgb, var(--marca-claro) 11%, transparent); }
+:where(.dashboard-marca, .portal-marca) .topbar-search input { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .primary-button { background: linear-gradient(120deg, var(--marca-principal), var(--marca-claro)); box-shadow: 0 5px 12px color-mix(in srgb, var(--marca-principal) 14%, transparent); }
+:where(.dashboard-marca, .portal-marca) .primary-button:hover { box-shadow: 0 10px 18px color-mix(in srgb, var(--marca-principal) 20%, transparent); }
+:where(.dashboard-marca, .portal-marca) .topbar-logout { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .dashboard-hero { background-color: var(--marca-oscuro); box-shadow: 0 12px 30px color-mix(in srgb, var(--marca-oscuro) 12%, transparent); }
+:where(.dashboard-marca, .portal-marca) .dashboard-hero::after { background: linear-gradient(125deg, transparent 20%, color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 8%, transparent) 55%, transparent 75%); }
+:where(.dashboard-marca, .portal-marca) .hero-kicker { border: 1px solid color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 24%, transparent); background: color-mix(in srgb, var(--marca-principal) 62%, transparent); color: color-mix(in srgb, var(--marca-claro) 55%, #fff); }
+:where(.dashboard-marca, .portal-marca) .dashboard-hero h2 span { color: color-mix(in srgb, var(--marca-claro) 55%, #fff); }
+:where(.dashboard-marca, .portal-marca) .dashboard-stat { box-shadow: 0 4px 16px color-mix(in srgb, var(--marca-principal) 4%, transparent); }
+:where(.dashboard-marca, .portal-marca) .dashboard-stat > div > span { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .dashboard-stat strong { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .dashboard-stat p { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .stat-icon { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .patients-heading h2 { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .patients-count { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .patient-filters button { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .patient-filters button.active { border-color: var(--marca-principal); background: linear-gradient(115deg, var(--marca-principal), var(--marca-principal)); }
+:where(.dashboard-marca, .portal-marca) .patient-filters button span { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .patient-filters button.active span { background: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .patient-card { box-shadow: 0 3px 9px color-mix(in srgb, var(--marca-principal) 3%, transparent); }
+:where(.dashboard-marca, .portal-marca) .patient-card:hover { border-color: color-mix(in srgb, var(--marca-claro) 55%, #fff); box-shadow: 0 12px 28px color-mix(in srgb, var(--marca-principal) 10%, transparent); }
+:where(.dashboard-marca, .portal-marca) .patient-avatar { background: radial-gradient(circle at 30% 25%, #edfff4, color-mix(in srgb, var(--marca-principal) 7%, #fff)); color: var(--marca-principal); box-shadow: 0 4px 12px color-mix(in srgb, var(--marca-claro) 12%, transparent); }
+:where(.dashboard-marca, .portal-marca) .patient-goal { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .patient-profile-hint { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .patient-profile-hint svg { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .patient-metrics dt { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .patient-metrics dd { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .patient-card::before { background: linear-gradient(90deg, var(--marca-claro), color-mix(in srgb, var(--marca-claro) 55%, #fff) 50%, transparent); }
+:where(.dashboard-marca, .portal-marca) .patient-card::after { background: linear-gradient(135deg, rgb(232 255 240 / .30), color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 45%, transparent)); }
+:where(.dashboard-marca, .portal-marca) .patient-card-mark { border: 1px solid color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 40%, transparent); color: var(--marca-principal); filter: drop-shadow(0 2px 5px color-mix(in srgb, var(--marca-claro) 10%, transparent)); }
+:where(.dashboard-marca, .portal-marca) .patient-card:hover .patient-avatar { box-shadow: 0 7px 18px color-mix(in srgb, var(--marca-claro) 16%, transparent); }
+:where(.dashboard-marca, .portal-marca) .patient-metrics .patient-metric-icon { border: 1px solid color-mix(in srgb, var(--marca-claro) 55%, #fff); background: linear-gradient(140deg, #e5faee, color-mix(in srgb, var(--marca-principal) 7%, #fff)); color: var(--marca-principal); box-shadow: 0 4px 9px color-mix(in srgb, var(--marca-claro) 10%, transparent); }
+:where(.dashboard-marca, .portal-marca) .patient-card:hover .patient-metric-icon { box-shadow: 0 4px 10px color-mix(in srgb, var(--marca-principal) 10%, transparent); }
+:where(.dashboard-marca, .portal-marca) .patient-clinical-tag { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .patient-clinical-preference { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .patient-trend { border: 1px solid color-mix(in srgb, var(--marca-claro) 55%, #fff); background: radial-gradient(circle at 90% 10%, color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 22%, transparent), transparent 36%), linear-gradient(110deg, #ecfbf3, #f3faff); box-shadow: inset 0 1px #fff, 0 6px 18px color-mix(in srgb, var(--marca-principal) 6%, transparent); }
+:where(.dashboard-marca, .portal-marca) .patient-trend-kicker { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .patient-trend-current { color: color-mix(in srgb, var(--marca-oscuro) 45%, #374151); }
+:where(.dashboard-marca, .portal-marca) .patient-trend-current strong { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .patient-trend-baseline { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .patient-trend-baseline b { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .patient-trend-baseline strong { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .patient-trend-empty, :where(.dashboard-marca, .portal-marca) .patient-trend-no-data span { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .patient-trend-no-data strong { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .weight-chart-scale, :where(.dashboard-marca, .portal-marca) .weight-chart-date { fill: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .followup-overview-heading span { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .followup-overview-heading h3 { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .followup-overview-heading small, :where(.dashboard-marca, .portal-marca) .followup-overview-note { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .followup-overview-stats span { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .followup-overview-stats strong { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .followup-overview-stats small { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .followup-overview-empty { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .patient-plan-action { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .patient-plan-action:hover { border-color: color-mix(in srgb, var(--marca-claro) 55%, #fff); box-shadow: 0 8px 17px color-mix(in srgb, var(--marca-principal) 10%, transparent); }
+:where(.dashboard-marca, .portal-marca) .patient-plan-action svg { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .patient-more summary { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .patient-more[open] summary, :where(.dashboard-marca, .portal-marca) .patient-more summary:hover { border-color: color-mix(in srgb, var(--marca-claro) 55%, #fff); color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .patient-more-menu { box-shadow: 0 12px 34px color-mix(in srgb, var(--marca-principal) 16%, transparent); }
+:where(.dashboard-marca, .portal-marca) .patient-more-menu button { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .patient-plan-action:focus-visible, :where(.dashboard-marca, .portal-marca) .patient-more summary:focus-visible, :where(.dashboard-marca, .portal-marca) .patient-more-menu button:focus-visible { outline: 2px solid var(--marca-claro); }
+:where(.dashboard-marca, .portal-marca) .menu-flow { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .menu-flow-kicker { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .menu-flow-heading p, :where(.dashboard-marca, .portal-marca) .menu-flow-food-heading p { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .menu-flow-steps li span { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .menu-flow-steps li.active { border-color: color-mix(in srgb, var(--marca-claro) 55%, #fff); color: var(--marca-oscuro); box-shadow: 0 5px 14px color-mix(in srgb, var(--marca-claro) 8%, transparent); }
+:where(.dashboard-marca, .portal-marca) .menu-flow-steps li.active span, :where(.dashboard-marca, .portal-marca) .menu-flow-steps li.done span { background: var(--marca-claro); }
+:where(.dashboard-marca, .portal-marca) .menu-flow-steps li.done { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .menu-flow-card-icon { background: linear-gradient(140deg, #d6fae6, color-mix(in srgb, var(--marca-claro) 55%, #fff)); color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .menu-flow-step-card p { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .menu-flow-step-card > button, :where(.dashboard-marca, .portal-marca) .menu-flow-food-return button, :where(.dashboard-marca, .portal-marca) .menu-flow-next button { border: 1px solid color-mix(in srgb, var(--marca-claro) 55%, #fff); color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .menu-flow-step-card > button:hover, :where(.dashboard-marca, .portal-marca) .menu-flow-food-return button:hover, :where(.dashboard-marca, .portal-marca) .menu-flow-next button:hover { box-shadow: 0 7px 18px color-mix(in srgb, var(--marca-principal) 12%, transparent); }
+:where(.dashboard-marca, .portal-marca) .menu-flow-generate > button { border-color: var(--marca-principal); background: linear-gradient(110deg, var(--marca-principal), var(--marca-claro)); }
+:where(.dashboard-marca, .portal-marca) .menu-flow-generate > button:disabled { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .menu-flow-back { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .menu-flow-food-heading::after { background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--marca-claro) 55%, #fff), #76caf0, transparent); }
+:where(.dashboard-marca, .portal-marca) .menu-flow-result-intro p { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .menu-flow-result-intro button, :where(.dashboard-marca, .portal-marca) .menu-flow-new-version { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .menu-flow-next { border: 1px solid color-mix(in srgb, var(--marca-claro) 55%, #fff); }
+:where(.dashboard-marca, .portal-marca) .menu-flow-next p { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .food-search-combo > svg { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .food-search-combo input { border: 1px solid color-mix(in srgb, var(--marca-claro) 55%, #fff); color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .food-search-combo input:focus { border-color: var(--marca-claro); box-shadow: 0 0 0 3px color-mix(in srgb, var(--marca-claro) 13%, transparent); }
+:where(.dashboard-marca, .portal-marca) .food-search-results { box-shadow: 0 18px 35px color-mix(in srgb, var(--marca-principal) 18%, transparent); }
+:where(.dashboard-marca, .portal-marca) .food-search-results button { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .food-search-results small { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .food-search-results .food-search-external { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .filter-empty { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .dashboard-rail { background: radial-gradient(circle at -10% 90%, color-mix(in srgb, var(--marca-claro) 25%, transparent), transparent 45%), linear-gradient(155deg, var(--marca-oscuro), var(--marca-principal) 65%, var(--marca-principal)); box-shadow: 8px 12px 30px color-mix(in srgb, var(--marca-principal) 11%, transparent); }
+:where(.dashboard-marca, .portal-marca) .rail-brand { border-bottom: 1px solid color-mix(in srgb, color-mix(in srgb, var(--marca-principal) 7%, #fff) 13%, transparent); }
+:where(.dashboard-marca, .portal-marca) .rail-brand > span { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .rail-nav a:hover svg, :where(.dashboard-marca, .portal-marca) .rail-nav a:focus-visible svg { filter: drop-shadow(0 0 6px color-mix(in srgb, color-mix(in srgb, var(--marca-principal) 7%, #fff) 60%, transparent)); }
+:where(.dashboard-marca, .portal-marca) .rail-nav a:hover, :where(.dashboard-marca, .portal-marca) .rail-nav a:focus-visible { background: color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 13%, transparent); }
+:where(.dashboard-marca, .portal-marca) .rail-nav a[aria-current="page"] { border-color: color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 28%, transparent); background: linear-gradient(110deg, color-mix(in srgb, var(--marca-claro) 40%, transparent), color-mix(in srgb, var(--marca-claro) 13%, transparent)); box-shadow: inset 3px 0 color-mix(in srgb, var(--marca-claro) 55%, #fff); }
+:where(.dashboard-marca, .portal-marca) .hero-slide { background-color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .hero-slide::after { background: linear-gradient(90deg, transparent 35%, color-mix(in srgb, var(--marca-claro) 6%, transparent) 52%, transparent 72%); }
+:where(.dashboard-marca, .portal-marca) .hero-slide .hero-kicker { border-color: color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 34%, transparent); background: color-mix(in srgb, var(--marca-principal) 58%, transparent); color: color-mix(in srgb, var(--marca-principal) 7%, #fff); }
+:where(.dashboard-marca, .portal-marca) .hero-controls { background: color-mix(in srgb, var(--marca-oscuro) 62%, transparent); }
+:where(.dashboard-marca, .portal-marca) .hero-dots button.active { background: color-mix(in srgb, var(--marca-claro) 55%, #fff); }
+:where(.dashboard-marca, .portal-marca) .dashboard-stat-green { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .patient-metrics dt svg { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .hero-copy { background: linear-gradient(90deg, color-mix(in srgb, var(--marca-oscuro) 70%, transparent), transparent); }
+:where(.dashboard-marca, .portal-marca) .hero-slide .hero-copy { background: linear-gradient(90deg, color-mix(in srgb, var(--marca-oscuro) 38%, transparent), transparent); }
+:where(.dashboard-marca, .portal-marca) .hero-slide .hero-copy { background: linear-gradient(90deg, color-mix(in srgb, var(--marca-oscuro) 80%, transparent), color-mix(in srgb, var(--marca-oscuro) 43%, transparent) 64%, transparent); }
+:where(.dashboard-marca, .portal-marca) .dashboard-rail { background: linear-gradient(180deg, color-mix(in srgb, var(--marca-oscuro) 8%, transparent), color-mix(in srgb, var(--marca-oscuro) 18%, transparent)), url('./assets/sidebar-wave-reference.webp') center 45% / auto 112% no-repeat, var(--marca-principal); box-shadow: 9px 0 31px color-mix(in srgb, var(--marca-principal) 10%, transparent); }
+:where(.dashboard-marca, .portal-marca) .rail-brand svg { filter: drop-shadow(0 5px 13px color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 38%, transparent)); }
+:where(.dashboard-marca, .portal-marca) .rail-brand .font-bold { background: linear-gradient(100deg, #fff 15%, color-mix(in srgb, var(--marca-principal) 7%, #fff) 50%, #fff 80%); }
+:where(.dashboard-marca, .portal-marca) .rail-brand > span { color: color-mix(in srgb, var(--marca-claro) 55%, #fff); }
+:where(.dashboard-marca, .portal-marca) .rail-nav a:hover { background: color-mix(in srgb, var(--marca-claro) 17%, transparent); }
+:where(.dashboard-marca, .portal-marca) .rail-nav a[aria-current="page"] { border-color: color-mix(in srgb, var(--marca-claro) 55%, #fff); background: linear-gradient(105deg, var(--marca-principal), var(--marca-claro) 78%, var(--marca-claro)); box-shadow: inset 0 1px rgb(255 255 255 / .19), 0 7px 18px rgb(0 0 0 / .16), 0 0 15px color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 22%, transparent); }
+:where(.dashboard-marca, .portal-marca) .rail-nav a[aria-current="page"] svg { filter: drop-shadow(0 0 5px color-mix(in srgb, color-mix(in srgb, var(--marca-principal) 7%, #fff) 85%, transparent)); }
+:where(.dashboard-marca, .portal-marca) .dashboard-main .topbar-search { box-shadow: 0 7px 20px color-mix(in srgb, var(--marca-principal) 6%, transparent); }
+:where(.dashboard-marca, .portal-marca) .dashboard-main .dashboard-hero { border: 1px solid color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 22%, transparent); box-shadow: 0 18px 42px color-mix(in srgb, var(--marca-principal) 13%, transparent); }
+:where(.dashboard-marca, .portal-marca) .dashboard-main .hero-slide { background: linear-gradient(90deg, var(--marca-oscuro) 0%, var(--marca-oscuro) 48%, var(--marca-principal) 72%, var(--marca-principal) 100%); }
+:where(.dashboard-marca, .portal-marca) .hero-visual-orbit { border: 1px solid color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 27%, transparent); box-shadow: 0 0 42px color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 8%, transparent), inset 0 0 29px color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 7%, transparent); }
+:where(.dashboard-marca, .portal-marca) .hero-glass-panel { border: 1px solid color-mix(in srgb, color-mix(in srgb, var(--marca-principal) 7%, #fff) 72%, transparent); background: linear-gradient(130deg, color-mix(in srgb, var(--marca-principal) 71%, transparent), rgb(5 78 87 / .77) 70%, rgb(31 93 124 / .65)); box-shadow: 0 21px 44px rgb(0 22 31 / .26), inset 0 1px rgb(255 255 255 / .20), 0 0 32px color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 24%, transparent); }
+:where(.dashboard-marca, .portal-marca) .hero-glass-panel::before { border: 1px solid color-mix(in srgb, color-mix(in srgb, var(--marca-principal) 7%, #fff) 10%, transparent); }
+:where(.dashboard-marca, .portal-marca) .hero-glass-heading { color: color-mix(in srgb, var(--marca-principal) 7%, #fff); }
+:where(.dashboard-marca, .portal-marca) .hero-glass-signal i { background: color-mix(in srgb, var(--marca-claro) 55%, #fff); box-shadow: 0 0 8px color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 68%, transparent); }
+:where(.dashboard-marca, .portal-marca) .hero-pulse-line { filter: drop-shadow(0 0 7px color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 70%, transparent)); }
+:where(.dashboard-marca, .portal-marca) .hero-glass-modules span { border: 1px solid color-mix(in srgb, color-mix(in srgb, var(--marca-principal) 7%, #fff) 25%, transparent); }
+:where(.dashboard-marca, .portal-marca) .hero-glass-modules span::before { background: color-mix(in srgb, var(--marca-claro) 55%, #fff); box-shadow: 0 0 6px color-mix(in srgb, var(--marca-claro) 55%, #fff); }
+:where(.dashboard-marca, .portal-marca) .hero-visual-spark { background: color-mix(in srgb, var(--marca-principal) 7%, #fff); box-shadow: 0 0 15px 4px color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 55%, transparent); }
+:where(.dashboard-marca, .portal-marca) .dashboard-main .dashboard-stat { box-shadow: 0 10px 30px color-mix(in srgb, var(--marca-principal) 7%, transparent); }
+:where(.dashboard-marca, .portal-marca) .dashboard-main .patient-card { box-shadow: 0 9px 26px color-mix(in srgb, var(--marca-principal) 6%, transparent); }
+:where(.dashboard-marca, .portal-marca) .patient-create-card { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .patient-create-card:hover { border-color: color-mix(in srgb, var(--marca-claro) 55%, #fff); box-shadow: 0 12px 28px color-mix(in srgb, var(--marca-principal) 9%, transparent); }
+:where(.dashboard-marca, .portal-marca) .patient-create-icon { background: linear-gradient(135deg, #dcffe8, color-mix(in srgb, var(--marca-claro) 55%, #fff)); color: var(--marca-oscuro); box-shadow: 0 0 0 8px color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 15%, transparent), 0 10px 21px color-mix(in srgb, var(--marca-claro) 22%, transparent); }
+:where(.dashboard-marca, .portal-marca) .patient-create-card > span:nth-last-child(2) { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .patient-create-action { background: linear-gradient(100deg, color-mix(in srgb, var(--marca-principal) 7%, #fff), color-mix(in srgb, var(--marca-claro) 55%, #fff)); color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .dashboard-main .topbar-note { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); box-shadow: 0 7px 18px color-mix(in srgb, var(--marca-principal) 5%, transparent); }
+:where(.dashboard-marca, .portal-marca) .topbar-note strong { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .topbar-note-icon { background: linear-gradient(135deg, color-mix(in srgb, var(--marca-principal) 7%, #fff), color-mix(in srgb, var(--marca-claro) 55%, #fff)); color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .patient-toolbar .patient-search { box-shadow: 0 6px 18px color-mix(in srgb, var(--marca-principal) 5%, transparent); }
+:where(.dashboard-marca, .portal-marca) .dashboard-rail { background: linear-gradient(100deg, color-mix(in srgb, var(--marca-oscuro) 95%, transparent), color-mix(in srgb, var(--marca-principal) 83%, transparent)), url('./assets/sidebar-wave-reference.webp') center 36% / cover no-repeat; }
+:where(.dashboard-marca, .portal-marca) .dashboard-main .hero-copy { background: linear-gradient(90deg, color-mix(in srgb, var(--marca-oscuro) 72%, transparent), color-mix(in srgb, var(--marca-oscuro) 20%, transparent) 75%, transparent); }
+:where(.dashboard-marca, .portal-marca) .dashboard-main .hero-copy { background: linear-gradient(90deg, color-mix(in srgb, var(--marca-oscuro) 88%, transparent), color-mix(in srgb, var(--marca-oscuro) 42%, transparent) 84%, transparent); }
+:where(.dashboard-marca, .portal-marca) .food-selection-actions button { border: 1px solid color-mix(in srgb, var(--marca-claro) 55%, #fff); color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .food-list-heading h2 { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .food-add-button, :where(.dashboard-marca, .portal-marca) .food-entry-form button[type="submit"], :where(.dashboard-marca, .portal-marca) .patient-entry-form button[type="submit"] { border: 1px solid var(--marca-claro); background: linear-gradient(120deg, var(--marca-principal), var(--marca-claro)); box-shadow: 0 6px 15px color-mix(in srgb, var(--marca-principal) 14%, transparent); }
+:where(.dashboard-marca, .portal-marca) .food-add-button:hover, :where(.dashboard-marca, .portal-marca) .food-entry-form button[type="submit"]:hover, :where(.dashboard-marca, .portal-marca) .patient-entry-form button[type="submit"]:hover { box-shadow: 0 9px 20px color-mix(in srgb, var(--marca-principal) 20%, transparent); }
+:where(.dashboard-marca, .portal-marca) .food-budget-inline { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .food-budget-inline strong { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .food-budget-inline span:last-child { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .food-coverage-card { box-shadow: 0 9px 25px color-mix(in srgb, var(--marca-principal) 5%, transparent); }
+:where(.dashboard-marca, .portal-marca) .food-coverage-visual { background: linear-gradient(115deg, color-mix(in srgb, var(--marca-principal) 95%, transparent), color-mix(in srgb, var(--marca-claro) 84%, transparent)), url("./assets/ambient-wave.svg") right bottom / cover no-repeat; }
+:where(.dashboard-marca, .portal-marca) .food-coverage-visual > span { border: 1px solid color-mix(in srgb, color-mix(in srgb, var(--marca-principal) 7%, #fff) 46%, transparent); box-shadow: 0 0 18px color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 20%, transparent); }
+:where(.dashboard-marca, .portal-marca) .food-coverage-visual small { color: color-mix(in srgb, var(--marca-principal) 7%, #fff); }
+:where(.dashboard-marca, .portal-marca) .food-coverage-kicker { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .food-coverage-header h3 { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .food-coverage-count { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .food-coverage-indicator > div { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .food-coverage-indicator strong { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .food-coverage-track i { background: linear-gradient(90deg, var(--marca-claro), color-mix(in srgb, var(--marca-claro) 55%, #fff)); }
+:where(.dashboard-marca, .portal-marca) .food-coverage-suggestions > span { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .food-coverage-suggestions button, :where(.dashboard-marca, .portal-marca) .form-suggestion-row button { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .food-coverage-detail summary { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .food-coverage-alert { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .food-coverage-loading { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .food-list-scroll { scrollbar-color: color-mix(in srgb, var(--marca-claro) 55%, #fff) transparent; }
+:where(.dashboard-marca, .portal-marca) .food-list-more { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .food-overview { box-shadow: 0 8px 22px color-mix(in srgb, var(--marca-principal) 5%, transparent); }
+:where(.dashboard-marca, .portal-marca) .food-overview > div { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .food-overview span { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .food-overview strong { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .food-overview-next { background: linear-gradient(110deg, var(--marca-principal), var(--marca-claro)); box-shadow: 0 4px 12px color-mix(in srgb, var(--marca-principal) 15%, transparent); }
+:where(.dashboard-marca, .portal-marca) .food-overview-next:hover { background: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .food-overview-next:disabled { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .food-list-item-icon { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .food-list-photo { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--marca-principal) 8%, transparent); }
+:where(.dashboard-marca, .portal-marca) .food-list-item-nutrients span { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .food-list-item-nutrients strong { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .food-list-item-nutrients small { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .food-list-item-nutrients p { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .topbar-guide-link { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .food-list-item:hover { border-color: color-mix(in srgb, var(--marca-claro) 55%, #fff); box-shadow: 0 7px 18px color-mix(in srgb, var(--marca-principal) 6%, transparent); }
+:where(.dashboard-marca, .portal-marca) .food-list-item-main > p:first-child { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .food-list-item-meta { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .food-list-nutrition { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .food-list-item-actions button { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .form-intro h3, :where(.dashboard-marca, .portal-marca) .food-entry-heading h3 { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .patient-entry-form label svg { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .patient-entry-form .form-suggestion-row button[aria-pressed="true"] { border-color: var(--marca-claro); color: var(--marca-oscuro); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--marca-claro) 22%, transparent); }
+:where(.dashboard-marca, .portal-marca) .food-nutrition-toggle { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .food-nutrition-preview { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .food-nutrition-preview > div:first-child span, :where(.dashboard-marca, .portal-marca) .food-nutrition-preview small { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .food-nutrition-preview-values span { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .food-nutrition-preview-values b { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .food-suggestion-tile { color: var(--marca-oscuro); box-shadow: 0 4px 13px color-mix(in srgb, var(--marca-principal) 4%, transparent); }
+:where(.dashboard-marca, .portal-marca) .food-suggestion-tile:hover { border-color: color-mix(in srgb, var(--marca-claro) 55%, #fff); box-shadow: 0 8px 19px color-mix(in srgb, var(--marca-principal) 10%, transparent); }
+:where(.dashboard-marca, .portal-marca) .modal-card input:focus, :where(.dashboard-marca, .portal-marca) .modal-card select:focus, :where(.dashboard-marca, .portal-marca) .modal-card textarea:focus { border-color: var(--marca-claro); box-shadow: 0 0 0 3px color-mix(in srgb, var(--marca-claro) 12%, transparent); }
+:where(.dashboard-marca, .portal-marca) .meal-food-unit { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .meal-food-add { border: 1px solid color-mix(in srgb, var(--marca-claro) 55%, #fff); color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .followup-open-button { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .followup-open-button:hover { box-shadow: 0 6px 15px color-mix(in srgb, var(--marca-principal) 12%, transparent); }
+:where(.dashboard-marca, .portal-marca) .followup-chart-context { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .followup-entry-form label svg { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .followup-form-heading { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .followup-form-heading strong { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .followup-form-heading p { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .followup-weight-help { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .followup-weight-help strong { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .followup-weight-confirm input { accent-color: var(--marca-claro); }
+:where(.dashboard-marca, .portal-marca) .food-diary { box-shadow: 0 8px 20px color-mix(in srgb, var(--marca-principal) 4%, transparent); }
+:where(.dashboard-marca, .portal-marca) .food-diary-icon { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .food-diary-heading h2 { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .food-diary-heading p, :where(.dashboard-marca, .portal-marca) .food-diary-note { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .food-diary-form label { color: color-mix(in srgb, var(--marca-oscuro) 45%, #374151); }
+:where(.dashboard-marca, .portal-marca) .food-diary-form label svg { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .food-diary-form input { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .food-diary-form input:focus { border-color: var(--marca-claro); box-shadow: 0 0 0 3px color-mix(in srgb, var(--marca-claro) 12%, transparent); }
+:where(.dashboard-marca, .portal-marca) .food-diary-suggestions { box-shadow: 0 12px 25px color-mix(in srgb, var(--marca-principal) 15%, transparent); }
+:where(.dashboard-marca, .portal-marca) .food-diary-suggestions button { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .food-diary-submit span { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .food-diary-submit button { background: linear-gradient(120deg, var(--marca-principal), var(--marca-claro)); }
+:where(.dashboard-marca, .portal-marca) .food-diary-empty { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .food-diary-day-head { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .food-diary-day-head span { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .food-diary-macros { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .food-diary-day li > span { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .food-diary-day li strong { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .food-diary-nutrients summary { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .food-diary-nutrients > div span { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .food-diary-nutrients > div b { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .food-diary-trend strong { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .food-diary-trend span { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .login-brand-panel { background: linear-gradient(170deg, color-mix(in srgb, var(--marca-oscuro) 75%, transparent), color-mix(in srgb, var(--marca-oscuro) 20%, transparent)), url('./assets/sidebar-wave-reference.webp') center / cover no-repeat, var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .portal-root { background: radial-gradient(circle at 92% 20%, rgb(218 220 255 / .34), transparent 36%), radial-gradient(circle at 10% 86%, color-mix(in srgb, color-mix(in srgb, var(--marca-principal) 7%, #fff) 36%, transparent), transparent 35%), #f4f9f7; }
+:where(.dashboard-marca, .portal-marca) .portal-rail { background: linear-gradient(180deg, color-mix(in srgb, var(--marca-oscuro) 8%, transparent), color-mix(in srgb, var(--marca-oscuro) 18%, transparent)), url('./assets/sidebar-wave-reference.webp') center 45% / auto 112% no-repeat, var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .portal-rail nav button:hover, :where(.dashboard-marca, .portal-marca) .portal-rail nav button[class*="bg-white/10"] { background: linear-gradient(100deg, color-mix(in srgb, var(--marca-principal) 78%, transparent), color-mix(in srgb, var(--marca-claro) 55%, transparent)); }
+:where(.dashboard-marca, .portal-marca) .portal-header { background: radial-gradient(circle at 80% 15%, color-mix(in srgb, var(--marca-claro) 22%, transparent), transparent 36%), linear-gradient(110deg, var(--marca-principal), var(--marca-principal)); }
+:where(.dashboard-marca, .portal-marca) .meal-preview h3 { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .meal-preview-values span { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .meal-preview-values strong { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .meal-calories-row button { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .boton-generando { background-image: linear-gradient(110deg,
+    var(--color-nutri-ink) 0%, var(--color-nutri-brand) 25%, var(--marca-claro) 45%,
+    var(--color-nutri-brand) 65%, var(--color-nutri-ink) 100%); box-shadow: 0 0 0 3px color-mix(in srgb, var(--marca-principal) 15%, transparent), 0 6px 18px -6px color-mix(in srgb, var(--marca-principal) 55%, transparent); }
+:where(.dashboard-marca, .portal-marca) .progreso-indef { background: color-mix(in srgb, var(--marca-principal) 12%, transparent); }
+:where(.dashboard-marca, .portal-marca) .progreso-indef::after { background: linear-gradient(90deg, var(--color-nutri-brand), var(--marca-claro)); }
+:where(.dashboard-marca, .portal-marca) .dashboard-main .patient-card { background: radial-gradient(circle at 86% 8%, color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 31%, transparent), transparent 32%), linear-gradient(140deg, #fff 37%, #e8f7ff 78%, #eef2ff); }
+:where(.dashboard-marca, .portal-marca) .dashboard-main .patient-card .patient-avatar { background: linear-gradient(140deg, #e2fff1, color-mix(in srgb, var(--marca-principal) 7%, #fff)); color: var(--marca-oscuro); box-shadow: 0 4px 13px color-mix(in srgb, var(--marca-claro) 16%, transparent); }
+:where(.dashboard-marca, .portal-marca) .dashboard-main .patient-card .patient-goal { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .patient-card-hero-visual::after { background: linear-gradient(90deg, transparent, color-mix(in srgb, color-mix(in srgb, var(--marca-principal) 7%, #fff) 92%, transparent), transparent); box-shadow: 0 0 7px color-mix(in srgb, var(--marca-claro) 75%, transparent); }
+:where(.dashboard-marca, .portal-marca) .patient-card-medical-icon { filter: drop-shadow(0 1px 2px var(--marca-principal)) drop-shadow(0 0 5px color-mix(in srgb, var(--marca-claro) 65%, transparent)); }
+:where(.dashboard-marca, .portal-marca) .patient-card-medical-icon .patient-card-medical-shield { fill: color-mix(in srgb, var(--marca-principal) 58%, transparent); }
+:where(.dashboard-marca, .portal-marca) .patient-vital-icon { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .patient-vital > div > span { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .patient-trend-kicker svg { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .patient-trend-result { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .patient-trend-percent { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .patient-trend-copy p { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .patient-trend-copy p b { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .patient-trend-adherence--bien { border-color: color-mix(in srgb, var(--marca-claro) 31%, transparent); color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .patient-trend-pending { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .patient-trend-pending svg { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .dashboard-main .patient-card .patient-plan-action { border-color: color-mix(in srgb, var(--marca-claro) 55%, #fff); background: linear-gradient(110deg, #e6fff8, #d9f2ff 60%, color-mix(in srgb, var(--marca-principal) 7%, #fff)); }
+:where(.dashboard-marca, .portal-marca) .patient-plan-icon { background: linear-gradient(145deg, color-mix(in srgb, var(--marca-principal) 7%, #fff), color-mix(in srgb, var(--marca-claro) 55%, #fff)); color: var(--marca-principal); box-shadow: 0 5px 13px color-mix(in srgb, var(--marca-claro) 18%, transparent); }
+:where(.dashboard-marca, .portal-marca) .patient-plan-copy small { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .dashboard-main .patient-card .patient-plan-action::after { border: 1px solid color-mix(in srgb, var(--marca-claro) 32%, transparent); box-shadow: 0 -8px 0 color-mix(in srgb, var(--marca-claro) 10%, transparent), 0 -16px 0 color-mix(in srgb, var(--marca-claro) 7%, transparent); }
+:where(.dashboard-marca, .portal-marca) .weekly-menu { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .weekly-menu-hero .menu-flow-kicker { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .weekly-menu-title span { border: 1px solid color-mix(in srgb, var(--marca-claro) 55%, #fff); color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .weekly-menu-history-button { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .weekly-menu-patient-note { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .weekly-menu-history-heading span { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .weekly-menu-history-list button { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .weekly-menu-history-list button.selected { border-color: var(--marca-claro); }
+:where(.dashboard-marca, .portal-marca) .weekly-menu-history-list button em { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .menu-version-confirm { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .weekly-menu-status { border: 1px solid color-mix(in srgb, var(--marca-claro) 55%, #fff); color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .weekly-menu-approve { background: linear-gradient(125deg, var(--marca-principal), var(--marca-claro)); box-shadow: 0 5px 14px color-mix(in srgb, var(--marca-principal) 19%, transparent); }
+:where(.dashboard-marca, .portal-marca) .weekly-menu-more > div { box-shadow: 0 12px 32px color-mix(in srgb, var(--marca-principal) 15%, transparent); }
+:where(.dashboard-marca, .portal-marca) .weekly-menu-more button { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .weekly-side-card { box-shadow: 0 5px 18px color-mix(in srgb, var(--marca-principal) 4%, transparent); }
+:where(.dashboard-marca, .portal-marca) .weekly-side-heading { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .weekly-side-icon { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .weekly-goal p { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .weekly-progress-change { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .weekly-progress p { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .weekly-progress > small { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .weekly-average dt { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .weekly-average dd { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .weekly-average-extra summary { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .weekly-day-strip button:hover { border-color: color-mix(in srgb, var(--marca-claro) 55%, #fff); }
+:where(.dashboard-marca, .portal-marca) .weekly-day-strip button.selected { border: 2px solid var(--marca-claro); box-shadow: 0 5px 16px color-mix(in srgb, var(--marca-claro) 19%, transparent); }
+:where(.dashboard-marca, .portal-marca) .weekly-day-strip span { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .weekly-day-art svg { filter: drop-shadow(0 2px 2px color-mix(in srgb, var(--marca-principal) 15%, transparent)); }
+:where(.dashboard-marca, .portal-marca) .weekly-day-strip small { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .weekly-day-heading h4 svg { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .weekly-day-calories { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .weekly-nutrient-meta { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .weekly-nutrient-item span { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .weekly-nutrient-item strong { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .weekly-micros button { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .weekly-meal:hover { border-color: color-mix(in srgb, var(--marca-claro) 55%, #fff); box-shadow: 0 5px 16px color-mix(in srgb, var(--marca-principal) 6%, transparent); }
+:where(.dashboard-marca, .portal-marca) .weekly-meal-icon { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .weekly-meal-copy strong { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .weekly-meal-calories { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .weekly-meal-chevron { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .weekly-meal-details { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .weekly-meal-details button { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .nutri-moment-icon { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--marca-claro) 55%, #fff), 0 2px 5px color-mix(in srgb, var(--marca-principal) 8%, transparent); }
+:where(.dashboard-marca, .portal-marca) .weekly-side-icon { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--marca-claro) 55%, #fff), 0 2px 6px color-mix(in srgb, var(--marca-principal) 10%, transparent); }
+:where(.dashboard-marca, .portal-marca) .weekly-nutrient-item > svg { filter: drop-shadow(0 1px 1px color-mix(in srgb, var(--marca-principal) 17%, transparent)); }
+:where(.dashboard-marca, .portal-marca) .weekly-meal-wrap:hover { box-shadow: 0 8px 22px color-mix(in srgb, var(--marca-principal) 12%, transparent); }
+:where(.dashboard-marca, .portal-marca) .weekly-meal-wrap:hover > .weekly-meal { border-color: var(--marca-claro); }
+
 /* ===== MODO OSCURO =====
    Se activa con la clase tema-oscuro en <html> (botón luna/sol, se recuerda
    en este dispositivo). Las reglas "generadas" repintan las clases propias de
