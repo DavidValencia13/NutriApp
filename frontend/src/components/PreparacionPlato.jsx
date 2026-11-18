@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { ArrowLeft, ArrowRight, Check, ChefHat, ListChecks, Plus, Timer, Trash2, X } from "lucide-react";
 import { cantidadLegible } from "../utils/cantidad";
 import { ACCIONES, accion, emojiDeAlimento, ingredientesDelPaso, textoMinutos } from "../utils/preparacion";
@@ -289,11 +290,12 @@ export function HojaPreparacion({ comida, onCerrar }) {
     };
   }, [onCerrar]);
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4" style={{ background: "rgba(15,42,32,0.55)" }}
+  // Se dibuja en <body> (portal): dentro de la tarjeta, su animación recortaba la ventana
+  return createPortal(
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center sm:p-6" style={{ background: "rgba(15,42,32,0.6)", backdropFilter: "blur(2px)" }}
       onClick={(e) => { if (e.target === e.currentTarget) onCerrar(); }}>
       <div role="dialog" aria-modal="true" aria-label={`Cómo preparar ${comida.nombrePlato}`}
-        className="bg-surface w-full sm:max-w-xl h-full sm:h-auto sm:max-h-[90vh] flex flex-col sm:rounded-2xl overflow-hidden shadow-2xl animate-fade-in-up">
+        className="bg-surface w-full sm:max-w-2xl h-full sm:h-auto sm:max-h-[92vh] flex flex-col sm:rounded-2xl overflow-hidden shadow-2xl animate-fade-in-up">
         <header className="flex items-center gap-3 px-4 py-3 bg-white border-b border-line shrink-0">
           <span className="boton-preparacion w-9 h-9 rounded-xl text-white flex items-center justify-center"><ChefHat size={19} aria-hidden="true" /></span>
           <div className="min-w-0 flex-1">
@@ -306,6 +308,7 @@ export function HojaPreparacion({ comida, onCerrar }) {
           <VistaPreparacion comida={comida} />
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
