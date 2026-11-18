@@ -39,10 +39,10 @@ export async function aprobarMenu(idPaciente, idMenu) {
 
 // Explicación de preparación: la IA escribe los pasos de los platos que no
 // la tienen (o de todos con regenerar). Devuelve { preparaciones, generadas }
-export async function generarPreparacion(idPaciente, idMenu, { regenerar = false } = {}) {
+export async function generarPreparacion(idPaciente, idMenu, { regenerar = false, idsComidas = null } = {}) {
   return await apiFetch(`/paciente/${idPaciente}/menu/${idMenu}/preparacion`, {
     method: "POST",
-    body: JSON.stringify({ regenerar }),
+    body: JSON.stringify({ regenerar, idsComidas }),
   });
 }
 

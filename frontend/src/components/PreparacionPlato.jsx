@@ -112,7 +112,7 @@ export function VistaPreparacion({ comida }) {
 }
 
 // Nutricionista: revisa y corrige los pasos antes de que los vea el paciente
-export function EditorPreparacion({ comida, soloLectura = false, onGuardar, onCancelar }) {
+export function EditorPreparacion({ comida, soloLectura = false, onGuardar, onCancelar, onRehacer, rehaciendo = false }) {
   const [pasos, setPasos] = useState(() => (comida.preparacion?.pasos || []).map((p) => ({ ...p })));
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
@@ -174,6 +174,11 @@ export function EditorPreparacion({ comida, soloLectura = false, onGuardar, onCa
         {comida.preparacion && (
           <button type="button" disabled={guardando} onClick={() => guardar([])} className="mr-auto px-3 py-2 rounded-lg text-sm text-gray-500 hover:text-nutri-pink">
             Quitar explicación
+          </button>
+        )}
+        {onRehacer && (
+          <button type="button" disabled={guardando || rehaciendo} onClick={onRehacer} className="px-3 py-2 rounded-lg text-sm font-semibold text-[#c25e0c] hover:bg-orange-50 disabled:opacity-60">
+            {rehaciendo ? "Rehaciendo…" : "Rehacer con IA"}
           </button>
         )}
         <button type="button" onClick={onCancelar} className="px-4 py-2 rounded-lg border border-line text-sm">Cancelar</button>

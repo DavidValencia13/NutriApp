@@ -10,15 +10,19 @@ class ExplicarPreparacionMenu {
     this.generadorPreparacion = generadorPreparacion;
   }
 
-  // Genera las que faltan (o todas con regenerar). Devuelve
+  // Genera las que faltan (o todas con regenerar). idsComidas limita a esos
+  // platos (el botón de cada comida pide solo la suya). Devuelve
   // { preparaciones: { [idComida]: preparacion }, generadas }
-  async generar(idMenu, idNutriologo, { regenerar = false } = {}) {
+  async generar(idMenu, idNutriologo, { regenerar = false, idsComidas = null } = {}) {
     const propio = await this.menuRepository.obtenerMenuConPropietario(idMenu, idNutriologo);
     if (!propio) throw new NotFoundError("Menú no encontrado");
     const menu = await this.menuRepository.obtenerConDetallesPorId(idMenu);
     const comidas = (menu?.dias || []).flatMap((dia) => dia.comidas || []);
 
-    const pendientes = comidas.filter((c) => regenerar || !c.preparacion?.pasos?.length);
+    const elegidas = Array.isArray(idsComidas) ? new Set(idsComidas.map(Number)) : null;
+    const pendientes = comidas.filter(
+      (c) => (!elegidas || elegidas.has(Number(c.id))) && (regenerar || !c.preparacion?.pasos?.length),
+    );
     const preparaciones = {};
     if (pendientes.length > 0) {
       const crudas = await this.generadorPreparacion.generar(pendientes);

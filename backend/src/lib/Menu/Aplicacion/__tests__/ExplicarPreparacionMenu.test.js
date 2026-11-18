@@ -142,3 +142,18 @@ test("el generador traduce los errores de la IA a mensajes claros", async () => 
   const roto = new GeneradorPreparacionIA(async () => "no es json");
   await assert.rejects(() => roto.generar([]), ServicioExternoError);
 });
+
+test("el botón de una comida genera solo esa comida", async () => {
+  const repo = repoFalso();
+  let pedidas;
+  const caso = new ExplicarPreparacionMenu({
+    menuRepository: repo,
+    generadorPreparacion: { async generar(comidas) {
+      pedidas = comidas.map((c) => c.id);
+      return { 12: [{ accion: "cocinar", texto: "Nuevo", minutos: 10 }] };
+    } },
+  });
+  const r = await caso.generar(7, 1, { regenerar: true, idsComidas: [12] });
+  assert.deepEqual(pedidas, [12]);
+  assert.equal(r.preparaciones[12].pasos[0].texto, "Nuevo");
+});

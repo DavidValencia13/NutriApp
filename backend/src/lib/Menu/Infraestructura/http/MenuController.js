@@ -107,6 +107,7 @@ class MenuController {
       }
       const resultado = await this.explicarPreparacionMenu.generar(idMenu, req.nutriologo.id, {
         regenerar: req.body?.regenerar === true,
+        idsComidas: Array.isArray(req.body?.idsComidas) ? req.body.idsComidas.slice(0, 50) : null,
       });
       res.json(resultado);
     } catch (error) {
