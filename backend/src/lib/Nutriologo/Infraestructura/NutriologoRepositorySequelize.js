@@ -46,6 +46,7 @@ class NutriologoRepositorySequelize {
       email: doc.email,
       password: doc.password,
       whatsappNumero: doc.whatsappNumero,
+      marca: doc.marca || null,
     });
   }
 }

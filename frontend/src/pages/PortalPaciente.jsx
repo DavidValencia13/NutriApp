@@ -8,6 +8,7 @@ import AsistenteChat from "../components/AsistenteChat";
 import { cantidadLegible } from "../utils/cantidad";
 import { HojaPreparacion, MiniPasos } from "../components/PreparacionPlato";
 import { tienePreparacion, textoMinutos } from "../utils/preparacion";
+import { estiloDeMarca } from "../utils/marca";
 import { ordenarControles } from "../utils/ordenarControles";
 import {
   obtenerPerfilPortal,
@@ -70,6 +71,22 @@ function primerNombre(nombre = "") {
 }
 
 /* ── Página ─────────────────────────────────────────────────────────────── */
+// Logo y nombre de la consulta del nutricionista ("Personalizar diseño");
+// sin marca propia se muestra el logo de NutriApp
+function EncabezadoMarca({ marca, grande = false }) {
+  const nombreConsulta = marca?.nombreConsulta || "";
+  if (!marca?.logo && !nombreConsulta) return <Logo size={grande ? 30 : 26} light />;
+  return (
+    <span className="flex items-center gap-2.5 min-w-0">
+      {marca.logo && <img src={marca.logo} alt="" className={`${grande ? "w-10 h-10" : "w-8 h-8"} rounded-lg object-contain bg-white p-0.5 shrink-0`} />}
+      <span className="min-w-0 leading-tight">
+        <span className="block font-semibold truncate">{nombreConsulta || "Mi nutricionista"}</span>
+        <span className="block text-[11px] text-white/60">con NutriApp</span>
+      </span>
+    </span>
+  );
+}
+
 function PortalPaciente() {
   const { paciente, logout } = useAuth();
   const [seccion, setSeccion] = useState("hoy");
@@ -114,12 +131,16 @@ function PortalPaciente() {
 
   const nombre = primerNombre(perfil?.nombre || paciente?.nombre);
 
+  // Diseño elegido por su nutricionista ("Personalizar diseño")
+  const marca = perfil?.marca || null;
+  const estiloMarca = estiloDeMarca(marca);
+  const nombreConsulta = marca?.nombreConsulta || "";
   return (
-    <div className="portal-root min-h-screen bg-surface md:flex">
+    <div className={`portal-root min-h-screen bg-surface md:flex ${estiloMarca ? "portal-marca" : ""}`} style={estiloMarca}>
       {/* Barra lateral (computadora) */}
       <aside className="portal-rail hidden md:flex w-60 shrink-0 flex-col bg-nutri-ink text-white sticky top-0 h-screen">
         <div className="px-5 h-16 flex items-center border-b border-white/10">
-          <Logo size={30} light />
+          <EncabezadoMarca marca={marca} grande />
         </div>
         <nav className="flex-1 px-3 py-5 space-y-0.5">
           {SECCIONES.map(({ id, label, Icono }) => (
@@ -157,7 +178,7 @@ function PortalPaciente() {
       <div className="flex-1 min-w-0 pb-20 md:pb-0">
         {/* Barra superior (celular) */}
         <div className="md:hidden flex items-center justify-between px-4 h-14 bg-nutri-ink text-white">
-          <Logo size={26} light />
+          <EncabezadoMarca marca={marca} />
           <button onClick={logout} aria-label="Cerrar sesión" className="p-2 -mr-2 text-white/70 hover:text-white">
             <LogOut size={18} />
           </button>
@@ -170,7 +191,9 @@ function PortalPaciente() {
               Hola{nombre ? `, ${nombre}` : ""}
             </h1>
             <p className="mt-2 text-white/70">
-              {perfil?.nutriologo ? `Plan preparado por tu nutricionista ${perfil.nutriologo}.` : "Tu plan de alimentación."}
+              {perfil?.nutriologo
+                ? `Plan preparado por tu nutricionista ${perfil.nutriologo}${nombreConsulta ? ` · ${nombreConsulta}` : ""}.`
+                : "Tu plan de alimentación."}
               {perfil?.metaCalorias ? ` Meta diaria: ${perfil.metaCalorias} kcal.` : ""}
             </p>
           </div>

@@ -32,3 +32,15 @@ export async function guardarWhatsappNutriologo(numero) {
     body: JSON.stringify({ numero }),
   });
 }
+
+// "Personalizar diseño": nombre de la consulta, color y logo que ve el paciente
+export async function obtenerMarcaNutriologo() {
+  return apiFetch("/nutriologo/me/marca");
+}
+
+export async function guardarMarcaNutriologo(marca) {
+  return apiFetch("/nutriologo/me/marca", {
+    method: "PUT",
+    body: JSON.stringify(marca),
+  });
+}

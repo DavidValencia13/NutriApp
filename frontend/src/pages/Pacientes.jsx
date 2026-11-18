@@ -10,7 +10,8 @@ import SeguimientoPaciente from "../components/SeguimientoPaciente";
 import FloatingAssistant from "../components/FloatingAssistant";
 import MiniSeguimiento from "../components/MiniSeguimiento";
 import AccesoPaciente from "../components/AccesoPaciente";
-import { BrainCircuit, CalendarCheck2, Ellipsis, HeartPulse, Ruler, ShieldAlert, Smartphone, UserRound, UtensilsCrossed } from "lucide-react";
+import PersonalizarDiseno from "../components/PersonalizarDiseno";
+import { BrainCircuit, CalendarCheck2, Ellipsis, HeartPulse, Palette, Ruler, ShieldAlert, Smartphone, UserRound, UtensilsCrossed } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { Logo } from "../components/Logo";
 import HeroCarousel from "../components/HeroCarousel";
@@ -165,7 +166,9 @@ function Pacientes() {
             ? `Seguimiento — ${modal.paciente?.nombre}`
             : modal.tipo === "acceso"
               ? `Acceso a la app — ${modal.paciente?.nombre}`
-              : "";
+              : modal.tipo === "diseno"
+                ? "Personalizar diseño"
+                : "";
 
   const conteo = busqueda.trim() || filtro !== "todos"
     ? `${pacientesFiltrados.length} resultado${pacientesFiltrados.length !== 1 ? "s" : ""}`
@@ -190,6 +193,9 @@ function Pacientes() {
             <div className="topbar-note"><span className="topbar-note-icon"><IconLeaf /></span><span>Tu consulta, <strong>con claridad.</strong></span></div>
             <div className="topbar-actions">
               <button type="button" className="topbar-guide-link" data-tour="ver-guia" onClick={() => setGuiaManual(true)}>Guía</button>
+              <button type="button" className="topbar-guide-link topbar-design-link" onClick={() => setModal({ tipo: "diseno", paciente: null })} title="Elige el color, el nombre y el logo que verán tus pacientes en su app">
+                <Palette size={15} aria-hidden="true" /> Personalizar diseño
+              </button>
               <button type="button" className="primary-button" data-tour="nuevo-paciente" onClick={() => setModal({ tipo: "paciente", paciente: null })}>
                 <IconPlus /> Nuevo paciente
               </button>
@@ -285,6 +291,9 @@ function Pacientes() {
           : "max-w-3xl"
         }
       >
+        {modal.tipo === "diseno" && (
+          <PersonalizarDiseno nombreNutricionista={nutriologo ? `${nutriologo.nombre} ${nutriologo.apellido || ""}`.trim() : ""} onCerrar={cerrarModal} />
+        )}
         {modal.tipo === "paciente" && (
           <FormularioPaciente
             pacienteEditar={modal.paciente}

@@ -5,6 +5,7 @@ const RegistrarNutriologo = require("../../Aplicacion/RegistrarNutriologo");
 const LoginNutriologo = require("../../Aplicacion/LoginNutriologo");
 const ObtenerNutriologo = require("../../Aplicacion/ObtenerNutriologo");
 const { ActualizarWhatsappNutriologo } = require("../../Aplicacion/ActualizarWhatsappNutriologo");
+const { PersonalizarMarca } = require("../../Aplicacion/PersonalizarMarca");
 const CrearPacienteDemo = require("../../../Paciente/Aplicacion/CrearPacienteDemo");
 const PacienteRepositorySequelize = require("../../../Paciente/Infraestructura/PacienteRepositorySequelize");
 const AlimentoRepositoryMongo = require("../../../Alimento/Infraestructura/AlimentoRepositoryMongo");
@@ -17,6 +18,7 @@ module.exports = function registerNutriologoModule(app) {
     loginNutriologo: new LoginNutriologo(repo),
     obtenerNutriologo: new ObtenerNutriologo(repo),
     actualizarWhatsappNutriologo: new ActualizarWhatsappNutriologo(repo),
+    personalizarMarca: new PersonalizarMarca(repo),
     crearPacienteDemo: new CrearPacienteDemo({
       pacienteRepository: new PacienteRepositorySequelize(),
       alimentoRepository: new AlimentoRepositoryMongo(),

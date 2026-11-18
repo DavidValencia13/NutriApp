@@ -9,6 +9,8 @@ module.exports = (controller) => {
 
   router.get("/me/whatsapp", authMiddleware, controller.obtenerWhatsapp);
   router.put("/me/whatsapp", authMiddleware, controller.actualizarWhatsapp);
+  router.get("/me/marca", authMiddleware, controller.obtenerMarca);
+  router.put("/me/marca", authMiddleware, controller.guardarMarca);
 
   // Ruta protegida: Express ejecuta authMiddleware primero,
   // y solo si llama a next() pasa al controller.obtener

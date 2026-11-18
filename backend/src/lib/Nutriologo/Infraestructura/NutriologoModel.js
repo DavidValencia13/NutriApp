@@ -32,6 +32,11 @@ const NutriologoModel = sequelize.define(
       type: DataTypes.STRING(15),
       allowNull: true,
     },
+    // "Personalizar diseño": { nombreConsulta, color, logo } que ve el paciente
+    marca: {
+      type: DataTypes.JSONB,
+      allowNull: true,
+    },
   },
   {
     timestamps: true, // agrega createdAt y updatedAt automáticamente

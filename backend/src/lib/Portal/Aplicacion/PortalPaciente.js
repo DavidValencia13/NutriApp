@@ -46,6 +46,8 @@ class PortalPaciente {
       pesoInicial: paciente.pesoInicial,
       metaCalorias: requerimientoCalorico(paciente),
       nutriologo: nutriologo ? `${nutriologo.nombre} ${nutriologo.apellido}`.trim() : null,
+      // Diseño elegido por su nutricionista (nombre de consulta, color, logo)
+      marca: nutriologo?.marca || null,
     };
   }
 
