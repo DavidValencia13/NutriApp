@@ -1778,12 +1778,13 @@ html.tema-oscuro .marca-fondo-liso.dashboard-page, html.tema-oscuro .marca-fondo
    la app; se regeneran con frontend/scripts/gen-oscuro.cjs si cambian los estilos. */
 html.tema-oscuro {
   color-scheme: dark;
-  --oscuro-fondo: #0b1412;
-  --oscuro-tarjeta: #14201d;
-  --oscuro-tarjeta-2: #1b2a26;
-  --oscuro-borde: #293a36;
-  --oscuro-texto: #e4efeb;
-  --oscuro-texto-suave: #9db2ab;
+  /* negro y grises neutros (sin tinte verde) */
+  --oscuro-fondo: #0a0a0b;
+  --oscuro-tarjeta: #151517;
+  --oscuro-tarjeta-2: #1d1d20;
+  --oscuro-borde: #2a2a2e;
+  --oscuro-texto: #ededef;
+  --oscuro-texto-suave: #a1a1aa;
   --oscuro-acento: #5fd3a8;
 }
 html.tema-oscuro body { background: var(--oscuro-fondo); color: var(--oscuro-texto); }
@@ -1798,8 +1799,11 @@ html.tema-oscuro .border-line, html.tema-oscuro .border-gray-200, html.tema-oscu
 html.tema-oscuro input:not([type="color"]):not([type="checkbox"]):not([type="radio"]), html.tema-oscuro textarea, html.tema-oscuro select {
   background-color: var(--oscuro-tarjeta-2); color: var(--oscuro-texto); border-color: var(--oscuro-borde);
 }
-html.tema-oscuro input::placeholder, html.tema-oscuro textarea::placeholder { color: #6f857e; }
-html.tema-oscuro .esqueleto { background: #18261f; }
+html.tema-oscuro .esqueleto { background: #1b1b1e; }
+/* sin ondas ni brillos decorativos verdes en modo oscuro */
+html.tema-oscuro .dashboard-page::before, html.tema-oscuro .dashboard-page::after { display: none; }
+html.tema-oscuro .patient-card::after, html.tema-oscuro .dashboard-stat::after { display: none; }
+html.tema-oscuro input::placeholder, html.tema-oscuro textarea::placeholder { color: #71717a; }
 html.tema-oscuro .esqueleto::after { opacity: .25; }
 html.tema-oscuro .modal-card { background-color: var(--oscuro-tarjeta); }
 /* generadas */
@@ -2160,7 +2164,7 @@ html.tema-oscuro .modal-card { background-color: var(--oscuro-tarjeta); }
 :where(.tema-oscuro) .weekly-side-icon { background: var(--oscuro-tarjeta); }
 :where(.tema-oscuro) .weekly-meal-wrap:hover > .weekly-meal { background: var(--oscuro-tarjeta); }
 
-html.tema-oscuro { --logo-texto: #e4efeb; }
+html.tema-oscuro { --logo-texto: #ededef; }
 
 /* "Personalizar diseño" en la pantalla del nutricionista */
 .rail-brand-propia { display: flex; align-items: center; gap: 10px; min-width: 0; }
