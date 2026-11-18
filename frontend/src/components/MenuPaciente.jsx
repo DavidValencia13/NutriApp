@@ -561,7 +561,6 @@ function MenuSemanalVista({ menu, esHistorico, historial, mostrarHistorial, onTo
             <b>{objetivo}</b>
             {paciente?.preferencias && <p>{paciente.preferencias}</p>}
           </section>
-          <RequerimientoNutricional idPaciente={idPaciente} resumenSemanal={menu.resumenNutricionalSemanal} />
           <ResumenSeguimientoMenu idPaciente={idPaciente} />
           {menu.resumenNutricionalSemanal && <ResumenNutricional resumen={menu.resumenNutricionalSemanal} />}
           {presupuesto !== undefined && <ResumenPresupuesto dias={dias} presupuesto={presupuesto} />}
@@ -601,6 +600,11 @@ function MenuSemanalVista({ menu, esHistorico, historial, mostrarHistorial, onTo
                 <summary>
                   <span className="weekly-meal-icon"><IconoMomento tipoComida={comida.tipoComida} /></span>
                   <span className="weekly-meal-copy"><strong>{comida.tipoComida}</strong><span>{comida.nombrePlato}</span></span>
+                  {!esHistorico && <button type="button" className={`weekly-meal-drink-icon ${comida.bebida ? "con-bebida" : ""}`}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); onBebida(comida); }}
+                    title={comida.bebida ? `Bebida: ${comida.bebida} (cambiar)` : "Agregar bebida"} aria-label={comida.bebida ? `Cambiar bebida: ${comida.bebida}` : "Agregar bebida"}>
+                    <CupSoda size={15} aria-hidden="true" />
+                  </button>}
                   <b className="weekly-meal-calories" title={comida.nutrientes?.completo === false ? "Valor estimado: faltan nutrientes de algún alimento" : undefined}>{comida.nutrientes?.completo === false && <IconAlertTriangle style={{ width: 12, height: 12 }} />} {Math.round(Number(comida.calorias) || 0)} kcal</b>
                   <ChevronRight className="weekly-meal-chevron" size={17} aria-hidden="true" />
                 </summary>
@@ -619,13 +623,11 @@ function MenuSemanalVista({ menu, esHistorico, historial, mostrarHistorial, onTo
                       ? <><ChefHat size={13} aria-hidden="true" /> Ver preparación · {comida.preparacion.pasos.length} pasos{comida.preparacion.minutosTotales > 0 && ` · ${textoMinutos(comida.preparacion.minutosTotales)}`}</>
                       : <><ChefHat size={13} aria-hidden="true" /> Explicación de preparación</>}
                 </button>}
-                  {!esHistorico && <button type="button" className="weekly-meal-drink" onClick={() => onBebida(comida)} title={comida.bebida ? `Bebida: ${comida.bebida}` : "Agregar una bebida a esta comida"}>
-                    <CupSoda size={13} aria-hidden="true" /> {comida.bebida ? "Cambiar bebida" : "Agregar bebida"}
-                  </button>}
                 </div>
               </div>)}
             </div>
           </article>}
+          <RequerimientoNutricional idPaciente={idPaciente} resumenSemanal={menu.resumenNutricionalSemanal} ancho />
         </section>
       </div>
     </div>
@@ -667,7 +669,7 @@ function ResumenPresupuesto({ dias, presupuesto }) {
           Costo del menú semanal
         </span>
         <span className={excedido ? "text-nutri-pink font-semibold" : "text-nutri-brand font-semibold"}>
-          {sinLimite ? <>{costoTotal.toFixed(2)}$ <small className="font-normal text-gray-500">· sin presupuesto definido</small></> : <>{costoTotal.toFixed(2)}$ / {Number(presupuesto).toFixed(2)}$</>}
+          {sinLimite ? <>{costoTotal.toFixed(2)}$<small className="block text-right font-normal text-gray-500">sin presupuesto definido</small></> : <>{costoTotal.toFixed(2)}$ / {Number(presupuesto).toFixed(2)}$</>}
         </span>
       </div>
       {!sinLimite && <div className="w-full h-1.5 bg-white rounded-full overflow-hidden">

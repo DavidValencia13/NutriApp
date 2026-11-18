@@ -13,7 +13,8 @@ const MACROS = [
   { clave: "grasas", nombre: "Grasas", campoMenu: "grasasTotales", kcalPorG: 9, color: "#a855f7" },
 ];
 
-function RequerimientoNutricional({ idPaciente, resumenSemanal }) {
+// ancho: tarjeta a lo ancho bajo las comidas (cálculo | macronutrientes)
+function RequerimientoNutricional({ idPaciente, resumenSemanal, ancho = false }) {
   const [datos, setDatos] = useState(null);
   const [verCalculo, setVerCalculo] = useState(false);
 
@@ -29,8 +30,10 @@ function RequerimientoNutricional({ idPaciente, resumenSemanal }) {
   const menuKcal = MACROS.reduce((t, m) => t + (Number(n[m.campoMenu]) || 0) / 7 * m.kcalPorG, 0);
 
   return (
-    <section className="weekly-side-card">
-      <div className="weekly-side-heading"><span className="weekly-side-icon"><Calculator size={20} aria-hidden="true" /></span><strong>Requerimiento energético</strong></div>
+    <section className={`weekly-side-card ${ancho ? "mt-3" : ""}`}>
+      <div className="weekly-side-heading"><span className="weekly-side-icon"><Calculator size={20} aria-hidden="true" /></span><strong>Requerimiento energético y macronutrientes</strong></div>
+      <div className={ancho ? "grid md:grid-cols-2 gap-x-8 gap-y-3" : ""}>
+      <div>
       <p className="text-2xl font-semibold text-nutri-ink tabular mt-1">{fmt(datos.meta)} <span className="text-sm font-normal text-gray-500">kcal/día</span></p>
       <p className="text-xs text-gray-500">Fórmula: <strong className="text-nutri-ink">{datos.formula}</strong></p>
 
@@ -68,7 +71,8 @@ function RequerimientoNutricional({ idPaciente, resumenSemanal }) {
         </ol>
       )}
 
-      <div className="mt-3 pt-3 border-t border-line">
+      </div>
+      <div className={ancho ? "md:border-l md:border-line md:pl-8" : "mt-3 pt-3 border-t border-line"}>
         <p className="text-xs font-semibold text-nutri-ink mb-1.5">Distribución de macronutrientes</p>
         <div className="flex h-2.5 rounded-full overflow-hidden mb-2" aria-hidden="true">
           {MACROS.map((m) => <span key={m.clave} style={{ width: `${datos.macronutrientes[m.clave].porcentaje}%`, background: m.color }} />)}
@@ -97,6 +101,7 @@ function RequerimientoNutricional({ idPaciente, resumenSemanal }) {
           })}
         </ul>
         <p className="text-[10px] text-gray-400 mt-2 leading-snug">1 g de proteína o carbohidrato = 4 kcal; 1 g de grasa = 9 kcal. {datos.referencias}</p>
+      </div>
       </div>
     </section>
   );
