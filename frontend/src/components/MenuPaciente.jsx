@@ -571,10 +571,10 @@ function MenuSemanalVista({ menu, esHistorico, historial, mostrarHistorial, onTo
               </details>
                 {(tienePreparacion(comida) || !esHistorico) && <button type="button" className="weekly-meal-prep" onClick={() => onPreparacion(comida)} disabled={Boolean(explicandoId)}>
                   {explicandoId === comida.id
-                    ? <><Loader2 size={16} className="animate-spin" aria-hidden="true" /> Escribiendo la preparación…</>
+                    ? <><Loader2 size={13} className="animate-spin" aria-hidden="true" /> Escribiendo la preparación…</>
                     : tienePreparacion(comida)
-                      ? <><ChefHat size={16} aria-hidden="true" /> Ver preparación · {comida.preparacion.pasos.length} pasos{comida.preparacion.minutosTotales > 0 && ` · ${textoMinutos(comida.preparacion.minutosTotales)}`}</>
-                      : <><ChefHat size={16} aria-hidden="true" /> Explicación de preparación</>}
+                      ? <><ChefHat size={13} aria-hidden="true" /> Ver preparación · {comida.preparacion.pasos.length} pasos{comida.preparacion.minutosTotales > 0 && ` · ${textoMinutos(comida.preparacion.minutosTotales)}`}</>
+                      : <><ChefHat size={13} aria-hidden="true" /> Explicación de preparación</>}
                 </button>}
               </div>)}
             </div>

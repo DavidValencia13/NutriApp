@@ -1157,8 +1157,11 @@ h1, h2, h3, h4, h5, .font-display {
 button.boton-preparacion:active { transform: scale(.98); }
 
 /* Botón de preparación debajo de cada comida (nutricionista) */
-.weekly-meal-wrap { display: grid; gap: 0; }
-.weekly-meal-wrap > .weekly-meal { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
-.weekly-meal-prep { display: flex; align-items: center; justify-content: center; gap: 7px; width: 100%; padding: 9px 12px; border: 0; border-radius: 0 0 12px 12px; color: white; background: linear-gradient(125deg, #e8700f, #f59e0b); font-size: 13px; font-weight: 800; cursor: pointer; transition: filter .15s; }
-.weekly-meal-prep:hover:not(:disabled) { filter: brightness(1.07); }
+.weekly-meal-wrap { display: grid; border-radius: 12px; transition: transform .18s, box-shadow .18s; }
+.weekly-meal-wrap > .weekly-meal { border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom-color: transparent; }
+.weekly-meal-wrap:hover { transform: translateY(-2px); box-shadow: 0 8px 22px #0c695a1f; }
+.weekly-meal-wrap:hover > .weekly-meal { border-color: #5fc2a3; background: #f7fdfa; box-shadow: none; }
+.weekly-meal-wrap:hover > .weekly-meal-prep { border-color: #5fc2a3; }
+.weekly-meal-prep { display: flex; align-items: center; justify-content: flex-start; gap: 5px; width: 100%; padding: 4px 10px 4px 53px; border: 1px solid #e1edf0; border-top: 1px dashed #f3d3ad; border-radius: 0 0 12px 12px; color: #c25e0c; background: #fff8ef; font-size: 11px; font-weight: 750; cursor: pointer; transition: background .15s, color .15s, border-color .18s; }
+.weekly-meal-prep:hover:not(:disabled) { color: white; background: linear-gradient(125deg, #e8700f, #f59e0b); }
 .weekly-meal-prep:disabled { opacity: .7; cursor: wait; }
