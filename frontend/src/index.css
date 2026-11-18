@@ -1218,9 +1218,11 @@ html.tema-oscuro .dashboard-marca, html.tema-oscuro .portal-marca { --oscuro-ace
 :where(.dashboard-marca, .portal-marca) .patient-card-mark { border: 1px solid color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 40%, transparent); color: var(--marca-principal); filter: drop-shadow(0 2px 5px color-mix(in srgb, var(--marca-claro) 10%, transparent)); }
 :where(.dashboard-marca, .portal-marca) .patient-card:hover .patient-avatar { box-shadow: 0 7px 18px color-mix(in srgb, var(--marca-claro) 16%, transparent); }
 :where(.dashboard-marca, .portal-marca) .patient-metrics .patient-metric-icon { border: 1px solid color-mix(in srgb, var(--marca-claro) 55%, #fff); background: linear-gradient(140deg, #e5faee, color-mix(in srgb, var(--marca-principal) 7%, #fff)); color: var(--marca-principal); box-shadow: 0 4px 9px color-mix(in srgb, var(--marca-claro) 10%, transparent); }
+:where(.dashboard-marca, .portal-marca) .patient-metrics > div:nth-child(2) .patient-metric-icon { color: var(--marca-principal); }
 :where(.dashboard-marca, .portal-marca) .patient-card:hover .patient-metric-icon { box-shadow: 0 4px 10px color-mix(in srgb, var(--marca-principal) 10%, transparent); }
 :where(.dashboard-marca, .portal-marca) .patient-clinical-tag { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
 :where(.dashboard-marca, .portal-marca) .patient-clinical-preference { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .patient-clinical-activity { color: var(--marca-principal); }
 :where(.dashboard-marca, .portal-marca) .patient-trend { border: 1px solid color-mix(in srgb, var(--marca-claro) 55%, #fff); background: radial-gradient(circle at 90% 10%, color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 22%, transparent), transparent 36%), linear-gradient(110deg, #ecfbf3, #f3faff); box-shadow: inset 0 1px #fff, 0 6px 18px color-mix(in srgb, var(--marca-principal) 6%, transparent); }
 :where(.dashboard-marca, .portal-marca) .patient-trend-kicker { color: var(--marca-principal); }
 :where(.dashboard-marca, .portal-marca) .patient-trend-current { color: color-mix(in srgb, var(--marca-oscuro) 45%, #374151); }
@@ -1257,10 +1259,11 @@ html.tema-oscuro .dashboard-marca, html.tema-oscuro .portal-marca { --oscuro-ace
 :where(.dashboard-marca, .portal-marca) .menu-flow-step-card p { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
 :where(.dashboard-marca, .portal-marca) .menu-flow-step-card > button, :where(.dashboard-marca, .portal-marca) .menu-flow-food-return button, :where(.dashboard-marca, .portal-marca) .menu-flow-next button { border: 1px solid color-mix(in srgb, var(--marca-claro) 55%, #fff); color: var(--marca-principal); }
 :where(.dashboard-marca, .portal-marca) .menu-flow-step-card > button:hover, :where(.dashboard-marca, .portal-marca) .menu-flow-food-return button:hover, :where(.dashboard-marca, .portal-marca) .menu-flow-next button:hover { box-shadow: 0 7px 18px color-mix(in srgb, var(--marca-principal) 12%, transparent); }
+:where(.dashboard-marca, .portal-marca) .menu-flow-generate .menu-flow-card-icon { color: var(--marca-principal); }
 :where(.dashboard-marca, .portal-marca) .menu-flow-generate > button { border-color: var(--marca-principal); background: linear-gradient(110deg, var(--marca-principal), var(--marca-claro)); }
 :where(.dashboard-marca, .portal-marca) .menu-flow-generate > button:disabled { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
 :where(.dashboard-marca, .portal-marca) .menu-flow-back { color: var(--marca-principal); }
-:where(.dashboard-marca, .portal-marca) .menu-flow-food-heading::after { background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--marca-claro) 55%, #fff), #76caf0, transparent); }
+:where(.dashboard-marca, .portal-marca) .menu-flow-food-heading::after { background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--marca-claro) 55%, #fff), color-mix(in srgb, var(--marca-claro) 55%, #fff), transparent); }
 :where(.dashboard-marca, .portal-marca) .menu-flow-result-intro p { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
 :where(.dashboard-marca, .portal-marca) .menu-flow-result-intro button, :where(.dashboard-marca, .portal-marca) .menu-flow-new-version { color: var(--marca-principal); }
 :where(.dashboard-marca, .portal-marca) .menu-flow-next { border: 1px solid color-mix(in srgb, var(--marca-claro) 55%, #fff); }
@@ -1286,6 +1289,27 @@ html.tema-oscuro .dashboard-marca, html.tema-oscuro .portal-marca { --oscuro-ace
 :where(.dashboard-marca, .portal-marca) .hero-dots button.active { background: color-mix(in srgb, var(--marca-claro) 55%, #fff); }
 :where(.dashboard-marca, .portal-marca) .dashboard-stat-green { color: var(--marca-principal); }
 :where(.dashboard-marca, .portal-marca) .patient-metrics dt svg { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .floating-assistant::before { background: radial-gradient(ellipse at 48% 90%, color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 72%, transparent), transparent 59%), conic-gradient(from 145deg at 50% 100%, transparent, color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 64%, transparent), transparent 32%, color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 36%, transparent), transparent 65%); }
+:where(.dashboard-marca, .portal-marca) .floating-assistant::after { border: 2px solid color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 90%, transparent); background: radial-gradient(ellipse, color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 38%, transparent), transparent 72%); box-shadow: 0 0 17px color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 72%, transparent), inset 0 0 12px color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 45%, transparent); }
+:where(.dashboard-marca, .portal-marca) .assistant-avatar-button { box-shadow: 0 0 0 3px var(--marca-claro), 0 10px 28px color-mix(in srgb, var(--marca-principal) 25%, transparent); }
+:where(.dashboard-marca, .portal-marca) .assistant-avatar-button::before { border: 1px solid color-mix(in srgb, color-mix(in srgb, var(--marca-principal) 7%, #fff) 68%, transparent); box-shadow: 0 0 11px color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 52%, transparent); }
+:where(.dashboard-marca, .portal-marca) .assistant-avatar-button:hover { box-shadow: 0 0 0 5px color-mix(in srgb, var(--marca-claro) 55%, #fff), 0 14px 34px color-mix(in srgb, var(--marca-principal) 33%, transparent); }
+:where(.dashboard-marca, .portal-marca) .assistant-avatar-badge::before { background: radial-gradient(circle, color-mix(in srgb, var(--marca-claro) 22%, transparent), transparent 69%); }
+:where(.dashboard-marca, .portal-marca) .assistant-avatar-badge svg { filter: drop-shadow(0 0 3px color-mix(in srgb, var(--marca-principal) 70%, transparent)); }
+:where(.dashboard-marca, .portal-marca) .assistant-avatar-badge strong { -webkit-text-stroke: 1.5px var(--marca-principal); text-shadow: 0 2px 4px color-mix(in srgb, var(--marca-oscuro) 88%, transparent), 0 0 6px color-mix(in srgb, var(--marca-claro) 50%, transparent); }
+:where(.dashboard-marca, .portal-marca) .assistant-spark-main { filter: drop-shadow(0 0 2px color-mix(in srgb, color-mix(in srgb, var(--marca-principal) 7%, #fff) 55%, transparent)) drop-shadow(0 0 4px color-mix(in srgb, var(--marca-claro) 30%, transparent)); }
+:where(.dashboard-marca, .portal-marca) .assistant-spark-small { filter: drop-shadow(0 0 2px color-mix(in srgb, color-mix(in srgb, var(--marca-principal) 7%, #fff) 55%, transparent)) drop-shadow(0 0 4px color-mix(in srgb, var(--marca-claro) 30%, transparent)); }
+:where(.dashboard-marca, .portal-marca) .assistant-status-reading { box-shadow: 0 0 0 5px color-mix(in srgb, var(--marca-claro) 55%, #fff), 0 10px 30px color-mix(in srgb, var(--marca-principal) 28%, transparent); }
+:where(.dashboard-marca, .portal-marca) .assistant-status-ready { box-shadow: 0 0 0 5px color-mix(in srgb, var(--marca-claro) 55%, #fff), 0 10px 30px color-mix(in srgb, var(--marca-principal) 28%, transparent); }
+:where(.dashboard-marca, .portal-marca) .assistant-float-label { color: var(--marca-oscuro); box-shadow: 0 6px 20px color-mix(in srgb, var(--marca-principal) 9%, transparent); }
+:where(.dashboard-marca, .portal-marca) .assistant-panel { box-shadow: 0 24px 70px color-mix(in srgb, var(--marca-oscuro) 22%, transparent), 0 5px 18px color-mix(in srgb, var(--marca-oscuro) 12%, transparent); }
+:where(.dashboard-marca, .portal-marca) .assistant-panel-header { background: linear-gradient(110deg, var(--marca-principal), var(--marca-principal) 64%, var(--marca-claro)); }
+:where(.dashboard-marca, .portal-marca) .assistant-panel-header > img { border: 2px solid color-mix(in srgb, var(--marca-claro) 55%, #fff); }
+:where(.dashboard-marca, .portal-marca) .assistant-state i { background: color-mix(in srgb, var(--marca-claro) 55%, #fff); }
+:where(.dashboard-marca, .portal-marca) .assistant-context-label { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .assistant-panel-body select { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .assistant-panel-body select:focus { border-color: var(--marca-claro); box-shadow: 0 0 0 3px color-mix(in srgb, var(--marca-claro) 12%, transparent); }
+:where(.dashboard-marca, .portal-marca) .assistant-panel .assistant-chat form button[type="submit"] { background: linear-gradient(120deg, var(--marca-principal), var(--marca-claro)); }
 :where(.dashboard-marca, .portal-marca) .hero-copy { background: linear-gradient(90deg, color-mix(in srgb, var(--marca-oscuro) 70%, transparent), transparent); }
 :where(.dashboard-marca, .portal-marca) .hero-slide .hero-copy { background: linear-gradient(90deg, color-mix(in srgb, var(--marca-oscuro) 38%, transparent), transparent); }
 :where(.dashboard-marca, .portal-marca) .hero-slide .hero-copy { background: linear-gradient(90deg, color-mix(in srgb, var(--marca-oscuro) 80%, transparent), color-mix(in srgb, var(--marca-oscuro) 43%, transparent) 64%, transparent); }
@@ -1300,7 +1324,7 @@ html.tema-oscuro .dashboard-marca, html.tema-oscuro .portal-marca { --oscuro-ace
 :where(.dashboard-marca, .portal-marca) .dashboard-main .dashboard-hero { border: 1px solid color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 22%, transparent); box-shadow: 0 18px 42px color-mix(in srgb, var(--marca-principal) 13%, transparent); }
 :where(.dashboard-marca, .portal-marca) .dashboard-main .hero-slide { background: linear-gradient(90deg, var(--marca-oscuro) 0%, var(--marca-oscuro) 48%, var(--marca-principal) 72%, var(--marca-principal) 100%); }
 :where(.dashboard-marca, .portal-marca) .hero-visual-orbit { border: 1px solid color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 27%, transparent); box-shadow: 0 0 42px color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 8%, transparent), inset 0 0 29px color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 7%, transparent); }
-:where(.dashboard-marca, .portal-marca) .hero-glass-panel { border: 1px solid color-mix(in srgb, color-mix(in srgb, var(--marca-principal) 7%, #fff) 72%, transparent); background: linear-gradient(130deg, color-mix(in srgb, var(--marca-principal) 71%, transparent), rgb(5 78 87 / .77) 70%, rgb(31 93 124 / .65)); box-shadow: 0 21px 44px rgb(0 22 31 / .26), inset 0 1px rgb(255 255 255 / .20), 0 0 32px color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 24%, transparent); }
+:where(.dashboard-marca, .portal-marca) .hero-glass-panel { border: 1px solid color-mix(in srgb, color-mix(in srgb, var(--marca-principal) 7%, #fff) 72%, transparent); background: linear-gradient(130deg, color-mix(in srgb, var(--marca-principal) 71%, transparent), color-mix(in srgb, var(--marca-principal) 77%, transparent) 70%, color-mix(in srgb, var(--marca-principal) 65%, transparent)); box-shadow: 0 21px 44px color-mix(in srgb, var(--marca-oscuro) 26%, transparent), inset 0 1px rgb(255 255 255 / .20), 0 0 32px color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 24%, transparent); }
 :where(.dashboard-marca, .portal-marca) .hero-glass-panel::before { border: 1px solid color-mix(in srgb, color-mix(in srgb, var(--marca-principal) 7%, #fff) 10%, transparent); }
 :where(.dashboard-marca, .portal-marca) .hero-glass-heading { color: color-mix(in srgb, var(--marca-principal) 7%, #fff); }
 :where(.dashboard-marca, .portal-marca) .hero-glass-signal i { background: color-mix(in srgb, var(--marca-claro) 55%, #fff); box-shadow: 0 0 8px color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 68%, transparent); }
@@ -1315,6 +1339,8 @@ html.tema-oscuro .dashboard-marca, html.tema-oscuro .portal-marca { --oscuro-ace
 :where(.dashboard-marca, .portal-marca) .patient-create-icon { background: linear-gradient(135deg, #dcffe8, color-mix(in srgb, var(--marca-claro) 55%, #fff)); color: var(--marca-oscuro); box-shadow: 0 0 0 8px color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 15%, transparent), 0 10px 21px color-mix(in srgb, var(--marca-claro) 22%, transparent); }
 :where(.dashboard-marca, .portal-marca) .patient-create-card > span:nth-last-child(2) { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
 :where(.dashboard-marca, .portal-marca) .patient-create-action { background: linear-gradient(100deg, color-mix(in srgb, var(--marca-principal) 7%, #fff), color-mix(in srgb, var(--marca-claro) 55%, #fff)); color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .floating-assistant { filter: drop-shadow(0 0 15px color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 28%, transparent)); }
+:where(.dashboard-marca, .portal-marca) .assistant-label-docked { border-color: color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 40%, transparent); background: color-mix(in srgb, var(--marca-oscuro) 82%, transparent); }
 :where(.dashboard-marca, .portal-marca) .dashboard-main .topbar-note { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); box-shadow: 0 7px 18px color-mix(in srgb, var(--marca-principal) 5%, transparent); }
 :where(.dashboard-marca, .portal-marca) .topbar-note strong { color: var(--marca-principal); }
 :where(.dashboard-marca, .portal-marca) .topbar-note-icon { background: linear-gradient(135deg, color-mix(in srgb, var(--marca-principal) 7%, #fff), color-mix(in srgb, var(--marca-claro) 55%, #fff)); color: var(--marca-principal); }
@@ -1431,8 +1457,11 @@ html.tema-oscuro .dashboard-marca, html.tema-oscuro .portal-marca { --oscuro-ace
 :where(.dashboard-marca, .portal-marca) .patient-card-hero-visual::after { background: linear-gradient(90deg, transparent, color-mix(in srgb, color-mix(in srgb, var(--marca-principal) 7%, #fff) 92%, transparent), transparent); box-shadow: 0 0 7px color-mix(in srgb, var(--marca-claro) 75%, transparent); }
 :where(.dashboard-marca, .portal-marca) .patient-card-medical-icon { filter: drop-shadow(0 1px 2px var(--marca-principal)) drop-shadow(0 0 5px color-mix(in srgb, var(--marca-claro) 65%, transparent)); }
 :where(.dashboard-marca, .portal-marca) .patient-card-medical-icon .patient-card-medical-shield { fill: color-mix(in srgb, var(--marca-principal) 58%, transparent); }
+:where(.dashboard-marca, .portal-marca) .patient-vitals { box-shadow: 0 7px 22px color-mix(in srgb, var(--marca-claro) 10%, transparent), inset 0 1px #fff; }
 :where(.dashboard-marca, .portal-marca) .patient-vital-icon { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .patient-vital-activity .patient-vital-icon { color: var(--marca-principal); }
 :where(.dashboard-marca, .portal-marca) .patient-vital > div > span { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .patient-trend-detail { box-shadow: 0 8px 24px color-mix(in srgb, var(--marca-claro) 11%, transparent), inset 0 1px #fff; }
 :where(.dashboard-marca, .portal-marca) .patient-trend-kicker svg { color: var(--marca-principal); }
 :where(.dashboard-marca, .portal-marca) .patient-trend-result { color: var(--marca-principal); }
 :where(.dashboard-marca, .portal-marca) .patient-trend-percent { color: var(--marca-principal); }
@@ -1441,13 +1470,15 @@ html.tema-oscuro .dashboard-marca, html.tema-oscuro .portal-marca { --oscuro-ace
 :where(.dashboard-marca, .portal-marca) .patient-trend-adherence--bien { border-color: color-mix(in srgb, var(--marca-claro) 31%, transparent); color: var(--marca-principal); }
 :where(.dashboard-marca, .portal-marca) .patient-trend-pending { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
 :where(.dashboard-marca, .portal-marca) .patient-trend-pending svg { color: var(--marca-principal); }
-:where(.dashboard-marca, .portal-marca) .dashboard-main .patient-card .patient-plan-action { border-color: color-mix(in srgb, var(--marca-claro) 55%, #fff); background: linear-gradient(110deg, #e6fff8, #d9f2ff 60%, color-mix(in srgb, var(--marca-principal) 7%, #fff)); }
+:where(.dashboard-marca, .portal-marca) .dashboard-main .patient-card .patient-plan-action { border-color: color-mix(in srgb, var(--marca-claro) 55%, #fff); background: linear-gradient(110deg, #e6fff8, #d9f2ff 60%, color-mix(in srgb, var(--marca-principal) 7%, #fff)); box-shadow: 0 7px 20px color-mix(in srgb, var(--marca-claro) 18%, transparent), inset 0 1px #fff; }
 :where(.dashboard-marca, .portal-marca) .patient-plan-icon { background: linear-gradient(145deg, color-mix(in srgb, var(--marca-principal) 7%, #fff), color-mix(in srgb, var(--marca-claro) 55%, #fff)); color: var(--marca-principal); box-shadow: 0 5px 13px color-mix(in srgb, var(--marca-claro) 18%, transparent); }
 :where(.dashboard-marca, .portal-marca) .patient-plan-copy small { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
+:where(.dashboard-marca, .portal-marca) .dashboard-main .patient-card .patient-plan-arrow { box-shadow: 0 3px 9px color-mix(in srgb, var(--marca-principal) 8%, transparent); }
 :where(.dashboard-marca, .portal-marca) .dashboard-main .patient-card .patient-plan-action::after { border: 1px solid color-mix(in srgb, var(--marca-claro) 32%, transparent); box-shadow: 0 -8px 0 color-mix(in srgb, var(--marca-claro) 10%, transparent), 0 -16px 0 color-mix(in srgb, var(--marca-claro) 7%, transparent); }
 :where(.dashboard-marca, .portal-marca) .weekly-menu { color: var(--marca-oscuro); }
 :where(.dashboard-marca, .portal-marca) .weekly-menu-hero .menu-flow-kicker { color: var(--marca-principal); }
 :where(.dashboard-marca, .portal-marca) .weekly-menu-title span { border: 1px solid color-mix(in srgb, var(--marca-claro) 55%, #fff); color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .weekly-menu-week { color: var(--marca-oscuro); }
 :where(.dashboard-marca, .portal-marca) .weekly-menu-history-button { color: var(--marca-principal); }
 :where(.dashboard-marca, .portal-marca) .weekly-menu-patient-note { color: var(--marca-principal); }
 :where(.dashboard-marca, .portal-marca) .weekly-menu-history-heading span { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
@@ -1457,6 +1488,7 @@ html.tema-oscuro .dashboard-marca, html.tema-oscuro .portal-marca { --oscuro-ace
 :where(.dashboard-marca, .portal-marca) .menu-version-confirm { color: var(--marca-oscuro); }
 :where(.dashboard-marca, .portal-marca) .weekly-menu-status { border: 1px solid color-mix(in srgb, var(--marca-claro) 55%, #fff); color: var(--marca-principal); }
 :where(.dashboard-marca, .portal-marca) .weekly-menu-approve { background: linear-gradient(125deg, var(--marca-principal), var(--marca-claro)); box-shadow: 0 5px 14px color-mix(in srgb, var(--marca-principal) 19%, transparent); }
+:where(.dashboard-marca, .portal-marca) .weekly-menu-more summary { color: var(--marca-principal); }
 :where(.dashboard-marca, .portal-marca) .weekly-menu-more > div { box-shadow: 0 12px 32px color-mix(in srgb, var(--marca-principal) 15%, transparent); }
 :where(.dashboard-marca, .portal-marca) .weekly-menu-more button { color: var(--marca-oscuro); }
 :where(.dashboard-marca, .portal-marca) .weekly-side-card { box-shadow: 0 5px 18px color-mix(in srgb, var(--marca-principal) 4%, transparent); }
@@ -1469,11 +1501,13 @@ html.tema-oscuro .dashboard-marca, html.tema-oscuro .portal-marca { --oscuro-ace
 :where(.dashboard-marca, .portal-marca) .weekly-average dt { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
 :where(.dashboard-marca, .portal-marca) .weekly-average dd { color: var(--marca-oscuro); }
 :where(.dashboard-marca, .portal-marca) .weekly-average-extra summary { color: var(--marca-principal); }
+:where(.dashboard-marca, .portal-marca) .weekly-day-strip button { color: var(--marca-oscuro); }
 :where(.dashboard-marca, .portal-marca) .weekly-day-strip button:hover { border-color: color-mix(in srgb, var(--marca-claro) 55%, #fff); }
 :where(.dashboard-marca, .portal-marca) .weekly-day-strip button.selected { border: 2px solid var(--marca-claro); box-shadow: 0 5px 16px color-mix(in srgb, var(--marca-claro) 19%, transparent); }
 :where(.dashboard-marca, .portal-marca) .weekly-day-strip span { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
 :where(.dashboard-marca, .portal-marca) .weekly-day-art svg { filter: drop-shadow(0 2px 2px color-mix(in srgb, var(--marca-principal) 15%, transparent)); }
 :where(.dashboard-marca, .portal-marca) .weekly-day-strip small { color: var(--marca-oscuro); }
+:where(.dashboard-marca, .portal-marca) .weekly-day-detail { box-shadow: 0 10px 24px color-mix(in srgb, var(--marca-principal) 7%, transparent); }
 :where(.dashboard-marca, .portal-marca) .weekly-day-heading h4 svg { color: var(--marca-principal); }
 :where(.dashboard-marca, .portal-marca) .weekly-day-calories { color: var(--marca-oscuro); }
 :where(.dashboard-marca, .portal-marca) .weekly-nutrient-meta { color: color-mix(in srgb, var(--marca-oscuro) 22%, #6b7280); }
@@ -1492,7 +1526,17 @@ html.tema-oscuro .dashboard-marca, html.tema-oscuro .portal-marca { --oscuro-ace
 :where(.dashboard-marca, .portal-marca) .weekly-nutrient-item > svg { filter: drop-shadow(0 1px 1px color-mix(in srgb, var(--marca-principal) 17%, transparent)); }
 :where(.dashboard-marca, .portal-marca) .weekly-meal-wrap:hover { box-shadow: 0 8px 22px color-mix(in srgb, var(--marca-principal) 12%, transparent); }
 :where(.dashboard-marca, .portal-marca) .weekly-meal-wrap:hover > .weekly-meal { border-color: var(--marca-claro); }
+@keyframes clinic-pulse-marca { 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--marca-claro) 8%, transparent); } }
+@keyframes assistant-glow-marca { 50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--marca-claro) 55%, #fff), 0 0 28px color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 72%, transparent), 0 13px 31px color-mix(in srgb, var(--marca-principal) 29%, transparent); } }
+@keyframes assistant-platform-marca { to { opacity: .58; box-shadow: 0 0 28px color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 93%, transparent), inset 0 0 18px color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 65%, transparent); } }
+@keyframes assistant-halo-marca { 50% { opacity: .55; box-shadow: 0 0 19px color-mix(in srgb, color-mix(in srgb, var(--marca-claro) 55%, #fff) 78%, transparent); } }
+@keyframes assistant-ia-glow-marca { 50% { color: #fff; text-shadow: 0 2px 4px color-mix(in srgb, var(--marca-oscuro) 88%, transparent), 0 0 10px var(--marca-claro); } }
+@keyframes assistant-thinking-marca { 50% { transform: rotate(5deg) scale(1.035); box-shadow: 0 0 0 7px color-mix(in srgb, var(--marca-claro) 32%, transparent), 0 16px 30px color-mix(in srgb, var(--marca-principal) 27%, transparent); } }
+@keyframes nav-icon-lift-marca { 50% { transform: translateY(-2px); filter: drop-shadow(0 0 9px color-mix(in srgb, color-mix(in srgb, var(--marca-principal) 7%, #fff) 95%, transparent)); } }
+@keyframes patient-medical-glow-marca { 50% { filter: drop-shadow(0 1px 2px var(--marca-principal)) drop-shadow(0 0 9px color-mix(in srgb, var(--marca-claro) 95%, transparent)); } }
 
+/* etiqueta del asistente junto al menú lateral: texto claro sobre el color */
+:where(.dashboard-marca, .portal-marca) .assistant-float-label.assistant-label-docked { color: #fff; }
 /* Tipografía, esquinas y fondo elegidos en "Personalizar diseño" */
 .marca-fuente-clasica, .marca-fuente-clasica :where(*:not(svg):not(svg *)) { font-family: 'Lora', Georgia, serif !important; }
 .marca-fuente-redondeada, .marca-fuente-redondeada :where(*:not(svg):not(svg *)) { font-family: 'Nunito', system-ui, sans-serif !important; }

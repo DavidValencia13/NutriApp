@@ -51,7 +51,7 @@ function esVerde([r, g, b]) {
   else if (max === g) h = (b - r) / (max - min) + 2;
   else h = (r - g) / (max - min) + 4;
   h = (h * 60 + 360) % 360;
-  return h >= 85 && h <= 185;
+  return h >= 85 && h <= 200; // verdes, turquesas y celestes de acento
 }
 
 function reemplazo(color, esTexto = false) {
@@ -102,7 +102,36 @@ if (process.argv.includes("--bordes")) {
   console.error(`${salida.length} reglas de bordes`);
   process.exit(0);
 }
-const OMITIR = /assistant|boton-preparacion|weekly-meal-prep|prep-|live-dot|esqueleto|tema-oscuro|marca/;
+const OMITIR = /boton-preparacion|weekly-meal-prep|prep-|live-dot|esqueleto|tema-oscuro|marca/;
+
+// Animaciones con verdes (brillos del asistente, etc.): se crea una copia
+// "-marca" de cada @keyframes con los colores cambiados
+const keyframesMarca = [];
+const nombresMarca = new Set();
+{
+  const sinComentarios = fuente.replace(/\/\*[\s\S]*?\*\//g, "");
+  const reK = /@keyframes\s+([\w-]+)\s*\{/g;
+  let k;
+  while ((k = reK.exec(sinComentarios))) {
+    let j = reK.lastIndex, prof = 1;
+    for (; j < sinComentarios.length && prof > 0; j++) {
+      if (sinComentarios[j] === "{") prof++;
+      else if (sinComentarios[j] === "}") prof--;
+    }
+    const cuerpo = sinComentarios.slice(reK.lastIndex, j - 1);
+    let cambio = false;
+    const nuevo = cuerpo.replace(/([\w-]+)\s*:\s*([^;{}]+)/g, (decl, prop, valor) =>
+      decl.replace(valor, valor.replace(/#[0-9a-f]{3,8}\b|rgba?\([^)]*\)/gi, (c) => {
+        const r = reemplazo(c, prop === "color");
+        if (r) { cambio = true; return r; }
+        return c;
+      })));
+    if (cambio) {
+      nombresMarca.add(k[1]);
+      keyframesMarca.push(`@keyframes ${k[1]}-marca {${nuevo}}`);
+    }
+  }
+}
 const reglas = [];
 const re = /([^{}]+)\{([^{}]*)\}/g;
 let m;
@@ -121,6 +150,12 @@ while ((m = re.exec(limpio))) {
       if (r) { cambio = true; return r; }
       return c;
     });
+    if (prop === "animation" || prop === "animation-name") {
+      valor = valor.replace(/[w-]+/g, (nombre) => {
+        if (nombresMarca.has(nombre)) { cambio = true; return `${nombre}-marca`; }
+        return nombre;
+      });
+    }
     if (cambio) salida.push(`${prop}: ${valor}`);
   }
   if (salida.length) {
@@ -128,5 +163,5 @@ while ((m = re.exec(limpio))) {
     reglas.push(`${sel} { ${salida.join("; ")}; }`);
   }
 }
-console.log(reglas.join("\n"));
+console.log([...reglas, ...keyframesMarca].join("\n"));
 console.error(`${reglas.length} reglas`);
