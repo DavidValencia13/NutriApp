@@ -1080,7 +1080,15 @@ h1, h2, h3, h4, h5, .font-display {
 /* Seguimiento (progreso del peso y efectividad) lado a lado bajo las comidas */
 .weekly-follow-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-top: 12px; align-items: stretch; }
 .weekly-follow-row:empty { display: none; }
+/* Macronutrientes bajo las comidas: una tarjeta por macro */
+.macro-tarjeta { padding: 10px 12px; border: 1px solid #e5eef0; border-top: 3px solid; border-radius: 12px; background: #fff; }
+:where(.tema-oscuro) .macro-tarjeta { background: var(--oscuro-tarjeta-2, #1d1d20); border-color: var(--oscuro-borde, #2a2a2e); }
 .weekly-follow-row > * { margin: 0 !important; }
+/* Progreso del peso a lo ancho: datos a la izquierda y gráfica a la derecha (sin estirarse) */
+.weekly-follow-row .weekly-progress { display: grid; grid-template-columns: minmax(170px, 1fr) minmax(0, 2fr); column-gap: 20px; align-content: start; }
+.weekly-follow-row .weekly-progress > * { grid-column: 1; }
+.weekly-follow-row .weekly-progress > .weight-chart-frame { grid-column: 2; grid-row: 1 / span 4; margin-top: 0; align-self: center; max-width: 380px; width: 100%; justify-self: end; }
+@media (max-width: 620px) { .weekly-follow-row .weekly-progress { grid-template-columns: 1fr; } .weekly-follow-row .weekly-progress > .weight-chart-frame { grid-column: 1; grid-row: auto; margin-top: 8px; } }
 .weekly-follow-row > .rounded-lg { padding: 12px 13px; border-radius: 15px; font-size: 11px; border-color: #deedf0; box-shadow: 0 5px 18px #183e3a0b; }
 :where(.marca-bordes-rectos) .weekly-follow-row > .rounded-lg { border-radius: 4px; }
 :where(.marca-bordes-redondeados) .weekly-follow-row > .rounded-lg { border-radius: 26px; }

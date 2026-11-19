@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { generarMenu, obtenerMenu, aprobarMenu, listarHistorialMenu, obtenerVersionMenu, generarPreparacion, guardarPreparacion, guardarBebida } from "../services/menuService";
 import { EditorPreparacion } from "./PreparacionPlato";
 import { EditorBebida, NombreConBebida, TarjetaBebida } from "./BebidaComida";
-import RequerimientoNutricional from "./RequerimientoNutricional";
+import { CalculoRequerimiento, MacronutrientesMenu } from "./RequerimientoNutricional";
 import { aplicarPreparaciones, necesitaPreparacion, separarPasos, tienePreparacion, textoMinutos } from "../utils/preparacion";
 import { listarSeguimiento } from "../services/seguimientoService";
 import { listarAlimentos, obtenerCoberturaCatalogo } from "../services/alimentoService";
@@ -564,7 +564,8 @@ function MenuSemanalVista({ menu, esHistorico, historial, mostrarHistorial, onTo
           {menu.resumenNutricionalSemanal && <ResumenNutricional resumen={menu.resumenNutricionalSemanal} />}
           {presupuesto !== undefined && <ResumenPresupuesto dias={dias} presupuesto={presupuesto} />}
           {/* Lo nutricional a la izquierda; el seguimiento va bajo las comidas */}
-          <RequerimientoNutricional idPaciente={idPaciente} resumenSemanal={menu.resumenNutricionalSemanal} />
+          <CalculoRequerimiento idPaciente={idPaciente} />
+          <EfectividadMenu idPaciente={idPaciente} idMenu={menu.id} />
         </aside>
 
         <section className="weekly-menu-content" aria-label="Días y comidas del menú">
@@ -627,9 +628,9 @@ function MenuSemanalVista({ menu, esHistorico, historial, mostrarHistorial, onTo
               </div>)}
             </div>
           </article>}
+          <div className="mt-3"><MacronutrientesMenu idPaciente={idPaciente} resumenSemanal={menu.resumenNutricionalSemanal} /></div>
           <div className="weekly-follow-row">
             <ResumenSeguimientoMenu idPaciente={idPaciente} />
-            <EfectividadMenu idPaciente={idPaciente} idMenu={menu.id} />
           </div>
         </section>
       </div>
