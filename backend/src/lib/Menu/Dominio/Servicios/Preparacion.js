@@ -32,9 +32,12 @@ function normalizarPreparacion(preparacion) {
         accion: normalizarAccion(paso?.accion),
         texto,
         minutos: Number.isFinite(minutos) && minutos > 0 ? Math.min(Math.round(minutos), MAX_MINUTOS_PASO) : 0,
+        // paso de la bebida (se muestra aparte, después del plato)
+        ...(paso?.bebida === true && { bebida: true }),
       };
     })
-    .filter((paso) => paso.texto);
+    .filter((paso) => paso.texto)
+    .sort((a, b) => Number(Boolean(a.bebida)) - Number(Boolean(b.bebida)));
 
   if (pasos.length === 0) return null;
   if (pasos.length > MAX_PASOS) throw new ValidationError(`La preparación admite como máximo ${MAX_PASOS} pasos`);

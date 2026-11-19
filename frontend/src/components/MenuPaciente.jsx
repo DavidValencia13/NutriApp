@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { generarMenu, obtenerMenu, aprobarMenu, listarHistorialMenu, obtenerVersionMenu, generarPreparacion, guardarPreparacion, guardarBebida } from "../services/menuService";
 import { EditorPreparacion } from "./PreparacionPlato";
-import { EditorBebida, LineaBebida, NombreConBebida } from "./BebidaComida";
+import { EditorBebida, NombreConBebida, TarjetaBebida } from "./BebidaComida";
 import RequerimientoNutricional from "./RequerimientoNutricional";
-import { aplicarPreparaciones, necesitaPreparacion, tienePreparacion, textoMinutos } from "../utils/preparacion";
+import { aplicarPreparaciones, necesitaPreparacion, separarPasos, tienePreparacion, textoMinutos } from "../utils/preparacion";
 import { listarSeguimiento } from "../services/seguimientoService";
 import { listarAlimentos, obtenerCoberturaCatalogo } from "../services/alimentoService";
 import SuficienciaAlimentos from "./SuficienciaAlimentos";
@@ -561,10 +561,10 @@ function MenuSemanalVista({ menu, esHistorico, historial, mostrarHistorial, onTo
             <b>{objetivo}</b>
             {paciente?.preferencias && <p>{paciente.preferencias}</p>}
           </section>
-          <ResumenSeguimientoMenu idPaciente={idPaciente} />
           {menu.resumenNutricionalSemanal && <ResumenNutricional resumen={menu.resumenNutricionalSemanal} />}
           {presupuesto !== undefined && <ResumenPresupuesto dias={dias} presupuesto={presupuesto} />}
-          <EfectividadMenu idPaciente={idPaciente} idMenu={menu.id} />
+          {/* Lo nutricional a la izquierda; el seguimiento va bajo las comidas */}
+          <RequerimientoNutricional idPaciente={idPaciente} resumenSemanal={menu.resumenNutricionalSemanal} />
         </aside>
 
         <section className="weekly-menu-content" aria-label="Días y comidas del menú">
@@ -611,7 +611,7 @@ function MenuSemanalVista({ menu, esHistorico, historial, mostrarHistorial, onTo
                 <div className="weekly-meal-details">
                   {comida.descripcion && <p>{comida.descripcion}</p>}
                   <p>{(comida.detalles || []).map((d) => `${d.nombreAlimento} ${cantidadLegible(d.cantidadUtilizada, d.unidadMedida)}`).join(" · ")}</p>
-                  <LineaBebida bebida={comida.bebida} nutricion={comida.bebidaNutricion} className="text-[11px] mt-1" />
+                  <TarjetaBebida bebida={comida.bebida} nutricion={comida.bebidaNutricion} className="my-2" />
                   <div><span>Costo estimado: ${Number(comida.costoTotal || 0).toFixed(2)}</span>{!aprobado && !esHistorico && <button type="button" onClick={() => onAjustarComida(comida)}>Ajustar comida <ArrowRight size={14} aria-hidden="true" /></button>}</div>
                 </div>
               </details>
@@ -620,14 +620,17 @@ function MenuSemanalVista({ menu, esHistorico, historial, mostrarHistorial, onTo
                   {explicandoId === comida.id || (preparandoTodo && !tienePreparacion(comida))
                     ?<><Loader2 size={13} className="animate-spin" aria-hidden="true" /> Escribiendo la preparación…</>
                     : tienePreparacion(comida)
-                      ? <><ChefHat size={13} aria-hidden="true" /> Ver preparación · {comida.preparacion.pasos.length} pasos{comida.preparacion.minutosTotales > 0 && ` · ${textoMinutos(comida.preparacion.minutosTotales)}`}</>
+                      ? <><ChefHat size={13} aria-hidden="true" /> Ver preparación · {comida.preparacion.pasos.length} pasos{comida.preparacion.minutosTotales > 0 && ` · ${textoMinutos(comida.preparacion.minutosTotales)}`}{separarPasos(comida).bebida.length > 0 && " · plato y bebida"}</>
                       : <><ChefHat size={13} aria-hidden="true" /> Explicación de preparación</>}
                 </button>}
                 </div>
               </div>)}
             </div>
           </article>}
-          <RequerimientoNutricional idPaciente={idPaciente} resumenSemanal={menu.resumenNutricionalSemanal} ancho />
+          <div className="weekly-follow-row">
+            <ResumenSeguimientoMenu idPaciente={idPaciente} />
+            <EfectividadMenu idPaciente={idPaciente} idMenu={menu.id} />
+          </div>
         </section>
       </div>
     </div>

@@ -60,6 +60,36 @@ function bebidaPreparada(comida) {
   return Boolean(comida?.bebida && n && ((Number(n.nutrientes?.calorias) || 0) > 0 || n.ingredientes?.length));
 }
 
+
+// Pasos del plato y de la bebida por separado. Los nuevos vienen marcados
+// (bebida: true); en explicaciones anteriores el paso empezaba con el
+// nombre de la bebida ("Batido de guineo: coloca...").
+export function separarPasos(comida) {
+  const pasos = comida?.preparacion?.pasos || [];
+  const nombre = sinTildes(comida?.bebida);
+  // "Batido de guineo: coloca..." -> lo de antes de ":" es parte del nombre de la bebida
+  const empiezaConBebida = (texto) => {
+    const t = String(texto || "");
+    const i = t.indexOf(":");
+    const antes = i > 0 && i < 60 ? sinTildes(t.slice(0, i)).trim() : "";
+    return antes.length >= 5 && (nombre.startsWith(antes) || antes.startsWith(nombre.slice(0, 12)));
+  };
+  const esDeBebida = (p) => p.bebida === true || Boolean(comida?.bebida && empiezaConBebida(p.texto));
+  const conIndice = pasos.map((p, i) => ({ ...p, indice: i }));
+  return { plato: conIndice.filter((p) => !esDeBebida(p)), bebida: conIndice.filter(esDeBebida) };
+}
+
+// Quita "Batido de guineo: " del inicio del texto (ya va en el título de la sección)
+export function textoSinBebida(texto, bebida) {
+  const t = String(texto || "");
+  const i = t.indexOf(":");
+  if (!(i > 0 && i < 60)) return t;
+  const antes = sinTildes(t.slice(0, i)).trim();
+  const nombre = sinTildes(bebida);
+  if (antes.length < 5 || !(nombre.startsWith(antes) || antes.startsWith(nombre.slice(0, 12)))) return t;
+  return t.slice(i + 1).trim().replace(/^./, (c) => c.toUpperCase());
+}
+
 // Falta explicación, o se hizo antes de ponerle la bebida preparada actual
 export function necesitaPreparacion(comida) {
   if (!tienePreparacion(comida)) return true;

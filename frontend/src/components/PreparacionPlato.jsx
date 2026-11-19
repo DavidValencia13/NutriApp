@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { NombreConBebida } from "./BebidaComida";
 import { createPortal } from "react-dom";
-import { ArrowLeft, ArrowRight, Check, ChefHat, ListChecks, Plus, Timer, Trash2, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, ChefHat, CupSoda, ListChecks, Plus, Timer, Trash2, UtensilsCrossed, X } from "lucide-react";
 import { cantidadLegible } from "../utils/cantidad";
-import { ACCIONES, accion, emojiDeAlimento, ingredientesDelPaso, textoMinutos } from "../utils/preparacion";
+import { ACCIONES, accion, emojiDeAlimento, ingredientesDelPaso, separarPasos, textoMinutos, textoSinBebida } from "../utils/preparacion";
 
 // Explicación de preparación de un plato: pasos cortos con ícono de color
 // por acción y dibujos de los ingredientes (todo local, no gasta IA).
@@ -45,7 +45,7 @@ export function MiniPasos({ pasos, max = 6 }) {
   );
 }
 
-export function ListaPasos({ pasos, detalles = [] }) {
+export function ListaPasos({ pasos, detalles = [], inicio = 0 }) {
   return (
     <ol className="relative">
       {pasos.map((paso, i) => {
@@ -58,7 +58,7 @@ export function ListaPasos({ pasos, detalles = [] }) {
               <span className="absolute left-6 top-12 bottom-0 w-0.5 -ml-px" aria-hidden="true"
                 style={{ background: `linear-gradient(${a.color}55, ${accion(pasos[i + 1].accion).color}55)` }} />
             )}
-            <BurbujaAccion clave={paso.accion} numero={i + 1} />
+            <BurbujaAccion clave={paso.accion} numero={inicio + i + 1} />
             <div className="min-w-0 flex-1 rounded-2xl border-2 bg-white p-3" style={{ borderColor: a.fondo }}>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs font-bold uppercase tracking-wide" style={{ color: a.color }}>{a.nombre}</span>
@@ -82,6 +82,29 @@ export function ListaPasos({ pasos, detalles = [] }) {
   );
 }
 
+// Apartados: primero el plato y después la bebida (si es preparada)
+export function PasosPorApartado({ comida }) {
+  const { plato, bebida } = separarPasos(comida);
+  const detalles = comida.detalles || [];
+  const pasosBebida = bebida.map((p) => ({ ...p, texto: textoSinBebida(p.texto, comida.bebida) }));
+  return (
+    <div className="space-y-4">
+      {plato.length > 0 && (
+        <section>
+          <h3 className="text-sm font-semibold text-nutri-ink mb-3 flex items-center gap-1.5"><UtensilsCrossed size={16} aria-hidden="true" /> Plato: <span className="font-normal">{comida.nombrePlato}</span></h3>
+          <ListaPasos pasos={plato} detalles={detalles} />
+        </section>
+      )}
+      {pasosBebida.length > 0 && (
+        <section className="seccion-bebida">
+          <h3 className="seccion-bebida-titulo"><CupSoda size={18} aria-hidden="true" /> Bebida: <span className="font-semibold">{comida.bebida}</span></h3>
+          <ListaPasos pasos={pasosBebida} detalles={[]} inicio={plato.length} />
+        </section>
+      )}
+    </div>
+  );
+}
+
 const POSICIONES_BURBUJA = [
   { top: -6, right: -12 }, { bottom: -4, left: -14 }, { top: -6, left: -14 }, { bottom: -4, right: -14 },
 ];
@@ -97,7 +120,8 @@ export function VistaPreparacion({ comida }) {
     const paso = pasos[pasoActual];
     const a = accion(paso.accion);
     const ultimo = pasoActual === pasos.length - 1;
-    const ingredientes = ingredientesDelPaso(paso.texto, detalles);
+    const esBebida = separarPasos(comida).bebida.some((p) => p.indice === pasoActual);
+    const ingredientes = esBebida ? [] : ingredientesDelPaso(paso.texto, detalles);
     return (
       <div className="flex flex-col min-h-[60vh]">
         <div className="flex gap-1.5" role="progressbar" aria-valuemin={1} aria-valuemax={pasos.length} aria-valuenow={pasoActual + 1}>
@@ -105,7 +129,7 @@ export function VistaPreparacion({ comida }) {
             <span key={i} className="h-1.5 flex-1 rounded-full transition-all" style={{ background: i <= pasoActual ? accion(p.accion).color : "#e5e7eb" }} />
           ))}
         </div>
-        <p className="text-xs font-bold mt-3" style={{ color: a.color }}>PASO {pasoActual + 1} DE {pasos.length}</p>
+        <p className="text-xs font-bold mt-3" style={{ color: a.color }}>PASO {pasoActual + 1} DE {pasos.length}{esBebida && <span className="ml-2 text-sky-700">· BEBIDA: {comida.bebida}</span>}</p>
         <div key={pasoActual} className="flex-1 flex flex-col items-center justify-center text-center py-6 gap-5 animate-fade-in-up">
           <div className="relative">
             <span className="w-36 h-36 rounded-full flex items-center justify-center"
@@ -119,7 +143,7 @@ export function VistaPreparacion({ comida }) {
             ))}
           </div>
           <p className="text-sm font-bold uppercase tracking-wide" style={{ color: a.color }}>{a.nombre}</p>
-          <p className="text-xl font-medium text-nutri-ink max-w-md leading-snug">{paso.texto}</p>
+          <p className="text-xl font-medium text-nutri-ink max-w-md leading-snug">{esBebida ? textoSinBebida(paso.texto, comida.bebida) : paso.texto}</p>
           {paso.minutos > 0 && (
             <p className="text-base font-semibold rounded-full px-4 py-1.5 flex items-center gap-2" style={{ color: a.color, background: a.fondo }}>
               <Timer size={18} aria-hidden="true" /> {textoMinutos(paso.minutos)}
@@ -181,13 +205,18 @@ export function VistaPreparacion({ comida }) {
               );
             })}
           </ul>
+          {comida.bebida && (
+            <p className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-sky-800">
+              <CupSoda size={14} aria-hidden="true" /> <strong>Para la bebida:</strong>
+              {(comida.bebidaNutricion?.ingredientes || []).length
+                ? comida.bebidaNutricion.ingredientes.map((i, k) => <span key={k} className="tarjeta-bebida-chip">{i.nombre} · {i.medida || `${i.cantidad} ${i.unidad}`}</span>)
+                : <span>{comida.bebida}{comida.bebidaNutricion?.ml ? ` (${comida.bebidaNutricion.ml} ml)` : ""}</span>}
+            </p>
+          )}
         </section>
       )}
 
-      <section>
-        <h3 className="text-sm font-semibold text-nutri-ink mb-3">Cómo prepararlo</h3>
-        <ListaPasos pasos={pasos} detalles={detalles} />
-      </section>
+      <PasosPorApartado comida={comida} />
 
       <button type="button" onClick={() => setPasoActual(0)}
         className="boton-preparacion sticky bottom-0 w-full flex items-center justify-center gap-2 rounded-xl py-4 font-bold text-white text-base">
@@ -199,13 +228,18 @@ export function VistaPreparacion({ comida }) {
 
 // Nutricionista: revisa y corrige los pasos antes de que los vea el paciente
 export function EditorPreparacion({ comida, soloLectura = false, onGuardar, onCancelar, onRehacer, rehaciendo = false }) {
-  const [pasos, setPasos] = useState(() => (comida.preparacion?.pasos || []).map((p) => ({ ...p })));
+  const [pasos, setPasos] = useState(() => {
+    const deBebida = new Set(separarPasos(comida).bebida.map((p) => p.indice));
+    return (comida.preparacion?.pasos || []).map((p, i) => (deBebida.has(i)
+      ? { ...p, bebida: true, texto: textoSinBebida(p.texto, comida.bebida) }
+      : { ...p, bebida: false }));
+  });
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
 
   if (soloLectura) {
     return pasos.length
-      ? <ListaPasos pasos={pasos} detalles={comida.detalles || []} />
+      ? <PasosPorApartado comida={comida} />
       : <p className="text-sm text-gray-500">Este plato no tiene explicación de preparación.</p>;
   }
 
@@ -218,7 +252,8 @@ export function EditorPreparacion({ comida, soloLectura = false, onGuardar, onCa
     setGuardando(true);
     try {
       const limpios = lista.filter((p) => String(p.texto || "").trim());
-      await onGuardar(limpios.length ? { pasos: limpios.map((p) => ({ ...p, minutos: Number(p.minutos) || 0 })) } : null);
+      const ordenados = [...limpios.filter((p) => !p.bebida), ...limpios.filter((p) => p.bebida)];
+      await onGuardar(ordenados.length ? { pasos: ordenados.map((p) => ({ accion: p.accion, texto: p.texto, minutos: Number(p.minutos) || 0, ...(p.bebida && { bebida: true }) })) } : null);
     } catch (err) {
       setError(err.message || "No se pudo guardar");
     } finally {
@@ -231,32 +266,48 @@ export function EditorPreparacion({ comida, soloLectura = false, onGuardar, onCa
       <p className="text-sm text-gray-600">
         Revisa los pasos de <strong>{comida.nombrePlato}</strong>. El paciente los verá en su app con estos íconos y colores.
       </p>
-      <ol className="space-y-3">
-        {pasos.map((paso, i) => (
-          <li key={i} className="rounded-xl border-2 p-3 space-y-2" style={{ borderColor: accion(paso.accion).fondo }}>
-            <div className="flex items-center gap-2">
-              <BurbujaAccion clave={paso.accion} tamano={36} icono={18} />
-              <span className="text-xs font-semibold text-gray-500">Paso {i + 1}</span>
-              <select value={paso.accion} onChange={(e) => cambiar(i, "accion", e.target.value)} aria-label={`Acción del paso ${i + 1}`}
-                className="ml-auto rounded-lg border border-line bg-white px-2 py-1.5 text-sm">
-                {Object.entries(ACCIONES).map(([valor, { nombre }]) => <option key={valor} value={valor}>{nombre}</option>)}
-              </select>
-              <label className="flex items-center gap-1 text-sm text-gray-500">
-                <input type="number" min="0" max="180" value={paso.minutos} onChange={(e) => cambiar(i, "minutos", e.target.value)}
-                  aria-label={`Minutos del paso ${i + 1}`} className="w-16 rounded-lg border border-line px-2 py-1.5 text-sm" /> min
-              </label>
-              <button type="button" onClick={() => setPasos((l) => l.filter((_, j) => j !== i))} aria-label={`Quitar paso ${i + 1}`}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-nutri-pink hover:bg-gray-50"><Trash2 size={16} /></button>
-            </div>
-            <textarea value={paso.texto} onChange={(e) => cambiar(i, "texto", e.target.value)} maxLength={220} rows={2}
-              aria-label={`Texto del paso ${i + 1}`} className="w-full rounded-lg border border-line px-3 py-2 text-sm" />
-          </li>
-        ))}
-      </ol>
-      {pasos.length < 8 && (
-        <button type="button" onClick={() => setPasos((l) => [...l, { accion: "cocinar", texto: "", minutos: 0 }])}
-          className="flex items-center gap-1.5 text-sm font-semibold text-nutri-brand"><Plus size={16} aria-hidden="true" /> Agregar paso</button>
-      )}
+      {[false, true].map((esBebida) => {
+        if (esBebida && !comida.bebida && !pasos.some((p) => p.bebida)) return null;
+        const filas = pasos.map((p, i) => ({ p, i })).filter(({ p }) => Boolean(p.bebida) === esBebida);
+        const offset = esBebida ? pasos.filter((p) => !p.bebida).length : 0;
+        return (
+          <section key={String(esBebida)} className={esBebida ? "seccion-bebida pb-3" : ""}>
+            <h3 className={esBebida ? "seccion-bebida-titulo" : "text-sm font-semibold text-nutri-ink mb-3 flex items-center gap-1.5"}>
+              {esBebida ? <CupSoda size={18} aria-hidden="true" /> : <UtensilsCrossed size={16} aria-hidden="true" />}
+              {esBebida ? "Bebida:" : "Plato:"} <span className="font-normal">{esBebida ? comida.bebida || "sin bebida" : comida.nombrePlato}</span>
+            </h3>
+            {filas.length === 0 && <p className="text-xs text-gray-500 mb-2">{esBebida ? "Sin pasos para la bebida." : "Sin pasos para el plato."}</p>}
+            <ol className="space-y-3">
+              {filas.map(({ p: paso, i }, k) => (
+                <li key={i} className="rounded-xl border-2 p-3 space-y-2 bg-white" style={{ borderColor: accion(paso.accion).fondo }}>
+                  <div className="flex items-center gap-2">
+                    <BurbujaAccion clave={paso.accion} tamano={36} icono={18} />
+                    <span className="text-xs font-semibold text-gray-500">Paso {offset + k + 1}</span>
+                    <select value={paso.accion} onChange={(e) => cambiar(i, "accion", e.target.value)} aria-label={`Acción del paso ${offset + k + 1}`}
+                      className="ml-auto rounded-lg border border-line bg-white px-2 py-1.5 text-sm">
+                      {Object.entries(ACCIONES).map(([valor, { nombre }]) => <option key={valor} value={valor}>{nombre}</option>)}
+                    </select>
+                    <label className="flex items-center gap-1 text-sm text-gray-500">
+                      <input type="number" min="0" max="180" value={paso.minutos} onChange={(e) => cambiar(i, "minutos", e.target.value)}
+                        aria-label={`Minutos del paso ${offset + k + 1}`} className="w-16 rounded-lg border border-line px-2 py-1.5 text-sm" /> min
+                    </label>
+                    <button type="button" onClick={() => setPasos((l) => l.filter((_, j) => j !== i))} aria-label={`Quitar paso ${offset + k + 1}`}
+                      className="p-1.5 rounded-lg text-gray-400 hover:text-nutri-pink hover:bg-gray-50"><Trash2 size={16} /></button>
+                  </div>
+                  <textarea value={paso.texto} onChange={(e) => cambiar(i, "texto", e.target.value)} maxLength={220} rows={2}
+                    aria-label={`Texto del paso ${offset + k + 1}`} className="w-full rounded-lg border border-line px-3 py-2 text-sm" />
+                </li>
+              ))}
+            </ol>
+            {pasos.length < 8 && (
+              <button type="button" onClick={() => setPasos((l) => [...l, { accion: esBebida ? "licuar" : "cocinar", texto: "", minutos: 0, bebida: esBebida }])}
+                className={`mt-2 flex items-center gap-1.5 text-sm font-semibold ${esBebida ? "text-sky-700" : "text-nutri-brand"}`}>
+                <Plus size={16} aria-hidden="true" /> {esBebida ? "Agregar paso de la bebida" : "Agregar paso del plato"}
+              </button>
+            )}
+          </section>
+        );
+      })}
       {error && <p className="text-sm text-nutri-pink">{error}</p>}
       <div className="flex flex-wrap justify-end gap-2 pt-2 border-t border-line">
         {comida.preparacion && (

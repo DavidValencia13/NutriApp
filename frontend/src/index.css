@@ -1075,8 +1075,15 @@ h1, h2, h3, h4, h5, .font-display {
 .weekly-menu-more button:hover { background: #edfaf5; }
 .weekly-menu-more button:disabled { opacity: .45; cursor: not-allowed; }
 .weekly-menu-next { margin-bottom: 13px; }
-.weekly-menu-layout { display: grid; grid-template-columns: minmax(190px, 220px) minmax(0, 1fr); gap: 14px; align-items: start; }
+.weekly-menu-layout { display: grid; grid-template-columns: minmax(250px, 310px) minmax(0, 1fr); gap: 16px; align-items: start; }
 .weekly-menu-sidebar { display: grid; gap: 10px; min-width: 0; }
+/* Seguimiento (progreso del peso y efectividad) lado a lado bajo las comidas */
+.weekly-follow-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-top: 12px; align-items: stretch; }
+.weekly-follow-row:empty { display: none; }
+.weekly-follow-row > * { margin: 0 !important; }
+.weekly-follow-row > .rounded-lg { padding: 12px 13px; border-radius: 15px; font-size: 11px; border-color: #deedf0; box-shadow: 0 5px 18px #183e3a0b; }
+:where(.marca-bordes-rectos) .weekly-follow-row > .rounded-lg { border-radius: 4px; }
+:where(.marca-bordes-redondeados) .weekly-follow-row > .rounded-lg { border-radius: 26px; }
 .weekly-side-card { padding: 12px 13px; border: 1px solid #deedf0; border-radius: 15px; background: linear-gradient(145deg, #fff 55%, #f0fcfb); box-shadow: 0 5px 18px #183e3a0b; }
 .weekly-side-heading { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: #143e39; font-size: 12px; }
 .weekly-side-icon { display: grid; place-items: center; width: 30px; height: 30px; flex: none; border-radius: 10px; color: #07876a; background: #ddf9ed; }
@@ -1164,6 +1171,24 @@ button.boton-preparacion:active { transform: scale(.98); }
 /* Bebida junto al nombre del plato, mismo tamaño (los pacientes no leían la letra pequeña) */
 .nombre-bebida { color: #0369a1; }
 :where(.tema-oscuro) .nombre-bebida { color: #7dd3fc; }
+.nombre-bebida { white-space: normal; }
+/* Tarjeta de la bebida dentro de la comida */
+.tarjeta-bebida { display: flex; align-items: flex-start; gap: .65rem; padding: .6rem .75rem; border: 1px solid #bae6fd; border-radius: 14px; background: linear-gradient(135deg, #f0f9ff, #e0f2fe); text-align: left; }
+.tarjeta-bebida-icono { display: grid; place-items: center; width: 34px; height: 34px; flex: none; border-radius: 50%; background: #0284c7; color: #fff; box-shadow: 0 2px 6px rgba(2,132,199,.3); }
+.tarjeta-bebida-titulo { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #0369a1; }
+.tarjeta-bebida-nombre { font-size: .9rem; font-weight: 600; color: #0c4a6e; line-height: 1.25; }
+.tarjeta-bebida-chip { font-size: 11px; padding: 1px 8px; border-radius: 999px; background: #fff; border: 1px solid #bae6fd; color: #075985; }
+.tarjeta-bebida-datos { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; flex: none; font-size: 11px; color: #0369a1; }
+.tarjeta-bebida-datos strong { font-size: .85rem; color: #0c4a6e; }
+:where(.tema-oscuro) .tarjeta-bebida { background: #0b1d2a; border-color: #164e63; }
+:where(.tema-oscuro) .tarjeta-bebida-nombre, :where(.tema-oscuro) .tarjeta-bebida-datos strong { color: #e0f2fe; }
+:where(.tema-oscuro) .tarjeta-bebida-titulo, :where(.tema-oscuro) .tarjeta-bebida-datos { color: #7dd3fc; }
+:where(.tema-oscuro) .tarjeta-bebida-chip { background: #0f2a3a; border-color: #164e63; color: #bae6fd; }
+/* Sección de la bebida en la explicación de preparación */
+.seccion-bebida { border: 2px dashed #7dd3fc; border-radius: 18px; padding: .85rem .85rem .1rem; background: #f0f9ff; }
+.seccion-bebida-titulo { display: flex; align-items: center; gap: .5rem; margin-bottom: .75rem; font-weight: 700; color: #0369a1; }
+:where(.tema-oscuro) .seccion-bebida { background: #0b1d2a; border-color: #164e63; }
+:where(.tema-oscuro) .seccion-bebida-titulo { color: #7dd3fc; }
 html.tema-oscuro .weekly-meal-drink-icon.con-bebida { background: rgb(2 132 199 / .2); }
 /* Fila de acciones bajo cada comida */
 .weekly-meal-actions { display: flex; }

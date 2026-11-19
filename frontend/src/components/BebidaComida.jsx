@@ -314,32 +314,47 @@ export function EditorBebida({ idPaciente, comida, onGuardar, onCancelar }) {
 }
 
 // Nombre del plato con la bebida al lado, del mismo tamaño, para que el
-// paciente la vea (en letra pequeña se la saltaba)
+// paciente la vea (en letra pequeña se la saltaba):
+// "Huevos duros con arroz + 🥤 Jugo de mora sin azúcar"
 export function NombreConBebida({ nombrePlato, bebida }) {
   return (
     <>
       {nombrePlato}
-      {bebida && <span className="nombre-bebida"> + {bebida}</span>}
+      {bebida && (
+        <span className="nombre-bebida">
+          {" + "}
+          <CupSoda size="0.95em" strokeWidth={2.4} className="inline-block align-[-0.12em] mr-0.5" aria-hidden="true" />
+          {bebida}
+        </span>
+      )}
     </>
   );
 }
 
-// Detalle de la bebida (cantidad, calorías e ingredientes)
-export function LineaBebida({ bebida, nutricion, className = "" }) {
+// Tarjeta de la bebida dentro de la comida: nombre, cantidad, calorías e
+// ingredientes (si es preparada)
+export function TarjetaBebida({ bebida, nutricion, className = "" }) {
   if (!bebida) return null;
   const ingredientes = nutricion?.ingredientes || [];
+  const kcal = Math.round(nutricion?.nutrientes?.calorias || 0);
   return (
-    <p className={`flex items-start gap-1.5 text-sm ${className}`}>
-      <CupSoda size={16} className="shrink-0 mt-0.5 text-sky-600" aria-hidden="true" />
-      <span>
-        <strong className="font-semibold">Bebida:</strong> {bebida}
-        {nutricion?.ml ? <span className="text-gray-500"> · {nutricion.ml} ml · {Math.round(nutricion.nutrientes?.calorias || 0)} kcal</span> : null}
+    <div className={`tarjeta-bebida ${className}`}>
+      <span className="tarjeta-bebida-icono"><CupSoda size={18} aria-hidden="true" /></span>
+      <div className="min-w-0 flex-1">
+        <p className="tarjeta-bebida-titulo">Bebida</p>
+        <p className="tarjeta-bebida-nombre">{bebida}</p>
         {ingredientes.length > 0 && (
-          <span className="block text-gray-500">
-            {ingredientes.map((i) => `${i.nombre} ${i.medida || `${fmt(i.cantidad)} ${i.unidad}`}`).join(" · ")}
-          </span>
+          <ul className="mt-1.5 flex flex-wrap gap-1">
+            {ingredientes.map((i, k) => (
+              <li key={k} className="tarjeta-bebida-chip">{i.nombre} · {i.medida || `${fmt(i.cantidad)} ${i.unidad}`}</li>
+            ))}
+          </ul>
         )}
-      </span>
-    </p>
+      </div>
+      <div className="tarjeta-bebida-datos">
+        {nutricion?.ml ? <span>{nutricion.ml} ml</span> : null}
+        <strong>{kcal > 0 ? `${kcal} kcal` : "0 kcal"}</strong>
+      </div>
+    </div>
   );
 }
