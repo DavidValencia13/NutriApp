@@ -68,7 +68,38 @@ const NOMBRES_ACTIVIDAD = [
 ];
 const PORCENTAJE_GRASA = 0.3;
 
-function detalleRequerimiento(paciente = {}, { proteinaPorKg } = {}) {
+// Proteína diaria por kg de peso. Sugerida según el objetivo, pero el
+// nutricionista puede fijar otro valor por paciente (ej. 1,6 g/kg para un
+// deportista) dentro de un rango seguro.
+const PROTEINA_MIN_KG = 0.6;
+const PROTEINA_MAX_KG = 3;
+
+function proteinaSugeridaPorKg(objetivo) {
+  const texto = normalizar(objetivo);
+  if (/aument|ganar|subir|muscul|masa/.test(texto)) return 1.8;
+  if (/bajar|perder|reducir|adelgazar/.test(texto)) return 1.2;
+  return 1.0;
+}
+
+function proteinaPorKgPaciente(paciente = {}) {
+  const fijada = Number(paciente.proteinaPorKg);
+  return fijada > 0 ? fijada : proteinaSugeridaPorKg(paciente.objetivo);
+}
+
+// null o "" = volver al valor sugerido
+function normalizarProteinaPorKg(valor) {
+  if (valor === null || valor === undefined || valor === "") return null;
+  const n = Number(String(valor).replace(",", "."));
+  if (!Number.isFinite(n) || n < PROTEINA_MIN_KG || n > PROTEINA_MAX_KG) return undefined;
+  return Math.round(n * 10) / 10;
+}
+
+function proteinaDiariaG(paciente = {}) {
+  const kg = Number(paciente.peso);
+  return kg > 0 ? Math.round(kg * proteinaPorKgPaciente(paciente)) : null;
+}
+
+function detalleRequerimiento(paciente = {}) {
   const kg = Number(paciente.peso);
   const cm = Number(paciente.altura) * 100;
   if (!(kg > 0) || !(cm > 0)) return null;
@@ -83,7 +114,9 @@ function detalleRequerimiento(paciente = {}, { proteinaPorKg } = {}) {
   const meta = requerimientoCalorico(paciente);
   const minimo = MINIMO_SEGURO[sexo] || 1350;
 
-  const gPorKg = proteinaPorKg ? proteinaPorKg(paciente.objetivo) : 1;
+  const gPorKg = proteinaPorKgPaciente(paciente);
+  const sugerida = proteinaSugeridaPorKg(paciente.objetivo);
+  const personalizada = Number(paciente.proteinaPorKg) > 0;
   const proteinaG = Math.round(kg * gPorKg);
   const grasaKcal = meta * PORCENTAJE_GRASA;
   const grasaG = Math.round(grasaKcal / 9);
@@ -105,12 +138,19 @@ function detalleRequerimiento(paciente = {}, { proteinaPorKg } = {}) {
     minimoAplicado: Math.round(get + ajuste) < minimo,
     minimoSeguro: minimo,
     macronutrientes: {
-      proteinas: macro(proteinaG, 4, `${String(gPorKg).replace(".", ",")} g por kg de peso según el objetivo`),
+      proteinas: macro(proteinaG, 4, personalizada
+        ? `${String(gPorKg).replace(".", ",")} g por kg de peso (fijado por el nutricionista; sugerido ${String(sugerida).replace(".", ",")} g/kg)`
+        : `${String(gPorKg).replace(".", ",")} g por kg de peso según el objetivo`),
       carbohidratos: macro(carbohidratosG, 4, "Resto de las calorías"),
       grasas: macro(grasaG, 9, "30 % de las calorías"),
     },
+    proteina: { porKg: gPorKg, sugeridaPorKg: sugerida, personalizada, minimo: PROTEINA_MIN_KG, maximo: PROTEINA_MAX_KG },
     referencias: "TMB: Mifflin-St Jeor (1990). Factores de actividad: FAO/OMS. Rangos aceptables: carbohidratos 45–65 %, grasas 20–35 %, proteínas 10–35 % (Institute of Medicine, 2005).",
   };
 }
 
-module.exports = { requerimientoCalorico, repartoPorComida, factorActividad, detalleRequerimiento };
+module.exports = {
+  requerimientoCalorico, repartoPorComida, factorActividad, detalleRequerimiento,
+  proteinaSugeridaPorKg, proteinaPorKgPaciente, normalizarProteinaPorKg, proteinaDiariaG,
+  PROTEINA_MIN_KG, PROTEINA_MAX_KG,
+};

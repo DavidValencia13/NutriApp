@@ -220,7 +220,7 @@ function ListaAlimentos({ idPaciente, paciente, onContinue }) {
         <div><Target size={21} aria-hidden="true" /><span>Objetivo<strong>{paciente?.objetivo || "Sin registrar"}</strong></span></div>
         <div><Layers3 size={21} aria-hidden="true" /><span>Guardados<strong>{alimentos.length} alimentos</strong></span></div>
         <div><Sprout size={21} aria-hidden="true" /><span>Grupos presentes<strong>{cobertura?.resumen?.esencialesCubiertos ?? "—"} / {cobertura?.resumen?.esencialesTotal ?? "—"}</strong></span></div>
-        <div><Wallet2 size={21} aria-hidden="true" /><span>Presupuesto semanal<strong>{Number(paciente?.presupuesto) > 0 ? <>${costoCatalogo.toFixed(2)} / ${Number(paciente.presupuesto).toFixed(2)}</> : <>${costoCatalogo.toFixed(2)} <small className="font-normal">· sin límite</small></>}</strong></span></div>
+        <div><Wallet2 size={21} aria-hidden="true" /><span>Presupuesto semanal<strong>{Number(paciente?.presupuesto) > 0 ? <>${costoCatalogo.toFixed(2)} / ${Number(paciente.presupuesto).toFixed(2)}</> : <>No maneja</>}</strong></span></div>
         {onContinue && <button type="button" className="food-overview-next" onClick={onContinue} disabled={!puedeContinuar} title={puedeContinuar ? "Revisar la propuesta de menú" : "Completa los alimentos y sus datos nutricionales para continuar"}>Continuar al menú <span aria-hidden="true">→</span></button>}
       </div>
       {!cargandoCobertura && !cobertura && <p className="food-coverage-unavailable" role="status">No se pudo comprobar el catálogo. Vuelve a abrir esta vista para intentarlo de nuevo.</p>}
@@ -309,7 +309,7 @@ function ListaAlimentos({ idPaciente, paciente, onContinue }) {
                     </button>
                   )}
                   <p className="food-list-item-meta" title={`Precio de referencia: ${precioDeReferencia(a)}`}>
-                    {a.cantidad} {a.unidadMedida === "unidad" ? Number(a.cantidad) === 1 ? "unidad" : "unidades" : a.unidadMedida} disponibles <span>·</span> ${(Number(a.precio) * Number(a.cantidad)).toFixed(2)} total
+                    {a.cantidad} {a.unidadMedida === "unidad" ? Number(a.cantidad) === 1 ? "unidad" : "unidades" : a.unidadMedida} disponibles{Number(paciente?.presupuesto) > 0 && <> <span>·</span> ${(Number(a.precio) * Number(a.cantidad)).toFixed(2)} total</>}
                   </p>
                   {a.unidadMedida === "g" && Number(paciente?.presupuesto) > 0 &&
                     Number(a.precio) * 100 > Number(paciente?.presupuesto) && (

@@ -7,7 +7,7 @@ const {
   momentosDelDia,
   LIMITE_CANTIDAD_POR_UNIDAD,
 } = require("../Dominio/Servicios/CalculadoraNutricional");
-const { requerimientoCalorico } = require("../Dominio/Servicios/RequerimientoCalorico");
+const { requerimientoCalorico, proteinaDiariaG } = require("../Dominio/Servicios/RequerimientoCalorico");
 const { evaluar: evaluarCoberturaCatalogo } = require("../../Alimento/Dominio/Servicios/EvaluadorCoberturaCatalogo");
 
 class GenerarMenuSemanal {
@@ -71,6 +71,8 @@ class GenerarMenuSemanal {
       // Meta diaria calculada (Mifflin-St Jeor × actividad ± objetivo): sin
       // ella la IA elegía porciones demasiado pequeñas
       caloriasObjetivoDia: requerimientoCalorico(paciente),
+      // g/kg sugerido por objetivo o el que fijó el nutricionista
+      proteinasObjetivoDia: proteinaDiariaG(paciente),
     };
     if (this.resumenPaciente14Dias) {
       perfilParaIA.resumenUltimos14Dias = await this.resumenPaciente14Dias.ejecutar(idPaciente);

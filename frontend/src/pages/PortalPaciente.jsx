@@ -8,7 +8,7 @@ import AsistenteChat from "../components/AsistenteChat";
 import { cantidadLegible } from "../utils/cantidad";
 import { HojaPreparacion, MiniPasos } from "../components/PreparacionPlato";
 import PanelComposicion from "../components/ComposicionCorporal";
-import { LineaBebida } from "../components/BebidaComida";
+import { LineaBebida, NombreConBebida } from "../components/BebidaComida";
 import { tienePreparacion, textoMinutos } from "../utils/preparacion";
 import { clasesDeMarca, estiloDeMarca } from "../utils/marca";
 import BotonTema from "../components/BotonTema";
@@ -407,7 +407,7 @@ function TarjetaComida({ comida, marca, onMarcar, indice }) {
               <p className="text-xs font-semibold text-nutri-brand">{comida.tipoComida}</p>
               <span className="text-xs text-gray-500 tabular shrink-0">{Math.round(Number(comida.calorias) || 0)} kcal</span>
             </div>
-            <h3 className="font-semibold leading-snug mt-0.5">{comida.nombrePlato}</h3>
+            <h3 className="font-semibold leading-snug mt-0.5"><NombreConBebida nombrePlato={comida.nombrePlato} bebida={comida.bebida} /></h3>
             {comida.descripcion && <p className="text-sm text-gray-500 mt-1 leading-relaxed">{comida.descripcion}</p>}
           </div>
         </div>

@@ -1,5 +1,5 @@
 const { gramosEquivalentes } = require("../../../Menu/Dominio/Servicios/CalculadoraNutricional");
-const { requerimientoCalorico } = require("../../../Menu/Dominio/Servicios/RequerimientoCalorico");
+const { requerimientoCalorico, proteinaSugeridaPorKg, proteinaDiariaG } = require("../../../Menu/Dominio/Servicios/RequerimientoCalorico");
 const { normalizar } = require("../../../Alerta/Dominio/Servicios/EvaluadorAlertas");
 const { VALORES_DIARIOS_REFERENCIA } = require("../../../Alerta/Dominio/Servicios/ValoresReferencia");
 
@@ -27,19 +27,13 @@ const DIAS = 7;
 const GRASAS_PARA_COCINAR = /aceite|manteca|mantequilla|margarina/;
 const GRAMOS_GRASA_POR_DIA = 30;
 
-// Proteína diaria recomendada por kg de peso según el objetivo
-function proteinaPorKg(objetivo) {
-  const texto = normalizar(objetivo);
-  if (/aument|ganar|subir|muscul|masa/.test(texto)) return 1.8;
-  if (/bajar|perder|reducir|adelgazar/.test(texto)) return 1.2;
-  return 1.0;
-}
+// Proteína diaria recomendada por kg de peso según el objetivo (el
+// nutricionista puede fijar otro valor en el paciente)
+const proteinaPorKg = proteinaSugeridaPorKg;
 
 function evaluarSuficiencia({ paciente, alimentos }) {
   const caloriasRequeridas = requerimientoCalorico(paciente || {});
-  const proteinasRequeridas = paciente?.peso > 0
-    ? Math.round(Number(paciente.peso) * proteinaPorKg(paciente.objetivo))
-    : null;
+  const proteinasRequeridas = proteinaDiariaG(paciente || {});
 
   let calorias = 0;
   let proteinas = 0;

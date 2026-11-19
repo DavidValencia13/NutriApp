@@ -44,4 +44,30 @@ function normalizarPreparacion(preparacion) {
   return { pasos, minutosTotales: pasos.reduce((total, paso) => total + paso.minutos, 0) };
 }
 
-module.exports = { ACCIONES, MAX_PASOS, normalizarPreparacion };
+// Lo que devuelve la IA se recorta a los límites en vez de descartarse
+function recortarPasosIA(pasos) {
+  if (!Array.isArray(pasos)) return pasos;
+  return pasos.slice(0, MAX_PASOS).map((p) => ({ ...p, texto: String(p?.texto || "").slice(0, MAX_TEXTO) }));
+}
+
+// Bebida que se prepara (jugo, batido, colada...): tiene calorías o
+// ingredientes. Agua o una infusión simple no necesitan pasos.
+function bebidaPreparada(comida) {
+  const n = comida?.bebidaNutricion;
+  return Boolean(comida?.bebida && n && ((Number(n.nutrientes?.calorias) || 0) > 0 || n.ingredientes?.length));
+}
+
+// Le falta explicación, o se explicó antes de ponerle la bebida preparada
+// que tiene ahora (la preparación guarda con qué bebida se hizo)
+function necesitaPreparacion(comida) {
+  if (!comida?.preparacion?.pasos?.length) return true;
+  return bebidaPreparada(comida) && comida.preparacion.bebida !== comida.bebida;
+}
+
+// Marca con qué bebida se hizo la explicación
+function conBebida(preparacion, comida) {
+  if (!preparacion) return preparacion;
+  return bebidaPreparada(comida) ? { ...preparacion, bebida: comida.bebida } : preparacion;
+}
+
+module.exports = { ACCIONES, MAX_PASOS, normalizarPreparacion, recortarPasosIA, bebidaPreparada, necesitaPreparacion, conBebida };

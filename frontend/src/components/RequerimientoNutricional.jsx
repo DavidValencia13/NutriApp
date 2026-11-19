@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Calculator, ChevronDown } from "lucide-react";
-import { obtenerRequerimiento } from "../services/menuService";
+import { Calculator, ChevronDown, Loader2, Pencil } from "lucide-react";
+import { guardarProteinaPorKg, obtenerRequerimiento } from "../services/menuService";
 
 // Para el profesional: de dónde sale la meta de calorías (fórmula y cada
 // paso) y la distribución de macronutrientes en g, kcal y %, comparada con
@@ -17,6 +17,26 @@ const MACROS = [
 function RequerimientoNutricional({ idPaciente, resumenSemanal, ancho = false }) {
   const [datos, setDatos] = useState(null);
   const [verCalculo, setVerCalculo] = useState(false);
+  // Ajuste de proteína (g/kg) por el nutricionista
+  const [editandoProteina, setEditandoProteina] = useState(false);
+  const [proteinaTexto, setProteinaTexto] = useState("");
+  const [guardandoProteina, setGuardandoProteina] = useState(false);
+  const [errorProteina, setErrorProteina] = useState("");
+  const [proteinaCambiada, setProteinaCambiada] = useState(false);
+
+  async function guardarProteina(valor) {
+    setErrorProteina("");
+    setGuardandoProteina(true);
+    try {
+      setDatos(await guardarProteinaPorKg(idPaciente, valor));
+      setEditandoProteina(false);
+      setProteinaCambiada(true);
+    } catch (err) {
+      setErrorProteina(err.message || "No se pudo guardar");
+    } finally {
+      setGuardandoProteina(false);
+    }
+  }
 
   useEffect(() => {
     let vigente = true;
@@ -91,6 +111,35 @@ function RequerimientoNutricional({ idPaciente, resumenSemanal, ancho = false })
                 </div>
                 <p className="pl-4 tabular text-nutri-ink font-semibold">{fmt(meta.gramos)} g = {fmt(meta.kcal)} kcal</p>
                 <p className="text-[11px] text-gray-500 pl-4">{meta.nota}</p>
+                {m.clave === "proteinas" && datos.proteina && (
+                  editandoProteina ? (
+                    <form className="pl-4 mt-1 flex flex-wrap items-center gap-1.5" onSubmit={(e) => { e.preventDefault(); guardarProteina(proteinaTexto); }}>
+                      <input type="number" step="0.1" min={datos.proteina.minimo} max={datos.proteina.maximo} value={proteinaTexto} autoFocus
+                        onChange={(e) => setProteinaTexto(e.target.value)} aria-label="Gramos de proteína por kg de peso"
+                        className="w-16 rounded-md border border-line px-2 py-1 text-xs" />
+                      <span className="text-[11px] text-gray-500">g/kg = {fmt((Number(proteinaTexto) || 0) * v.peso)} g/día</span>
+                      <button type="submit" disabled={guardandoProteina} className="rounded-md bg-nutri-brand px-2 py-1 text-[11px] font-semibold text-white disabled:opacity-60">
+                        {guardandoProteina ? <Loader2 size={12} className="animate-spin" aria-label="Guardando" /> : "Guardar"}
+                      </button>
+                      {datos.proteina.personalizada && (
+                        <button type="button" disabled={guardandoProteina} onClick={() => guardarProteina(null)} className="text-[11px] font-semibold text-nutri-brand">
+                          Usar sugerido ({String(datos.proteina.sugeridaPorKg).replace(".", ",")})
+                        </button>
+                      )}
+                      <button type="button" onClick={() => { setEditandoProteina(false); setErrorProteina(""); }} className="text-[11px] text-gray-500">Cancelar</button>
+                      <span className="basis-full text-[10px] text-gray-400">Rango permitido: {String(datos.proteina.minimo).replace(".", ",")} a {datos.proteina.maximo} g/kg (ej. deportistas 1,6–2,2).</span>
+                      {errorProteina && <span className="basis-full text-[11px] text-nutri-pink">{errorProteina}</span>}
+                    </form>
+                  ) : (
+                    <button type="button" onClick={() => { setProteinaTexto(String(datos.proteina.porKg)); setEditandoProteina(true); }}
+                      className="pl-4 mt-0.5 inline-flex items-center gap-1 text-[11px] font-semibold text-nutri-brand">
+                      <Pencil size={11} aria-hidden="true" /> Ajustar g/kg
+                    </button>
+                  )
+                )}
+                {m.clave === "proteinas" && proteinaCambiada && !editandoProteina && (
+                  <p className="text-[11px] text-amber-700 pl-4">Guardado. Se aplicará al generar el próximo menú.</p>
+                )}
                 {gMenu !== null && (
                   <p className="text-[11px] text-gray-500 pl-4">
                     Menú (promedio diario): <span className="tabular">{fmt(gMenu)} g · {fmt(kcalMenu)} kcal{menuKcal > 0 ? ` · ${Math.round((kcalMenu / menuKcal) * 100)} %` : ""}</span>

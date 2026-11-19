@@ -54,6 +54,18 @@ export function tienePreparacion(comida) {
   return Boolean(comida?.preparacion?.pasos?.length);
 }
 
+// Bebida preparada (jugo, batido, colada): su preparación va con el plato
+function bebidaPreparada(comida) {
+  const n = comida?.bebidaNutricion;
+  return Boolean(comida?.bebida && n && ((Number(n.nutrientes?.calorias) || 0) > 0 || n.ingredientes?.length));
+}
+
+// Falta explicación, o se hizo antes de ponerle la bebida preparada actual
+export function necesitaPreparacion(comida) {
+  if (!tienePreparacion(comida)) return true;
+  return bebidaPreparada(comida) && comida.preparacion.bebida !== comida.bebida;
+}
+
 export function textoMinutos(minutos) {
   const m = Number(minutos) || 0;
   if (m <= 0) return "";

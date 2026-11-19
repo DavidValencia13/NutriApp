@@ -114,7 +114,7 @@ ALIMENTOS ESCASOS (regla estricta: si te pasas, el menú se rechaza): ${escasos.
     const meta = perfilPaciente.caloriasObjetivoDia;
     const instruccionCalorias = meta
       ? `
-META DE CALORÍAS (importante): cada día debe sumar aproximadamente ${meta} kcal (entre ${Math.round(meta * 0.9)} y ${Math.round(meta * 1.1)}), repartidas así: ${repartoPorComida(meta, momentos).map((r) => `${r.momento} ≈ ${r.calorias} kcal`).join(", ")}. Elige porciones normales de adulto que lleguen a esa meta, no porciones mínimas. Las cantidades del inventario son en crudo (ej. 70-90 g de arroz crudo ≈ un plato de arroz cocido; 120-150 g de pollo o carne crudos ≈ una porción de almuerzo).
+META DE CALORÍAS (importante): cada día debe sumar aproximadamente ${meta} kcal (entre ${Math.round(meta * 0.9)} y ${Math.round(meta * 1.1)}), repartidas así: ${repartoPorComida(meta, momentos).map((r) => `${r.momento} ≈ ${r.calorias} kcal`).join(", ")}. Elige porciones normales de adulto que lleguen a esa meta, no porciones mínimas. ${perfilPaciente.proteinasObjetivoDia ? `La proteína del día debe acercarse a ${perfilPaciente.proteinasObjetivoDia} g (la fijó el nutricionista): reparte alimentos proteicos en las comidas principales. ` : ""}Las cantidades del inventario son en crudo (ej. 70-90 g de arroz crudo ≈ un plato de arroz cocido; 120-150 g de pollo o carne crudos ≈ una porción de almuerzo).
 `
       : "";
     const instruccionCorreccion = correccionAnterior

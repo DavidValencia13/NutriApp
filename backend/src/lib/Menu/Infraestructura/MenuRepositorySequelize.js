@@ -207,6 +207,8 @@ class MenuRepositorySequelize {
     return {
       id: doc.id,
       idDiaMenu: doc.idDiaMenu,
+      bebida: doc.bebida,
+      bebidaNutricion: doc.bebidaNutricion,
       menu: {
         id: doc.dia.menu.id,
         idPaciente: doc.dia.menu.idPaciente,

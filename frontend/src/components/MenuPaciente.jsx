@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { generarMenu, obtenerMenu, aprobarMenu, listarHistorialMenu, obtenerVersionMenu, generarPreparacion, guardarPreparacion, guardarBebida } from "../services/menuService";
 import { EditorPreparacion } from "./PreparacionPlato";
-import { EditorBebida, LineaBebida } from "./BebidaComida";
+import { EditorBebida, LineaBebida, NombreConBebida } from "./BebidaComida";
 import RequerimientoNutricional from "./RequerimientoNutricional";
-import { aplicarPreparaciones, tienePreparacion, textoMinutos } from "../utils/preparacion";
+import { aplicarPreparaciones, necesitaPreparacion, tienePreparacion, textoMinutos } from "../utils/preparacion";
 import { listarSeguimiento } from "../services/seguimientoService";
 import { listarAlimentos, obtenerCoberturaCatalogo } from "../services/alimentoService";
 import SuficienciaAlimentos from "./SuficienciaAlimentos";
@@ -135,7 +135,7 @@ function MenuPaciente({ idPaciente, paciente, presupuesto, vistaInicial = "resum
   const [preparandoTodo, setPreparandoTodo] = useState(false);
   const intentosPreparacion = useRef(new Set());
   useEffect(() => {
-    const faltantes = (menu?.dias || []).flatMap((d) => d.comidas || []).filter((c) => !tienePreparacion(c)).map((c) => c.id);
+    const faltantes = (menu?.dias || []).flatMap((d) => d.comidas || []).filter(necesitaPreparacion).map((c) => `${c.id}${c.bebida ? `+${c.bebida}` : ""}`);
     if (!menu?.id || faltantes.length === 0) return;
     const clave = `${menu.id}:${faltantes.join(",")}`;
     if (intentosPreparacion.current.has(clave)) return;
@@ -599,7 +599,7 @@ function MenuSemanalVista({ menu, esHistorico, historial, mostrarHistorial, onTo
               {(diaActivo.comidas || []).map((comida) => <div key={comida.id} className="weekly-meal-wrap"><details className="weekly-meal">
                 <summary>
                   <span className="weekly-meal-icon"><IconoMomento tipoComida={comida.tipoComida} /></span>
-                  <span className="weekly-meal-copy"><strong>{comida.tipoComida}</strong><span>{comida.nombrePlato}</span></span>
+                  <span className="weekly-meal-copy"><strong>{comida.tipoComida}</strong><span><NombreConBebida nombrePlato={comida.nombrePlato} bebida={comida.bebida} /></span></span>
                   {!esHistorico && <button type="button" className={`weekly-meal-drink-icon ${comida.bebida ? "con-bebida" : ""}`}
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); onBebida(comida); }}
                     title={comida.bebida ? `Bebida: ${comida.bebida} (cambiar)` : "Agregar bebida"} aria-label={comida.bebida ? `Cambiar bebida: ${comida.bebida}` : "Agregar bebida"}>

@@ -1,5 +1,5 @@
 const { NotFoundError } = require("../Dominio/Errores");
-const { normalizarPreparacion } = require("../Dominio/Servicios/Preparacion");
+const { normalizarPreparacion, recortarPasosIA, necesitaPreparacion, conBebida } = require("../Dominio/Servicios/Preparacion");
 
 // Explicación de preparación de los platos de un menú. La genera la IA solo
 // cuando el nutricionista la pide, se guarda y él la puede corregir; el
@@ -21,7 +21,7 @@ class ExplicarPreparacionMenu {
 
     const elegidas = Array.isArray(idsComidas) ? new Set(idsComidas.map(Number)) : null;
     const pendientes = comidas.filter(
-      (c) => (!elegidas || elegidas.has(Number(c.id))) && (regenerar || !c.preparacion?.pasos?.length),
+      (c) => (!elegidas || elegidas.has(Number(c.id))) && (regenerar || necesitaPreparacion(c)),
     );
     const preparaciones = {};
     if (pendientes.length > 0) {
@@ -29,7 +29,7 @@ class ExplicarPreparacionMenu {
       for (const comida of pendientes) {
         let preparacion = null;
         try {
-          preparacion = normalizarPreparacion(crudas[Number(comida.id)]);
+          preparacion = conBebida(normalizarPreparacion(recortarPasosIA(crudas[Number(comida.id)])), comida);
         } catch {
           preparacion = null; // un plato mal formado no tumba a los demás
         }
@@ -52,7 +52,7 @@ class ExplicarPreparacionMenu {
   // de más si falla.
   completarEnSegundoPlano(menu) {
     const comidas = (menu?.dias || []).flatMap((dia) => dia.comidas || []);
-    if (!menu?.id || !comidas.some((c) => !c.preparacion?.pasos?.length)) return false;
+    if (!menu?.id || !comidas.some(necesitaPreparacion)) return false;
     this._intentos = this._intentos || new Map();
     const ultimo = this._intentos.get(menu.id);
     if (ultimo && Date.now() - ultimo < 10 * 60 * 1000) return false;
@@ -65,13 +65,13 @@ class ExplicarPreparacionMenu {
 
   async _completarFaltantes(idMenu) {
     const menu = await this.menuRepository.obtenerConDetallesPorId(idMenu);
-    const pendientes = (menu?.dias || []).flatMap((dia) => dia.comidas || []).filter((c) => !c.preparacion?.pasos?.length);
+    const pendientes = (menu?.dias || []).flatMap((dia) => dia.comidas || []).filter(necesitaPreparacion);
     if (pendientes.length === 0) return;
     const crudas = await this.generadorPreparacion.generar(pendientes);
     const preparaciones = {};
     for (const comida of pendientes) {
       try {
-        const p = normalizarPreparacion(crudas[Number(comida.id)]);
+        const p = conBebida(normalizarPreparacion(recortarPasosIA(crudas[Number(comida.id)])), comida);
         if (p) preparaciones[comida.id] = p;
       } catch {
         // un plato mal formado no tumba a los demás
@@ -84,7 +84,9 @@ class ExplicarPreparacionMenu {
   async editar(idComidaMenu, idNutriologo, preparacion) {
     const comida = await this.menuRepository.obtenerComidaConPropietario(idComidaMenu, idNutriologo);
     if (!comida) throw new NotFoundError("Comida no encontrada");
-    const normalizada = normalizarPreparacion(preparacion);
+    // La corrección del nutricionista conserva la marca de la bebida (si no,
+    // se volvería a generar y se perdería lo que corrigió)
+    const normalizada = conBebida(normalizarPreparacion(preparacion), comida);
     await this.menuRepository.guardarPreparaciones({ [idComidaMenu]: normalizada });
     return { idComidaMenu, preparacion: normalizada };
   }

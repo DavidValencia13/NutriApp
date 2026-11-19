@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { NombreConBebida } from "./BebidaComida";
 import { createPortal } from "react-dom";
 import { ArrowLeft, ArrowRight, Check, ChefHat, ListChecks, Plus, Timer, Trash2, X } from "lucide-react";
 import { cantidadLegible } from "../utils/cantidad";
@@ -142,7 +143,7 @@ export function VistaPreparacion({ comida }) {
   return (
     <div className="space-y-5">
       <div className="rounded-2xl bg-white border border-line p-4">
-        <p className="font-semibold text-nutri-ink leading-snug">{comida.nombrePlato}</p>
+        <p className="font-semibold text-nutri-ink leading-snug"><NombreConBebida nombrePlato={comida.nombrePlato} bebida={comida.bebida} /></p>
         {detalles.length > 0 && (
           <p className="text-3xl mt-2 tracking-wider" aria-hidden="true">{detalles.map((d) => emojiDeAlimento(d.nombreAlimento)).join("")}</p>
         )}

@@ -23,6 +23,7 @@ class Paciente {
     pesoInicial,
     edad,
     sexo,
+    proteinaPorKg,
   }) {
     // Validaciones (reglas de negocio: qué datos son obligatorios y válidos)
     if (!idNutriologo)
@@ -95,6 +96,8 @@ class Paciente {
     this.pesoInicial = pesoInicialNum;
     this.edad = edad ?? undefined;
     this.sexo = sexo ?? undefined;
+    // Opcional: g de proteína por kg que fijó el nutricionista; null = según el objetivo
+    this.proteinaPorKg = Number(proteinaPorKg) > 0 ? Number(proteinaPorKg) : null;
   }
 }
 

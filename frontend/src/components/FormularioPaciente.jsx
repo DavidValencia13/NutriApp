@@ -37,6 +37,8 @@ function FormularioPaciente({ pacienteEditar, onSuccess, onCancel }) {
     edad: "",
     sexo: "",
   });
+  // ¿Maneja presupuesto? Si no, no se piden precios al añadir alimentos
+  const [usaPresupuesto, setUsaPresupuesto] = useState(() => Number(pacienteEditar?.presupuesto) > 0);
   const [error, setError] = useState("");
   const [guardando, setGuardando] = useState(false);
 
@@ -70,7 +72,7 @@ function FormularioPaciente({ pacienteEditar, onSuccess, onCancel }) {
         altura: parseFloat(form.altura),
         numeroComidas: parseInt(form.numeroComidas),
         // Presupuesto opcional: vacío = 0 = sin límite (consulta privada)
-        presupuesto: parseFloat(form.presupuesto) > 0 ? parseFloat(form.presupuesto) : 0,
+        presupuesto: usaPresupuesto && parseFloat(form.presupuesto) > 0 ? parseFloat(form.presupuesto) : 0,
         tiempoParaCocinar: parseInt(form.tiempoParaCocinar),
         alergias: form.alergias
           .split(",")
@@ -225,22 +227,35 @@ function FormularioPaciente({ pacienteEditar, onSuccess, onCancel }) {
           <select id="patient-meals" name="numeroComidas" value={form.numeroComidas} onChange={handleChange} required className={inputClass}><option value="">Elige</option>{[3, 4, 5, 6].map((valor) => <option key={valor} value={valor}>{valor} comidas</option>)}{form.numeroComidas && ![3, 4, 5, 6].includes(Number(form.numeroComidas)) && <option value={form.numeroComidas}>{form.numeroComidas} comidas</option>}</select>
         </div>
         <div>
-          <label htmlFor="patient-budget" className={labelClass}><Wallet aria-hidden="true" />Presupuesto semanal <span className="font-normal text-gray-400">(opcional)</span></label>
-          <div className="flex items-center gap-1.5">
-            <input
-              id="patient-budget"
-              type="number"
-              step="0.01"
-              min="0"
-              name="presupuesto"
-              value={form.presupuesto}
-              onChange={handleChange}
-              placeholder="Sin límite"
-              className={inputClass}
-            />
-            <span className="text-gray-400 text-sm">$</span>
+          <label className={labelClass}><Wallet aria-hidden="true" />¿Maneja presupuesto?</label>
+          <div className="flex gap-1.5" role="radiogroup" aria-label="¿Maneja presupuesto?">
+            {[[true, "Sí"], [false, "No"]].map(([valor, texto]) => (
+              <button key={texto} type="button" role="radio" aria-checked={usaPresupuesto === valor} onClick={() => setUsaPresupuesto(valor)}
+                className={`flex-1 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${usaPresupuesto === valor ? "border-nutri-brand bg-nutri-brand text-white" : "border-line text-gray-600 hover:border-nutri-brand"}`}>
+                {texto}
+              </button>
+            ))}
           </div>
-          <p className="text-[11px] text-gray-400 mt-1">Déjalo vacío si no manejas presupuesto (por ejemplo, en consulta privada).</p>
+          {usaPresupuesto ? (
+            <div className="flex items-center gap-1.5 mt-2">
+              <input
+                id="patient-budget"
+                type="number"
+                step="0.01"
+                min="0.01"
+                name="presupuesto"
+                value={form.presupuesto}
+                onChange={handleChange}
+                required
+                placeholder="Semanal, ej. 40"
+                aria-label="Presupuesto semanal"
+                className={inputClass}
+              />
+              <span className="text-gray-400 text-sm">$</span>
+            </div>
+          ) : (
+            <p className="text-[11px] text-gray-400 mt-1">Sin presupuesto: no se pedirán precios al añadir alimentos.</p>
+          )}
         </div>
       </div>
 

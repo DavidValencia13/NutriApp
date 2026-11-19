@@ -43,6 +43,8 @@ const PacienteModel = sequelize.define(
     // Opcionales: habilitan el cálculo calórico personalizado en alertas.
     edad: { type: DataTypes.INTEGER, allowNull: true },
     sexo: { type: DataTypes.STRING, allowNull: true },
+    // g de proteína por kg que fijó el nutricionista (null = según objetivo)
+    proteinaPorKg: { type: DataTypes.FLOAT, allowNull: true },
   },
   {
     timestamps: true,

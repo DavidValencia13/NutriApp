@@ -59,6 +59,14 @@ export async function obtenerRequerimiento(idPaciente) {
   return await apiFetch(`/paciente/${idPaciente}/menu/requerimiento`);
 }
 
+// g de proteína por kg que fija el nutricionista (null = sugerido por objetivo)
+export async function guardarProteinaPorKg(idPaciente, proteinaPorKg) {
+  return await apiFetch(`/paciente/${idPaciente}/menu/requerimiento/proteina`, {
+    method: "PUT",
+    body: JSON.stringify({ proteinaPorKg }),
+  });
+}
+
 // Bebida que acompaña una comida: { bebida } o, si tiene calorías,
 // { bebida, ml, por100, fuente, referencia } ({ bebida: null } = quitarla)
 export async function guardarBebida(idPaciente, idComidaMenu, datos) {

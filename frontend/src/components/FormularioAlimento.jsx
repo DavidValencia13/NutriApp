@@ -282,6 +282,8 @@ function FormularioAlimento({
     Number(costoCatalogo) -
     costoAnterior +
     (Number.isFinite(precioTotalIngresado) ? precioTotalIngresado : 0);
+  // Sin presupuesto (consulta privada) no se pide el precio
+  const conPrecio = Number(presupuesto) > 0;
   const presupuestoExcedido =
     Number(presupuesto) > 0 && costoProyectado > Number(presupuesto);
   const precioPor100g =
@@ -512,7 +514,8 @@ function FormularioAlimento({
         unidadMedida: form.unidadMedida,
         // El backend guarda precio POR unidad de medida; el nutriólogo
         // captura el total pagado, así que aquí se hace la división.
-        precio: precioTotal / cantidad,
+        // Sin presupuesto no se pide precio (se conserva el que tuviera)
+        precio: conPrecio ? precioTotal / cantidad : Number(alimentoEditar?.precio) || 0,
         gruposAlimenticios,
       };
 
@@ -572,7 +575,7 @@ function FormularioAlimento({
       : [];
     return (
       <div className="food-pick-stage">
-        <div className="food-entry-heading"><span className="food-coverage-kicker">PASO 1 · ELEGIR ALIMENTO</span><h3>Busca o elige una sugerencia</h3><p>Selecciona un alimento para completar nombre, grupo y nutrientes disponibles. Después indica cuánto tienes y su precio.</p></div>
+        <div className="food-entry-heading"><span className="food-coverage-kicker">PASO 1 · ELEGIR ALIMENTO</span><h3>Busca o elige una sugerencia</h3><p>Selecciona un alimento para completar nombre, grupo y nutrientes disponibles. Después indica cuánto tienes{Number(presupuesto) > 0 ? " y su precio" : ""}.</p></div>
         <label className={labelClass} htmlFor="buscar-catalogo">Buscar alimento</label>
         <div className="food-search-combo">
           <Search size={18} aria-hidden="true" />
@@ -702,7 +705,7 @@ function FormularioAlimento({
 
   return (
     <form onSubmit={handleSubmit} className="food-entry-form">
-      <div className="food-entry-heading"><span className="food-coverage-kicker">PASO 2 · DISPONIBILIDAD</span><h3>Confirma cantidad y precio</h3><p>El nombre y los nutrientes se completan desde la sugerencia o la fuente consultada. Revisa los valores antes de guardar.</p></div>
+      <div className="food-entry-heading"><span className="food-coverage-kicker">PASO 2 · DISPONIBILIDAD</span><h3>{Number(presupuesto) > 0 ? "Confirma cantidad y precio" : "Confirma la cantidad"}</h3><p>El nombre y los nutrientes se completan desde la sugerencia o la fuente consultada. Revisa los valores antes de guardar.</p></div>
       {error && (
         <p className="bg-red-100 text-red-700 text-sm p-2 rounded-lg mb-4">
           {error}
@@ -911,6 +914,7 @@ function FormularioAlimento({
         </div>
       )}
 
+      {conPrecio && (<>
       <div className="mb-4">
         <label className={labelClass}>
           Precio total pagado por esta cantidad
@@ -953,6 +957,7 @@ function FormularioAlimento({
           </p>
         )}
       </div>
+      </>)}
 
       <div className="mb-4">
         <button type="button" onClick={() => { if (!mostrarNutricional) setMostrarNutricional(true); setDetallesNutricionalesAbiertos((abierto) => !abierto); }} aria-expanded={detallesNutricionalesAbiertos} className="food-nutrition-toggle">

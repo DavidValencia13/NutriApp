@@ -72,6 +72,7 @@ class PacienteRepositorySequelize {
           : parseFloat(doc.pesoInicial),
       edad: doc.edad === null ? undefined : doc.edad,
       sexo: doc.sexo === null ? undefined : doc.sexo,
+      proteinaPorKg: doc.proteinaPorKg ?? null,
     });
   }
 }

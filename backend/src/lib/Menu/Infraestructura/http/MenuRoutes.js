@@ -7,6 +7,7 @@ module.exports = (controller, { limiteGeneracion } = {}) => {
   router.get("/", controller.obtener); // RF-009 / RF-0010
   router.get("/historial", controller.historial);
   router.get("/requerimiento", controller.requerimiento); // cómo se calculó la meta y los macros
+  router.put("/requerimiento/proteina", controller.guardarProteina); // g de proteína por kg
   router.get("/historial/:idMenu", controller.obtenerVersion);
   router.put("/comida/:idComidaMenu", controller.ajustar); // RF-0011
   router.post("/:idMenu/preview-nutrientes", controller.previewNutrientes); // feedback en vivo

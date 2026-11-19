@@ -5,8 +5,8 @@ const GeneradorMenuIA = require("../GeneradorMenuIA");
 const GeneradorPreparacionIA = require("../GeneradorPreparacionIA");
 const ExplicarPreparacionMenu = require("../../Aplicacion/ExplicarPreparacionMenu");
 const { AsignarBebidaComida } = require("../../Aplicacion/AsignarBebidaComida");
-const { detalleRequerimiento } = require("../../Dominio/Servicios/RequerimientoCalorico");
-const { proteinaPorKg } = require("../../../Alimento/Dominio/Servicios/SuficienciaCatalogo");
+const { detalleRequerimiento, normalizarProteinaPorKg, PROTEINA_MIN_KG, PROTEINA_MAX_KG } = require("../../Dominio/Servicios/RequerimientoCalorico");
+const { ValidationError } = require("../../Dominio/Errores");
 const { pedirCompletion } = require("../../../../Infraestructura/ia/iaClient");
 
 const GenerarMenuSemanal = require("../../Aplicacion/GenerarMenuSemanal");
@@ -58,7 +58,14 @@ module.exports = function registerMenuModule(app) {
     calcularNutrientesPreviewComida: new CalcularNutrientesPreviewComida({ menuRepository: menuRepo, listarAlimentosPorPaciente, pacienteRepository: pacienteRepo }),
     explicarPreparacionMenu,
     asignarBebidaComida: new AsignarBebidaComida({ menuRepository: menuRepo }),
-    obtenerRequerimiento: async (idPaciente) => detalleRequerimiento((await pacienteRepo.findById(idPaciente)) || {}, { proteinaPorKg }),
+    obtenerRequerimiento: async (idPaciente) => detalleRequerimiento((await pacienteRepo.findById(idPaciente)) || {}),
+    // El nutricionista ajusta los g de proteína por kg del paciente (null = sugerido)
+    guardarProteina: async (idPaciente, valor) => {
+      const proteinaPorKg = normalizarProteinaPorKg(valor);
+      if (proteinaPorKg === undefined)
+        throw new ValidationError(`La proteína debe estar entre ${PROTEINA_MIN_KG} y ${PROTEINA_MAX_KG} g por kg`);
+      return detalleRequerimiento((await pacienteRepo.updateById(idPaciente, { proteinaPorKg })) || {});
+    },
   });
 
   app.use(

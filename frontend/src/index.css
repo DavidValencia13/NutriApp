@@ -1161,6 +1161,9 @@ button.boton-preparacion:active { transform: scale(.98); }
 .weekly-meal-drink-icon { display: grid; place-items: center; width: 28px; height: 28px; flex: none; border: 1px dashed #bae6fd; border-radius: 50%; color: #0284c7; background: transparent; cursor: pointer; transition: background .15s, color .15s; }
 .weekly-meal-drink-icon:hover { color: #fff; background: #0284c7; border-style: solid; }
 .weekly-meal-drink-icon.con-bebida { border-style: solid; border-color: #0284c7; background: #e0f2fe; }
+/* Bebida junto al nombre del plato, mismo tamaño (los pacientes no leían la letra pequeña) */
+.nombre-bebida { color: #0369a1; }
+:where(.tema-oscuro) .nombre-bebida { color: #7dd3fc; }
 html.tema-oscuro .weekly-meal-drink-icon.con-bebida { background: rgb(2 132 199 / .2); }
 /* Fila de acciones bajo cada comida */
 .weekly-meal-actions { display: flex; }

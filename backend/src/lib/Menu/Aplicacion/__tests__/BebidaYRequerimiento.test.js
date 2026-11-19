@@ -64,3 +64,47 @@ test("bebida con calorías: nutrientes de la porción con la tabla (por 100 ml)"
   assert.equal(r.bebidaNutricion.nutrientes.calorias, 90);
   assert.equal(guardadas[0].nut.nutrientes.calorias, 90);
 });
+
+test("bebida preparada: suma los ingredientes elegidos (leche + plátano + Splenda)", () => {
+  const leche = { calorias: 61, proteinas: 3.2, carbohidratos: 4.8, grasasTotales: 3.3 };
+  const platano = { calorias: 89, proteinas: 1.1, carbohidratos: 22.8, grasasTotales: 0.3 };
+  const n = nutricionDeBebida({
+    ml: 300,
+    ingredientes: [
+      { nombre: "Leche entera", cantidad: 240, unidad: "ml", medida: "1 taza", por100: leche, fuente: "USDA" },
+      { nombre: "Plátano", cantidad: 120, unidad: "g", por100: platano },
+      { nombre: "Splenda", cantidad: 1, unidad: "g", sinCalorias: true },
+    ],
+  });
+  assert.equal(n.ml, 300);
+  assert.equal(n.nutrientes.calorias, Math.round(61 * 2.4 + 89 * 1.2)); // 253
+  assert.equal(n.ingredientes.length, 3);
+  assert.equal(n.ingredientes[0].medida, "1 taza");
+  assert.equal(n.ingredientes[2].calorias, 0);
+  assert.equal(n.fuente, "USDA");
+  assert.throws(() => nutricionDeBebida({ ml: 300, ingredientes: [{ nombre: "Panela", cantidad: 10 }] }), ValidationError);
+});
+
+test("proteína: el nutricionista puede fijar g/kg (ej. 1,6) dentro de un rango seguro", () => {
+  const { normalizarProteinaPorKg, proteinaDiariaG } = require("../../Dominio/Servicios/RequerimientoCalorico");
+  const paciente = { peso: 80, altura: 1.75, edad: 28, sexo: "masculino", nivelActividad: "Alto", objetivo: "Mantener peso" };
+  assert.equal(detalleRequerimiento(paciente).proteina.porKg, 1);
+  const d = detalleRequerimiento({ ...paciente, proteinaPorKg: 1.6 });
+  assert.equal(d.macronutrientes.proteinas.gramos, 128);
+  assert.equal(d.proteina.personalizada, true);
+  assert.equal(d.proteina.sugeridaPorKg, 1);
+  assert.equal(proteinaDiariaG({ ...paciente, proteinaPorKg: 1.6 }), 128);
+  assert.equal(normalizarProteinaPorKg("1,64"), 1.6);
+  assert.equal(normalizarProteinaPorKg(""), null);
+  assert.equal(normalizarProteinaPorKg(5), undefined);
+});
+
+test("preparación: se rehace si se agrega una bebida preparada", () => {
+  const { necesitaPreparacion, conBebida } = require("../../Dominio/Servicios/Preparacion");
+  const pasos = [{ accion: "servir", texto: "Sirve", minutos: 0 }];
+  const agua = { bebida: "Vaso de agua", bebidaNutricion: null, preparacion: { pasos } };
+  assert.equal(necesitaPreparacion(agua), false);
+  const batido = { bebida: "Batido de plátano", bebidaNutricion: { nutrientes: { calorias: 200 } }, preparacion: { pasos } };
+  assert.equal(necesitaPreparacion(batido), true);
+  assert.equal(necesitaPreparacion({ ...batido, preparacion: conBebida({ pasos }, batido) }), false);
+});
