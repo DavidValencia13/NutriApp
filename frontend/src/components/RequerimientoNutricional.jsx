@@ -54,7 +54,7 @@ function RequerimientoNutricional({ idPaciente, resumenSemanal, ancho = false })
       <div className="weekly-side-heading"><span className="weekly-side-icon"><Calculator size={20} aria-hidden="true" /></span><strong>Requerimiento energético y macronutrientes</strong></div>
       <div className={ancho ? "grid md:grid-cols-2 gap-x-8 gap-y-3" : ""}>
       <div>
-      <p className="text-2xl font-semibold text-nutri-ink tabular mt-1">{fmt(datos.meta)} <span className="text-sm font-normal text-gray-500">kcal/día</span></p>
+      <p className="text-xl font-semibold text-nutri-ink tabular mt-0.5">{fmt(datos.meta)} <span className="text-sm font-normal text-gray-500">kcal/día</span></p>
       <p className="text-xs text-gray-500">Fórmula: <strong className="text-nutri-ink">{datos.formula}</strong></p>
 
       <button type="button" onClick={() => setVerCalculo((x) => !x)} aria-expanded={verCalculo}
@@ -88,68 +88,72 @@ function RequerimientoNutricional({ idPaciente, resumenSemanal, ancho = false })
               Complétalos para un cálculo exacto.
             </li>
           )}
+          <li className="text-[10px] text-gray-400 leading-snug">1 g de proteína o carbohidrato = 4 kcal; 1 g de grasa = 9 kcal. {datos.referencias}</li>
         </ol>
       )}
 
       </div>
       <div className={ancho ? "md:border-l md:border-line md:pl-8" : "mt-3 pt-3 border-t border-line"}>
-        <p className="text-xs font-semibold text-nutri-ink mb-1.5">Distribución de macronutrientes</p>
-        <div className="flex h-2.5 rounded-full overflow-hidden mb-2" aria-hidden="true">
+        <div className="flex items-baseline justify-between mb-1.5">
+          <p className="text-xs font-semibold text-nutri-ink">Macronutrientes</p>
+          <p className="text-[10px] text-gray-400">meta diaria</p>
+        </div>
+        <div className="flex h-2 rounded-full overflow-hidden mb-2.5" aria-hidden="true">
           {MACROS.map((m) => <span key={m.clave} style={{ width: `${datos.macronutrientes[m.clave].porcentaje}%`, background: m.color }} />)}
         </div>
-        <ul className="space-y-2">
+        <ul className="divide-y divide-line">
           {MACROS.map((m) => {
             const meta = datos.macronutrientes[m.clave];
             const gMenu = n[m.campoMenu] !== undefined ? Number(n[m.campoMenu]) / 7 : null;
             const kcalMenu = gMenu !== null ? gMenu * m.kcalPorG : null;
+            const esProteina = m.clave === "proteinas" && datos.proteina;
+            const nota = esProteina
+              ? `${String(datos.proteina.porKg).replace(".", ",")} g/kg ${datos.proteina.personalizada ? "(ajustado)" : "según objetivo"}`
+              : m.clave === "grasas" ? "30 % de las kcal" : "resto de las kcal";
             return (
-              <li key={m.clave} className="text-xs">
+              <li key={m.clave} className="py-1.5 text-xs">
                 <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full" style={{ background: m.color }} />
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ background: m.color }} />
                   <strong className="text-nutri-ink">{m.nombre}</strong>
-                  <span className="ml-auto tabular font-bold" style={{ color: m.color }}>{meta.porcentaje} %</span>
+                  <span className="ml-auto tabular text-nutri-ink">{fmt(meta.gramos)} g · {fmt(meta.kcal)} kcal</span>
+                  <span className="w-9 text-right tabular font-bold" style={{ color: m.color }}>{meta.porcentaje}%</span>
                 </div>
-                <p className="pl-4 tabular text-nutri-ink font-semibold">{fmt(meta.gramos)} g = {fmt(meta.kcal)} kcal</p>
-                <p className="text-[11px] text-gray-500 pl-4">{meta.nota}</p>
-                {m.clave === "proteinas" && datos.proteina && (
-                  editandoProteina ? (
-                    <form className="pl-4 mt-1 flex flex-wrap items-center gap-1.5" onSubmit={(e) => { e.preventDefault(); guardarProteina(proteinaTexto); }}>
-                      <input type="number" step="0.1" min={datos.proteina.minimo} max={datos.proteina.maximo} value={proteinaTexto} autoFocus
-                        onChange={(e) => setProteinaTexto(e.target.value)} aria-label="Gramos de proteína por kg de peso"
-                        className="w-16 rounded-md border border-line px-2 py-1 text-xs" />
-                      <span className="text-[11px] text-gray-500">g/kg = {fmt((Number(proteinaTexto) || 0) * v.peso)} g/día</span>
-                      <button type="submit" disabled={guardandoProteina} className="rounded-md bg-nutri-brand px-2 py-1 text-[11px] font-semibold text-white disabled:opacity-60">
-                        {guardandoProteina ? <Loader2 size={12} className="animate-spin" aria-label="Guardando" /> : "Guardar"}
-                      </button>
-                      {datos.proteina.personalizada && (
-                        <button type="button" disabled={guardandoProteina} onClick={() => guardarProteina(null)} className="text-[11px] font-semibold text-nutri-brand">
-                          Usar sugerido ({String(datos.proteina.sugeridaPorKg).replace(".", ",")})
-                        </button>
-                      )}
-                      <button type="button" onClick={() => { setEditandoProteina(false); setErrorProteina(""); }} className="text-[11px] text-gray-500">Cancelar</button>
-                      <span className="basis-full text-[10px] text-gray-400">Rango permitido: {String(datos.proteina.minimo).replace(".", ",")} a {datos.proteina.maximo} g/kg (ej. deportistas 1,6–2,2).</span>
-                      {errorProteina && <span className="basis-full text-[11px] text-nutri-pink">{errorProteina}</span>}
-                    </form>
-                  ) : (
+                <p className="pl-3.5 text-[11px] text-gray-500 flex flex-wrap items-center gap-x-1.5">
+                  <span>{nota}</span>
+                  {esProteina && !editandoProteina && (
                     <button type="button" onClick={() => { setProteinaTexto(String(datos.proteina.porKg)); setEditandoProteina(true); }}
-                      className="pl-4 mt-0.5 inline-flex items-center gap-1 text-[11px] font-semibold text-nutri-brand">
-                      <Pencil size={11} aria-hidden="true" /> Ajustar g/kg
+                      className="inline-flex items-center gap-0.5 font-semibold text-nutri-brand">
+                      <Pencil size={10} aria-hidden="true" /> Ajustar
                     </button>
-                  )
+                  )}
+                  {gMenu !== null && <span className="ml-auto tabular" title="Promedio diario del menú">Menú: {fmt(gMenu)} g{menuKcal > 0 ? ` (${Math.round((kcalMenu / menuKcal) * 100)}%)` : ""}</span>}
+                </p>
+                {esProteina && editandoProteina && (
+                  <form className="pl-3.5 mt-1 flex flex-wrap items-center gap-1.5" onSubmit={(e) => { e.preventDefault(); guardarProteina(proteinaTexto); }}>
+                    <input type="number" step="0.1" min={datos.proteina.minimo} max={datos.proteina.maximo} value={proteinaTexto} autoFocus
+                      onChange={(e) => setProteinaTexto(e.target.value)} aria-label="Gramos de proteína por kg de peso"
+                      className="w-16 rounded-md border border-line px-2 py-1 text-xs" />
+                    <span className="text-[11px] text-gray-500">g/kg = {fmt((Number(proteinaTexto) || 0) * v.peso)} g/día</span>
+                    <button type="submit" disabled={guardandoProteina} className="rounded-md bg-nutri-brand px-2 py-1 text-[11px] font-semibold text-white disabled:opacity-60">
+                      {guardandoProteina ? <Loader2 size={12} className="animate-spin" aria-label="Guardando" /> : "Guardar"}
+                    </button>
+                    {datos.proteina.personalizada && (
+                      <button type="button" disabled={guardandoProteina} onClick={() => guardarProteina(null)} className="text-[11px] font-semibold text-nutri-brand">
+                        Usar sugerido ({String(datos.proteina.sugeridaPorKg).replace(".", ",")})
+                      </button>
+                    )}
+                    <button type="button" onClick={() => { setEditandoProteina(false); setErrorProteina(""); }} className="text-[11px] text-gray-500">Cancelar</button>
+                    <span className="basis-full text-[10px] text-gray-400">Rango: {String(datos.proteina.minimo).replace(".", ",")} a {datos.proteina.maximo} g/kg (deportistas 1,6–2,2).</span>
+                    {errorProteina && <span className="basis-full text-[11px] text-nutri-pink">{errorProteina}</span>}
+                  </form>
                 )}
-                {m.clave === "proteinas" && proteinaCambiada && !editandoProteina && (
-                  <p className="text-[11px] text-amber-700 pl-4">Guardado. Se aplicará al generar el próximo menú.</p>
-                )}
-                {gMenu !== null && (
-                  <p className="text-[11px] text-gray-500 pl-4">
-                    Menú (promedio diario): <span className="tabular">{fmt(gMenu)} g · {fmt(kcalMenu)} kcal{menuKcal > 0 ? ` · ${Math.round((kcalMenu / menuKcal) * 100)} %` : ""}</span>
-                  </p>
+                {esProteina && proteinaCambiada && !editandoProteina && (
+                  <p className="pl-3.5 text-[11px] text-amber-700">Guardado. Se aplicará al generar el próximo menú.</p>
                 )}
               </li>
             );
           })}
         </ul>
-        <p className="text-[10px] text-gray-400 mt-2 leading-snug">1 g de proteína o carbohidrato = 4 kcal; 1 g de grasa = 9 kcal. {datos.referencias}</p>
       </div>
       </div>
     </section>

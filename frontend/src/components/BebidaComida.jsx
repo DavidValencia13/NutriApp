@@ -95,7 +95,7 @@ function filasIniciales(comida) {
   // Bebida de una sola ficha (versión anterior)
   if (previa?.nutrientes && previa.ml) {
     const por100 = Object.fromEntries(Object.entries(previa.nutrientes).map(([k, v]) => [k, (v * 100) / previa.ml]));
-    return [nuevaFila({ nombre: previa.referencia || comida.bebida, cantidad: previa.ml, unidad: "ml", por100, fuente: previa.fuente, referencia: previa.referencia })];
+    return [nuevaFila({ nombre: comida.bebida || previa.referencia, cantidad: previa.ml, unidad: "ml", por100, fuente: previa.fuente, referencia: previa.referencia })];
   }
   return [];
 }
@@ -339,22 +339,14 @@ export function TarjetaBebida({ bebida, nutricion, className = "" }) {
   const kcal = Math.round(nutricion?.nutrientes?.calorias || 0);
   return (
     <div className={`tarjeta-bebida ${className}`}>
-      <span className="tarjeta-bebida-icono"><CupSoda size={18} aria-hidden="true" /></span>
+      <span className="tarjeta-bebida-icono"><CupSoda size={14} aria-hidden="true" /></span>
       <div className="min-w-0 flex-1">
-        <p className="tarjeta-bebida-titulo">Bebida</p>
-        <p className="tarjeta-bebida-nombre">{bebida}</p>
+        <p className="tarjeta-bebida-nombre"><span className="tarjeta-bebida-titulo">Bebida</span> {bebida}</p>
         {ingredientes.length > 0 && (
-          <ul className="mt-1.5 flex flex-wrap gap-1">
-            {ingredientes.map((i, k) => (
-              <li key={k} className="tarjeta-bebida-chip">{i.nombre} · {i.medida || `${fmt(i.cantidad)} ${i.unidad}`}</li>
-            ))}
-          </ul>
+          <p className="tarjeta-bebida-ingredientes">{ingredientes.map((i) => `${i.nombre} ${i.medida || `${fmt(i.cantidad)} ${i.unidad}`}`).join(" · ")}</p>
         )}
       </div>
-      <div className="tarjeta-bebida-datos">
-        {nutricion?.ml ? <span>{nutricion.ml} ml</span> : null}
-        <strong>{kcal > 0 ? `${kcal} kcal` : "0 kcal"}</strong>
-      </div>
+      <span className="tarjeta-bebida-datos">{nutricion?.ml ? `${nutricion.ml} ml · ` : ""}<strong>{kcal} kcal</strong></span>
     </div>
   );
 }
