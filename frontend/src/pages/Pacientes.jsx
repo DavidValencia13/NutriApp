@@ -32,6 +32,8 @@ import {
 } from "../components/Icons";
 
 /* ── Helpers ──────────────────────────────────────────────────────────────── */
+// Object.hasOwn no existe en navegadores de celular antiguos
+const tieneClave = (objeto, clave) => Object.prototype.hasOwnProperty.call(objeto || {}, clave);
 function iniciales(nombre = "") {
   const partes = nombre.trim().split(/\s+/);
   return ((partes[0]?.[0] || "") + (partes[1]?.[0] || "")).toUpperCase() || "?";
@@ -156,14 +158,14 @@ function Pacientes() {
   ].every(Number.isFinite));
   const conAlerta = conCobertura.filter((p) => faltanAlimentos(coberturas[p.id])).length;
   const conCatalogoSuficiente = conCobertura.length - conAlerta;
-  const menusEnElaboracion = pacientes.filter((p) => Object.hasOwn(estadosMenu, p.id) && estadosMenu[p.id] !== undefined && estadosMenu[p.id] !== "aprobado").length;
+  const menusEnElaboracion = pacientes.filter((p) => tieneClave(estadosMenu, p.id) && estadosMenu[p.id] !== undefined && estadosMenu[p.id] !== "aprobado").length;
   const menusTerminados = pacientes.filter((p) => estadosMenu[p.id] === "aprobado").length;
-  const resumenMenusDisponible = pacientes.every((p) => Object.hasOwn(estadosMenu, p.id) && estadosMenu[p.id] !== undefined);
-  const coberturaLista = pacientes.length === 0 || pacientes.every((p) => Object.hasOwn(coberturas, p.id));
+  const resumenMenusDisponible = pacientes.every((p) => tieneClave(estadosMenu, p.id) && estadosMenu[p.id] !== undefined);
+  const coberturaLista = pacientes.length === 0 || pacientes.every((p) => tieneClave(coberturas, p.id));
   const resumenCoberturaDisponible = coberturaLista && conCobertura.length === pacientes.length;
   const pacientesFiltrados = pacientes.filter((p) => {
     const coincide = p.nombre.toLowerCase().includes(busqueda.trim().toLowerCase());
-    if (filtro === "alertas") return coincide && Object.hasOwn(estadosMenu, p.id) && estadosMenu[p.id] !== undefined && estadosMenu[p.id] !== "aprobado";
+    if (filtro === "alertas") return coincide && tieneClave(estadosMenu, p.id) && estadosMenu[p.id] !== undefined && estadosMenu[p.id] !== "aprobado";
     if (filtro === "suficientes") return coincide && estadosMenu[p.id] === "aprobado";
     return coincide;
   });

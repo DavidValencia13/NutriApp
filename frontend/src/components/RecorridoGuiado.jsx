@@ -72,7 +72,12 @@ function RecorridoGuiado({ pasos, abierto, onCerrar }) {
 
   const estiloGlobo = rect
     ? posicionGlobo(rect)
-    : { top: "50%", left: "50%", width: Math.min(ANCHO_GLOBO + 60, window.innerWidth - 32), transform: "translate(-50%, -50%)" };
+    : (() => {
+      // Centrado sin transform: la animación de entrada lo reemplazaba y el
+      // globo quedaba corrido fuera de la pantalla en celulares
+      const ancho = Math.min(ANCHO_GLOBO + 60, window.innerWidth - 32);
+      return { top: Math.max(16, window.innerHeight / 2 - 140), left: Math.max(16, (window.innerWidth - ancho) / 2), width: ancho };
+    })();
 
   return (
     <div className="fixed inset-0 z-[100]" role="dialog" aria-modal="true" aria-labelledby="recorrido-titulo">
