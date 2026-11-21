@@ -118,3 +118,26 @@ test("propaga ConflictError si el repositorio detecta la carrera dentro de su pr
     ConflictError,
   );
 });
+
+test("al cambiar acelga por espinaca se actualizan el nombre y la descripción", async () => {
+  const garbanzo = { id: "a1", nombre: "Garbanzo", unidadMedida: "g" };
+  const acelga = { id: "a2", nombre: "Acelga", unidadMedida: "g" };
+  const espinaca = { id: "a3", nombre: "Espinaca, cruda", unidadMedida: "g" };
+  const tomate = { id: "a4", nombre: "Tomate riñón", unidadMedida: "g" };
+  const deps = crearDependencias({
+    comida: {
+      id: 1, idDiaMenu: 5, menu: { id: 1, idPaciente: 1, estado: "generado" },
+      descripcion: "El garbanzo se guisa y se sirve con la ensalada de acelga.",
+      detalles: [{ nombreAlimento: "Garbanzo" }, { nombreAlimento: "Acelga" }, { nombreAlimento: "Tomate riñón" }],
+    },
+  });
+  deps.listarAlimentosPorPaciente = { async ejecutar() { return [garbanzo, acelga, espinaca, tomate]; } };
+  await new AjustarComidaMenu(deps).ejecutar(1, 10, {
+    calorias: 400,
+    nombrePlato: "Garbanzo guisado con ensalada de acelga",
+    alimentos: [{ idAlimento: "a1", cantidad: 100 }, { idAlimento: "a3", cantidad: 50 }, { idAlimento: "a4", cantidad: 50 }],
+  });
+  const { cambios } = deps.menuRepository.llamadas[0];
+  assert.equal(cambios.nombrePlato, "Garbanzo guisado con ensalada de espinaca y tomate riñón");
+  assert.equal(cambios.descripcion, "El garbanzo se guisa y se sirve con la ensalada de espinaca.");
+});

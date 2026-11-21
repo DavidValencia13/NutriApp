@@ -186,22 +186,25 @@ class MenuRepositorySequelize {
   async obtenerComidaConPropietario(idComidaMenu, idNutriologo) {
     const doc = await ComidaMenuModel.findOne({
       where: { id: idComidaMenu },
-      include: {
-        model: DiaMenuModel,
-        as: "dia",
-        required: true,
-        include: {
-          model: MenuModel,
-          as: "menu",
+      include: [
+        { model: DetalleComidaAlimentoModel, as: "detalles", attributes: ["idAlimento", "nombreAlimento"] },
+        {
+          model: DiaMenuModel,
+          as: "dia",
           required: true,
           include: {
-            model: PacienteModel,
-            as: "paciente",
-            where: { idNutriologo },
+            model: MenuModel,
+            as: "menu",
             required: true,
+            include: {
+              model: PacienteModel,
+              as: "paciente",
+              where: { idNutriologo },
+              required: true,
+            },
           },
         },
-      },
+      ],
     });
     if (!doc) return null;
     return {
@@ -209,6 +212,8 @@ class MenuRepositorySequelize {
       idDiaMenu: doc.idDiaMenu,
       bebida: doc.bebida,
       bebidaNutricion: doc.bebidaNutricion,
+      descripcion: doc.descripcion,
+      detalles: (doc.detalles || []).map((d) => ({ idAlimento: d.idAlimento, nombreAlimento: d.nombreAlimento })),
       menu: {
         id: doc.dia.menu.id,
         idPaciente: doc.dia.menu.idPaciente,
@@ -267,6 +272,7 @@ class MenuRepositorySequelize {
         {
           calorias: cambios.calorias,
           nombrePlato: cambios.nombrePlato,
+          ...(cambios.descripcion !== undefined && { descripcion: cambios.descripcion }),
           costoTotal: cambios.costoTotal,
           nutrientes: cambios.nutrientes,
           ...(!preparacionVigente && { preparacion: null }),

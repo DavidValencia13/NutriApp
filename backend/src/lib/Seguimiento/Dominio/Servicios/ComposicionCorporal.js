@@ -108,6 +108,29 @@ function evaluarIMC(imc) {
   return "obesidad";
 }
 
+// Masa muscular: baja / buena / alta.
+// - Con balanza de bioimpedancia: % de músculo esquelético del peso
+//   (referencia de balanzas Omron para adultos: mujeres 24,3–30,3 %,
+//   hombres 33,3–39,3 %).
+// - Si solo hay % de grasa (pliegues): índice de masa libre de grasa
+//   FFMI = masa magra / talla² (Schutz et al., 2002: mujeres 14–17,
+//   hombres 17–20 kg/m²; por encima, típico de deportistas).
+const MUSCULO_PCT = { femenino: [24.3, 30.3], masculino: [33.3, 39.3] };
+const FFMI = { femenino: [14, 17], masculino: [17, 20] };
+
+function evaluarMusculo({ masaMuscularKg, masaMagraKg, peso, altura, sexo }) {
+  const clasificar = (valor, [desde, hasta]) => (valor < desde ? "bajo" : valor <= hasta ? "bueno" : "alto");
+  if (masaMuscularKg && peso && MUSCULO_PCT[sexo]) {
+    const pct = (masaMuscularKg / peso) * 100;
+    return { nivel: clasificar(pct, MUSCULO_PCT[sexo]), indicador: "porcentaje", valor: Math.round(pct * 10) / 10 };
+  }
+  if (masaMagraKg && altura && FFMI[sexo]) {
+    const ffmi = masaMagraKg / (altura * altura);
+    return { nivel: clasificar(ffmi, FFMI[sexo]), indicador: "ffmi", valor: Math.round(ffmi * 10) / 10 };
+  }
+  return null;
+}
+
 const redondear = (n, d = 1) => (n === null || !Number.isFinite(n) ? null : Math.round(n * 10 ** d) / 10 ** d);
 
 // Composición corporal de un control. paciente: { edad, sexo, altura (m) }
@@ -148,6 +171,7 @@ function calcularComposicion(medidas, peso, paciente = {}) {
       cintura: evaluarCintura(cintura, sexo),
       indiceCinturaCadera: evaluarICC(icc, sexo),
       imc: evaluarIMC(imc),
+      musculo: evaluarMusculo({ masaMuscularKg: m.masaMuscularKg ?? null, masaMagraKg, peso: kg, altura, sexo }),
     },
   };
 }
@@ -157,4 +181,4 @@ function conComposicion(registros, paciente) {
   return registros.map((r) => (r.medidas ? { ...r, composicion: calcularComposicion(r.medidas, r.peso, paciente) } : r));
 }
 
-module.exports = { normalizarMedidas, calcularComposicion, conComposicion, grasaPorPliegues, PLIEGUES };
+module.exports = { normalizarMedidas, calcularComposicion, conComposicion, grasaPorPliegues, evaluarMusculo, PLIEGUES };

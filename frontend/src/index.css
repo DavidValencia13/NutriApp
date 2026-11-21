@@ -1080,6 +1080,18 @@ h1, h2, h3, h4, h5, .font-display {
 /* Seguimiento (progreso del peso y efectividad) lado a lado bajo las comidas */
 .weekly-follow-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-top: 12px; align-items: stretch; }
 .weekly-follow-row:empty { display: none; }
+/* Tarjeta del paciente: composición corporal (IMC, músculo, grasa, cintura) */
+.patient-body { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 8px 0 2px; }
+.patient-body-item { display: flex; flex-direction: column; gap: 1px; padding: 6px 8px; border: 1px solid #e3eeec; border-left: 3px solid #cbd5e1; border-radius: 10px; background: #fff; min-width: 0; }
+.patient-body-item span { font-size: 10px; color: #64748b; }
+.patient-body-item strong { font-size: 12.5px; color: #1f2937; line-height: 1.2; }
+.patient-body-item small { font-size: 10px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.patient-body-item.nivel-bien { border-left-color: #10b981; } .patient-body-item.nivel-bien strong { color: #047857; }
+.patient-body-item.nivel-vigilar { border-left-color: #f59e0b; } .patient-body-item.nivel-vigilar strong { color: #b45309; }
+.patient-body-item.nivel-alerta { border-left-color: #ef4444; } .patient-body-item.nivel-alerta strong { color: #b91c1c; }
+@media (max-width: 420px) { .patient-body { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+:where(.tema-oscuro) .patient-body-item { background: var(--oscuro-tarjeta-2, #1d1d20); border-color: var(--oscuro-borde, #2a2a2e); }
+:where(.tema-oscuro) .patient-body-item strong { color: var(--oscuro-texto, #ededef); }
 /* Macronutrientes bajo las comidas: una tarjeta por macro */
 .macro-tarjeta { padding: 10px 12px; border: 1px solid #e5eef0; border-top: 3px solid; border-radius: 12px; background: #fff; }
 :where(.tema-oscuro) .macro-tarjeta { background: var(--oscuro-tarjeta-2, #1d1d20); border-color: var(--oscuro-borde, #2a2a2e); }

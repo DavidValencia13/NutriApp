@@ -414,7 +414,7 @@ function PacienteCard({ p, versionSeguimiento, onMenu, onSeguimiento, onAcceso, 
           </svg>
         </div>
 
-        <MiniSeguimiento idPaciente={p.id} version={versionSeguimiento} pesoFicha={p.peso} nivelActividad={p.nivelActividad} objetivo={p.objetivo} />
+        <MiniSeguimiento idPaciente={p.id} version={versionSeguimiento} pesoFicha={p.peso} nivelActividad={p.nivelActividad} objetivo={p.objetivo} altura={p.altura} />
       </div>
 
       {/* Acciones */}

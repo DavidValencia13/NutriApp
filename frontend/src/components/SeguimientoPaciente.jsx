@@ -12,6 +12,8 @@ import PesoTrendChart from "./PesoTrendChart";
 import { ordenarControles } from "../utils/ordenarControles";
 import PanelComposicion, { FormularioMedidas } from "./ComposicionCorporal";
 import { hayMedidas, medidasDesdeRegistro, medidasParaEnviar } from "../utils/composicion";
+import PanelLaboratorio, { FormularioLaboratorio } from "./Laboratorio";
+import { hayLaboratorio, laboratorioDesdeRegistro, laboratorioParaEnviar } from "../utils/laboratorio";
 import { AlertTriangle, CalendarDays, ClipboardCheck, NotebookPen, Pencil, Scale } from "lucide-react";
 
 const ESTILOS_NIVEL = {
@@ -44,6 +46,7 @@ function datosFormulario(registro, fecha) {
     nivelCumplimiento: registro?.nivelCumplimiento || "",
     observaciones: registro?.observaciones || "",
     medidas: medidasDesdeRegistro(registro?.medidas),
+    laboratorio: laboratorioDesdeRegistro(registro?.laboratorio),
   };
 }
 
@@ -151,6 +154,7 @@ function SeguimientoPaciente({ idPaciente }) {
       </section>
 
       <div className="mt-4"><PanelComposicion registros={registros} /></div>
+      <div className="mt-4"><PanelLaboratorio registros={registros} /></div>
 
       <div className="followup-entry-section">
         <button
@@ -191,6 +195,7 @@ function SeguimientoPaciente({ idPaciente }) {
                       {formatoFecha(r.fecha)}
                       {r.peso != null && <span>· Peso: {formatoPeso(r.peso)} kg</span>}
                       {r.medidas && <span className="px-2 py-0.5 rounded-full bg-nutri-brand/10 text-nutri-brand font-medium">+ medidas corporales</span>}
+                      {r.laboratorio && <span className="px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 font-medium">+ exámenes</span>}
                       <span className={`px-2 py-0.5 rounded-full font-medium ${estilo.clase}`}>
                         Cumplimiento: {estilo.label}
                       </span>
@@ -233,6 +238,7 @@ function FormularioSeguimiento({ idPaciente, registros, registroInicial, onSucce
   const [guardando, setGuardando] = useState(false);
   const [pesoConfirmado, setPesoConfirmado] = useState(false);
   const [verMedidas, setVerMedidas] = useState(() => hayMedidas(form.medidas));
+  const [verLaboratorio, setVerLaboratorio] = useState(() => hayLaboratorio(form.laboratorio));
   const registroObjetivo = registroInicial || registroEnFecha(registros, form.fecha);
   const pesoIngresado = form.peso === "" ? null : Number(form.peso);
   const pesoAnterior = Number([...registros].filter((registro) =>
@@ -269,6 +275,7 @@ function FormularioSeguimiento({ idPaciente, registros, registroInicial, onSucce
         nivelCumplimiento: form.nivelCumplimiento,
         observaciones: form.observaciones || undefined,
         medidas: medidasParaEnviar(form.medidas),
+        laboratorio: laboratorioParaEnviar(form.laboratorio),
       };
       if (registroObjetivo) {
         await actualizarSeguimiento(idPaciente, registroObjetivo.id, datos);
@@ -326,6 +333,14 @@ function FormularioSeguimiento({ idPaciente, registros, registroInicial, onSucce
         onChange={(medidas) => setForm((prev) => ({ ...prev, medidas }))}
         abierto={verMedidas}
         onToggle={() => setVerMedidas((v) => !v)}
+      />
+
+      <FormularioLaboratorio
+        idBase={`followup-lab-${idPaciente}`}
+        valores={form.laboratorio}
+        onChange={(laboratorio) => setForm((prev) => ({ ...prev, laboratorio }))}
+        abierto={verLaboratorio}
+        onToggle={() => setVerLaboratorio((v) => !v)}
       />
 
       <div className="mb-3">

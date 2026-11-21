@@ -36,7 +36,9 @@ test("composición: kg de grasa, masa magra, IMC, ICC y semáforos", () => {
   assert.equal(c.masaMagraKg, 44.8);
   assert.equal(c.imc, 25);
   assert.equal(c.indiceCinturaCadera, 0.82);
-  assert.deepEqual(c.evaluacion, { grasa: "saludable", cintura: "aumentado", indiceCinturaCadera: "saludable", imc: "sobrepeso" });
+  const { musculo, ...semaforos } = c.evaluacion;
+  assert.deepEqual(semaforos, { grasa: "saludable", cintura: "aumentado", indiceCinturaCadera: "saludable", imc: "sobrepeso" });
+  assert.ok(musculo === null || ["bajo", "bueno", "alto"].includes(musculo.nivel));
   assert.deepEqual(c.rangoGrasa, { desde: 21, hasta: 33, alto: 39 });
 });
 

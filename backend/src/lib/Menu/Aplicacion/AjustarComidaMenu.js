@@ -9,6 +9,7 @@ const {
   cantidadEsPlausible,
   caloriasDeComida,
 } = require("../Dominio/Servicios/CalculadoraNutricional");
+const { actualizarPorCambios, completarNombre } = require("../Dominio/Servicios/NombrePlato");
 
 class AjustarComidaMenu {
   constructor({ menuRepository, listarAlimentosPorPaciente }) {
@@ -67,11 +68,19 @@ class AjustarComidaMenu {
       detallesConSnapshot.map((d) => d.nutrientes),
     );
 
+    // Si cambió un alimento (acelga -> espinaca), el nombre y la
+    // descripción se actualizan; y el nombre menciona todos los alimentos
+    const nombresAntes = (comida.detalles || []).map((d) => d.nombreAlimento);
+    const nombresDespues = detallesConSnapshot.map((d) => d.nombreAlimento);
+    const nombrePlato = completarNombre(actualizarPorCambios(cambios.nombrePlato.trim(), nombresAntes, nombresDespues), nombresDespues);
+    const descripcion = comida.descripcion ? actualizarPorCambios(comida.descripcion, nombresAntes, nombresDespues) : comida.descripcion;
+
     const resultado = await this.menuRepository.actualizarComida(idComidaMenu, {
       // Calculadas con las tablas si todos los alimentos tienen el dato; si
       // no, las que escribió el nutriólogo
       calorias: caloriasDeComida(nutrientes, cambios.calorias),
-      nombrePlato: cambios.nombrePlato.trim(),
+      nombrePlato,
+      ...(descripcion !== undefined && { descripcion }),
       costoTotal,
       nutrientes,
       alimentos: detallesConSnapshot,

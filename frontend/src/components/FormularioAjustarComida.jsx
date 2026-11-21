@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { reemplazarAlimento } from "../utils/nombrePlato";
 import { ajustarComida } from "../services/menuService";
 import { listarAlimentos } from "../services/alimentoService";
 import { calcularPreviewNutrientes } from "../services/previewNutrientesService";
@@ -66,6 +67,13 @@ function FormularioAjustarComida({ idPaciente, idMenu, comida, onSuccess, onCanc
   }, [filas, idPaciente, idMenu]);
 
   function handleFilaChange(index, campo, valor) {
+    // Al cambiar un alimento (acelga -> espinaca) el nombre del plato se actualiza
+    if (campo === "idAlimento") {
+      const nombreDe = (id) => alimentosDisponibles.find((a) => String(a.id) === String(id))?.nombre;
+      const viejo = nombreDe(filas[index]?.idAlimento);
+      const nuevo = nombreDe(valor);
+      if (viejo && nuevo) setNombrePlato((n) => reemplazarAlimento(n, viejo, nuevo));
+    }
     setFilas((prev) =>
       prev.map((f, i) => (i === index ? { ...f, [campo]: valor } : f)),
     );

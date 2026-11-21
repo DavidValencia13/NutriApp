@@ -13,6 +13,8 @@ const RegistroSeguimientoModel = sequelize.define(
     observaciones: { type: DataTypes.TEXT, allowNull: true },
     // Medidas corporales opcionales (cintura, pliegues, bioimpedancia...)
     medidas: { type: DataTypes.JSONB, allowNull: true },
+    // Exámenes de laboratorio opcionales (glucosa, lípidos, biometría)
+    laboratorio: { type: DataTypes.JSONB, allowNull: true },
   },
   { timestamps: true },
 );

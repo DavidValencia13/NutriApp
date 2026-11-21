@@ -1,5 +1,6 @@
 const { ValidationError } = require("../Errores");
 const { normalizarMedidas } = require("../Servicios/ComposicionCorporal");
+const { normalizarLaboratorio } = require("../Servicios/Laboratorio");
 
 const NIVELES_CUMPLIMIENTO = ["bien", "regular", "mal"];
 
@@ -10,7 +11,8 @@ const NIVELES_CUMPLIMIENTO = ["bien", "regular", "mal"];
 // más una observación libre opcional.
 class RegistroSeguimiento {
   // medidas (opcional): medidas corporales del control (ver ComposicionCorporal)
-  constructor({ id, idPaciente, fecha, peso, nivelCumplimiento, observaciones, medidas }) {
+  // laboratorio (opcional): glucosa, colesterol, triglicéridos, biometría... (ver Laboratorio)
+  constructor({ id, idPaciente, fecha, peso, nivelCumplimiento, observaciones, medidas, laboratorio }) {
     const idPacienteNum = Number(idPaciente);
     if (!Number.isInteger(idPacienteNum) || idPacienteNum <= 0)
       throw new ValidationError("El id del paciente no es válido");
@@ -28,6 +30,7 @@ class RegistroSeguimiento {
     this.nivelCumplimiento = nivelCumplimiento;
     this.observaciones = observaciones ? observaciones.trim() : undefined;
     this.medidas = normalizarMedidas(medidas);
+    this.laboratorio = normalizarLaboratorio(laboratorio);
   }
 }
 

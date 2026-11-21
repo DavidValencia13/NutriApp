@@ -8,6 +8,7 @@ const {
   LIMITE_CANTIDAD_POR_UNIDAD,
 } = require("../Dominio/Servicios/CalculadoraNutricional");
 const { requerimientoCalorico, proteinaDiariaG } = require("../Dominio/Servicios/RequerimientoCalorico");
+const { completarNombre } = require("../Dominio/Servicios/NombrePlato");
 const { evaluar: evaluarCoberturaCatalogo } = require("../../Alimento/Dominio/Servicios/EvaluadorCoberturaCatalogo");
 
 class GenerarMenuSemanal {
@@ -349,7 +350,8 @@ class GenerarMenuSemanal {
           // El momento del día lo fija el sistema según el orden (la
           // merienda siempre después del almuerzo), no lo que diga la IA
           tipoComida: momentos[comida.orden - 1] || comida.tipoComida,
-          nombrePlato: comida.nombrePlato,
+          // El nombre menciona todos los alimentos (ej. "... con tomate")
+          nombrePlato: completarNombre(comida.nombrePlato, alimentos.map((a) => a.nombreAlimento)),
           descripcion: comida.descripcion || null,
           // Calorías calculadas con las tablas USDA/USFQ; la estimación de
           // la IA solo si a algún alimento le falta el dato

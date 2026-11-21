@@ -10,6 +10,7 @@ class SeguimientoRepositorySequelize {
       nivelCumplimiento: registro.nivelCumplimiento,
       observaciones: registro.observaciones,
       medidas: registro.medidas,
+      laboratorio: registro.laboratorio,
     });
     return this._toEntity(doc);
   }
@@ -38,6 +39,7 @@ class SeguimientoRepositorySequelize {
       nivelCumplimiento: registro.nivelCumplimiento,
       observaciones: registro.observaciones ?? null,
       medidas: registro.medidas ?? null,
+      laboratorio: registro.laboratorio ?? null,
     });
     return this._toEntity(doc);
   }
@@ -62,6 +64,7 @@ class SeguimientoRepositorySequelize {
       nivelCumplimiento: doc.nivelCumplimiento,
       observaciones: doc.observaciones,
       medidas: doc.medidas || null,
+      laboratorio: doc.laboratorio || null,
     });
   }
 }

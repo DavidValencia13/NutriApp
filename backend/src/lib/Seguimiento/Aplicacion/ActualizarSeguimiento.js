@@ -6,7 +6,7 @@ class ActualizarSeguimiento {
     this.seguimientoRepository = seguimientoRepository;
   }
 
-  async ejecutar(id, idPaciente, { peso, nivelCumplimiento, observaciones, medidas } = {}) {
+  async ejecutar(id, idPaciente, { peso, nivelCumplimiento, observaciones, medidas, laboratorio } = {}) {
     const existente = await this.seguimientoRepository.findByIdAndPaciente(id, idPaciente);
     if (!existente) throw new NotFoundError("Registro de seguimiento no encontrado");
     if (!Number.isFinite(peso) || peso <= 0) throw new ValidationError("El peso debe ser mayor a 0");
@@ -23,6 +23,7 @@ class ActualizarSeguimiento {
       observaciones,
       // undefined = no se tocaron (se conservan); null = se quitaron
       medidas: medidas === undefined ? existente.medidas : medidas,
+      laboratorio: laboratorio === undefined ? existente.laboratorio : laboratorio,
     });
     const actualizado = await this.seguimientoRepository.actualizar(id, idPaciente, registro);
     if (!actualizado) throw new NotFoundError("Registro de seguimiento no encontrado");

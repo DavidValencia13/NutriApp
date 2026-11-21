@@ -1,4 +1,5 @@
 const { conComposicion } = require("../Dominio/Servicios/ComposicionCorporal");
+const { evaluarLaboratorio } = require("../Dominio/Servicios/Laboratorio");
 
 // Caso de uso: listar la bitácora de seguimiento de un paciente, en orden
 // cronológico. Los controles con medidas corporales traen su composición
@@ -12,9 +13,12 @@ class ListarSeguimientoPorPaciente {
 
   async ejecutar(idPaciente) {
     const registros = await this.seguimientoRepository.listarPorPaciente(idPaciente);
-    if (!this.pacienteRepository || !registros.some((r) => r.medidas)) return registros;
-    const paciente = await this.pacienteRepository.findById(idPaciente);
-    return conComposicion(registros, paciente || {});
+    if (!this.pacienteRepository || !registros.some((r) => r.medidas || r.laboratorio)) return registros;
+    const paciente = (await this.pacienteRepository.findById(idPaciente)) || {};
+    // Exámenes: cada valor con su estado (normal, límite, alto, bajo)
+    return conComposicion(registros, paciente).map((r) => (r.laboratorio
+      ? { ...r, evaluacionLaboratorio: evaluarLaboratorio(r.laboratorio, paciente.sexo) }
+      : r));
   }
 }
 
