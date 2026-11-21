@@ -19,7 +19,7 @@ import { useAuth } from "../context/AuthContext";
 import { Logo } from "../components/Logo";
 import HeroCarousel from "../components/HeroCarousel";
 import RecorridoGuiado from "../components/RecorridoGuiado";
-import { PASOS_GUIA_NUTRICIONISTA } from "../utils/guiaNutricionista";
+import { PASOS_GUIA_NUTRICIONISTA, VERSION_GUIA } from "../utils/guiaNutricionista";
 import {
   IconUsers,
   IconPlus,
@@ -73,7 +73,8 @@ function Pacientes() {
   const [seccionActiva, setSeccionActiva] = useState(() => window.location.hash === "#listado-pacientes" ? "pacientes" : "inicio");
   const claveGuia = `guia-vista-${nutriologo?.id}`;
   const [guiaVista, setGuiaVista] = useState(() => {
-    try { return localStorage.getItem(`guia-vista-${nutriologo?.id}`) === "1"; }
+    // Guarda la versión vista: si la guía trae novedades, se muestra otra vez
+    try { return Number(localStorage.getItem(`guia-vista-${nutriologo?.id}`)) >= VERSION_GUIA; }
     catch { return true; }
   });
   const [guiaManual, setGuiaManual] = useState(false);
@@ -88,7 +89,7 @@ function Pacientes() {
   function cerrarGuia() {
     setGuiaManual(false);
     setGuiaVista(true);
-    try { localStorage.setItem(claveGuia, "1"); } catch { /* almacenamiento opcional */ }
+    try { localStorage.setItem(claveGuia, String(VERSION_GUIA)); } catch { /* almacenamiento opcional */ }
   }
 
   useEffect(() => { cargarPacientes(); }, []);

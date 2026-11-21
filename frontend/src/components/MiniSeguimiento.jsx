@@ -78,7 +78,7 @@ function MiniSeguimiento({ idPaciente, version, pesoFicha, nivelActividad, objet
         <div className="patient-vital patient-vital-goal"><span className="patient-vital-icon"><Target size={19} aria-hidden="true" /></span><div><span>Objetivo</span><strong>{objetivo || "Sin definir"}</strong></div></div>
         <div className="patient-vital patient-vital-activity"><span className="patient-vital-icon"><Activity size={19} aria-hidden="true" /></span><div><span>Actividad</span><strong>{nivelActividad || "Sin registrar"}</strong></div></div>
       </div>
-      <div className="patient-body" aria-label="Composición corporal">
+      <div className="patient-body" aria-label="Composición corporal" data-tour="paciente-cuerpo">
         {cuerpo.map((c) => {
           const n = (c.clave === "musculo" ? NIVELES_MUSCULO : NIVELES)[c.nivel];
           return (
